@@ -24,7 +24,7 @@
 ##                 
 ##   Usage       : import private              
 ##
-##   Project     : https://github.com/qqtop/Nim-Snippets
+##   Project     : https://github.com/qqtop/NimCx
 ##
 ##   Docs        : http://qqtop.github.io/private.html
 ##
