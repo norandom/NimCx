@@ -24,9 +24,6 @@ Documentation for private.nim : http://qqtop.github.io/private.html
 
 Screenshots from privateTest
 
-https://github.com/qqtop/qqtop.github.io/blob/master/nimcolors10.png
-
-
 
 ![Image](http://qqtop.github.io/nimcolors9.png?raw=true)
 
