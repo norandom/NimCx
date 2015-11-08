@@ -1,11 +1,16 @@
 # NimCx
 
 
-Color and utilities for the terminal
+Color utilities for the terminal
 
 
+Code lives in   :  private.nim
+Demos reside in :  privateDemo.nim
+Tests dewell in :  privateTest.nim
 
-Tested on linux only.
+
+For Linux only.
+
 
 Documentation for private.nim : http://qqtop.github.io/private.html
 
@@ -13,7 +18,7 @@ Documentation for private.nim : http://qqtop.github.io/private.html
 
 
 
-Screenshots from testPrivate1
+Screenshots from privateTest
 
 ![Image](../master/nimcolors9.png?raw=true)
 
