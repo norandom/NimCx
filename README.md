@@ -2,13 +2,14 @@
 
 
 Color utilities for the terminal
+================================
 
-|----------------|--------------------|
-Code lives in   :  private.nim
 
-Demos reside in :  privateDemo.nim
 
-Tests dwells in :  privateTest.nim
+|----------------|------------------|------------------|
+|Code            | Demos            | Tests            |
+|----------------|------------------|------------------|
+|private.nim     | privateDemo.nim  |privateTest.nim   |
 
 
 
@@ -16,6 +17,7 @@ For Linux only.
 
 
 Documentation for private.nim : http://qqtop.github.io/private.html
+
 
 ![Image](../master/gnu.png?raw=true)
 
