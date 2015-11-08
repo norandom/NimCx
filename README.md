@@ -18,7 +18,7 @@ For Linux only.
 Documentation for private.nim : http://qqtop.github.io/private.html
 
 
-![Image](https://github.com/qqtop/qqtop.github.io/blob/master/gnu.png?raw=true)
+![Image](http://qqtop.github.io/gnu.png?raw=true)
 
 
 
