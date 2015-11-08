@@ -3,12 +3,12 @@
 
 Color utilities for the terminal
 
-
+|----------------|--------------------|
 Code lives in   :  private.nim
 
 Demos reside in :  privateDemo.nim
 
-Tests dewell in :  privateTest.nim
+Tests dwells in :  privateTest.nim
 
 
 
