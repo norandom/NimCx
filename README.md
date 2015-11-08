@@ -6,7 +6,6 @@ Color utilities for the terminal
 
 
 
-|----------------|------------------|------------------|
 |Code            | Demos            | Tests            |
 |----------------|------------------|------------------|
 |private.nim     | privateDemo.nim  |privateTest.nim   |
