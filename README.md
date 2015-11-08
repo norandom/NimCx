@@ -18,11 +18,15 @@ For Linux only.
 Documentation for private.nim : http://qqtop.github.io/private.html
 
 
-![Image](http://qqtop.github.io/gnu.png?raw=true)
+![Image](https://github.com/qqtop/qqtop.github.io/blob/master/gnu.png?raw=true)
 
 
 
 Screenshots from privateTest
+
+https://github.com/qqtop/qqtop.github.io/blob/master/nimcolors10.png
+
+
 
 ![Image](http://qqtop.github.io/nimcolors9.png?raw=true)
 
