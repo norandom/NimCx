@@ -765,8 +765,7 @@ template msgg*(code: stmt): stmt =
       ## naming of the templates is like msg+color so msgy => yellow
       ## use like : msgg() do : echo "How nice, it's in green"
       ## these templates have by large been superceded by various print and echo procs
-      ## but are useful to have ins ome circumstances 
-      ## like draw a yellow line with width 40   
+      ## but are useful in some circumstances where a statement needs to be passed.   
       ## 
       ## 
       ## .. code-block:: nim
@@ -859,6 +858,10 @@ template msgmb*(code: stmt): stmt =
 
   
 template hdx*(code:stmt):stmt =
+   ## hdx
+   ## 
+   ## a simple sandwich frame made with +
+   ## 
    echo ""
    echo repeat("+",tw)
    setForeGroundColor(fgCyan)
@@ -955,11 +958,9 @@ proc centerPos*(astring:string) =
      ##    printLn(s,gray)
      ## 
      ## 
-     #var xs = repeat(" ",tw div 2 - astring.len div 2 - 1)
      setCursorXPos(stdout,tw div 2 - astring.len div 2 - 1)
      
-
-   
+  
 proc checkColor*(colname: string): bool =
      ## checkColor
      ## 
@@ -1277,6 +1278,30 @@ proc printLnPos*[T](astring:T,fgr:string = white , bgr:string = black,xpos = -1,
           
      printPos(astring,fgr,bgr,xpos,fitLine)
      writeln(stdout,"")
+
+
+
+proc printCenter*(astring:string,fg:string = termwhite,bg:string = termblack) =
+     ## printCenter
+     ## 
+     ## attempts to print a string centered in terminal 
+     ## 
+     ## fore and backgroundcolor can be set
+     ## 
+  
+     centerpos(astring)
+     print(astring,fg,bg)
+     
+     
+proc printLnCenter*(astring:string,fg:string = termwhite,bg:string = termblack) =
+     ## printLnCenter
+     ## 
+     ## attempts to print a string centered in terminal and issues new line
+     ## 
+     ## fore and backgroundcolor can be set
+     ## 
+     printCenter(astring,fg,bg)     
+     writeline(stdout,"")
 
 
 
