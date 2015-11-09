@@ -1,5 +1,7 @@
 # NimCx
 
+![Image](http://qqtop.github.io/nimcolors11.png?raw=true)
+
 
 Color utilities for the terminal
 --------------------------------
@@ -40,6 +42,6 @@ Screenshots from cxTest
 
 
 
-![Image](http://qqtop.github.io/nimcolors11.png?raw=true)
+
 
 
