@@ -1,7 +1,7 @@
-import private,strutils,strfmt,random,times
+import cx,strutils,strfmt,random,times
 
-## small demos repository for var. procs in private
-## this file is imported by privateTest.nim to actually run the demos
+## small demos repository for var. procs in cx.nim
+## this file is imported by cxTest.nim to actually run the demos
  
 
 proc futureIsNimDemo*(posx:int = 0) = 
@@ -12,7 +12,7 @@ proc futureIsNimDemo*(posx:int = 0) =
       ## max xpos = 20
       ## 
       ## .. code-block:: nim
-      ##    import private
+      ##    import cx
       ##    cleanScreen()
       ##    for x in 0.. 10:
       ##        centerMark()
@@ -115,7 +115,7 @@ proc movNimDemo*() =
     ## Demo moving Nim
     ## 
     ## .. code-block:: nim
-    ##    import private 
+    ##    import cx 
     ##    decho(5)
     ##    movNimDemo()
     ##    printNimSx(salmon)

@@ -1,14 +1,14 @@
 
-## privateTest.nim
+## cxTest.nim
 ## 
-## rough testing for private.nim 
+## rough testing for cx.nim 
 ## 
 ## best run in a large console window
 
 
-import private,privateDemo,strfmt,strutils,sequtils,times,random
+import cx,cxDemo,strfmt,strutils,sequtils,times,random
 
-superHeader("Testing print and echo procs from private.nim and run demos")
+superHeader("Testing print and echo procs from cx.nim and run demos")
 
 var s = "Test color string"
 var n = 1234567

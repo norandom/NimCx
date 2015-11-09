@@ -1,6 +1,6 @@
 {.deadCodeElim: on.}
 ##
-##   Library     : private.nim
+##   Library     : cx.nim
 ##
 ##   Status      : stable
 ##
@@ -16,25 +16,25 @@
 ##
 ##   Description :
 ##   
-##                 private.nim is a public library with a collection of simple procs and templates
+##                 cx.nim is a public library with a collection of simple procs and templates
 ##
 ##                 for easy colored display in a linux terminal , date handling and more
 ##
 ##                 some procs may mirror functionality found in other moduls for convenience
 ##                 
-##   Usage       : import private              
+##   Usage       : import cx              
 ##
 ##   Project     : https://github.com/qqtop/NimCx
 ##
-##   Docs        : http://qqtop.github.io/private.html
+##   Docs        : http://qqtop.github.io/cx.html
 ##
 ##   Tested      :  on Ubuntu 14.04 , OpenSuse 13.2 , OpenSuse Leap42.1 , Mint 17  
 ##   
 ##   Related     : 
 ##   
-##                * demos : privateDemo.nim   
+##                * demos : cxDemo.nim   
 ##   
-##                * tests : privateTest.nim  
+##                * tests : cxTest.nim  
 ##                 
 ##
 ##   Programming : qqTop
@@ -899,7 +899,7 @@ template withFile*(f: expr, filename: string, mode: FileMode, body: stmt): stmt 
      ## Example 2
      ##
      ## .. code-block:: nim
-     ##    import private,strutils,strfmt
+     ##    import cx,strutils,strfmt
      ##
      ##    let curFile="/data5/notes.txt"
      ##    var lc = 0
@@ -1318,7 +1318,7 @@ proc printTK*[T](st:T , cols: varargs[string, `$`] = @[white] ) =
      ##     
      ##         
      ## .. code-block:: nim
-     ##    import private,strfmt
+     ##    import cx,strfmt
      ##    printTK("test",@[clrainbow,white,red,cyan,yellow])
      ##    printTK("{} {} {}  -->   {}".fmt(123,"Nice",456,768.5),green,white,red,cyan)
      ##    printTK("{} : {} {}  -->   {}".fmt(123,"Nice",456,768.5),green,brightwhite,clrainbow,red,cyan)
@@ -1455,7 +1455,7 @@ proc printBiCol*(s:string,sep:string,colLeft:string = yellowgreen ,colRight:stri
      ## echos a line in 2 colors based on a seperators first occurance
      ## 
      ## .. code-block:: nim
-     ##    import private,strutils,strfmt
+     ##    import cx,strutils,strfmt
      ##    
      ##    for x  in 0.. <3:     
      ##       # here use default colors for left and right side of the seperator     
@@ -1485,7 +1485,7 @@ proc printLnBiCol*(s:string,sep:string, colLeft:string = yellowgreen, colRight:s
      ## same as printBiCol but issues a new line
      ## 
      ## .. code-block:: nim
-     ##    import private,strutils,strfmt
+     ##    import cx,strutils,strfmt
      ##       
      ##    for x  in 0.. <3:     
      ##       # here use default colors for left and right side of the seperator     
@@ -1645,7 +1645,7 @@ proc cecho*(col:string,ggg: varargs[string, `$`] = @[""] )  =
       ## 
       ## 
       ## .. code-block:: nim
-      ##     import private,strfmt
+      ##     import cx,strfmt
       ##     cechoLn(salmon,"{:<10} : {} ==> {} --> {}".fmt("this ", "zzz ",123 ," color is something else"))
       ##     echo("ok")  # color resetted
       ##     echo(salmon,"{:<10} : {} ==> {} --> {}".fmt("this ", "zzz ",123 ," color is something else"))
@@ -1673,7 +1673,7 @@ proc cechoLn*(col:string,ggg: varargs[string, `$`] = @[""] )  =
       ## in your exisiting projects.
       ## 
       ## .. code-block:: nim
-      ##     import private,strutils
+      ##     import cx,strutils
       ##     cechoLn(steelblue,"We made it in $1 hours !" % $5)
       ##
       ## 
@@ -1704,7 +1704,7 @@ proc doty*(d:int,col:string = white, bgr = black) =
      ## if it is available on your system otherwise a rectangle may be shown
      ## 
      ## .. code-block:: nimble
-     ##      import private
+     ##      import cx
      ##      printLnBiCol("Test for  :  doty\n",":",truetomato,lime)
      ##      dotyLn(22 ,lime)
      ##      dotyLn(18 ,salmon,blue)
@@ -1766,7 +1766,7 @@ proc drawRect*(h:int = 0 ,w:int = 3, frhLine:string = "_", frVLine:string = "|",
       ## 
       ## 
       ## .. code-block:: nim
-      ##    import private
+      ##    import cx
       ##    clearUp(18)
       ##    curSet()
       ##    drawRect(15,24,frhLine = "+",frvLine = wideDot , frCol = randCol(),xpos = 8)
@@ -2082,7 +2082,7 @@ proc getNextMonday*(adate:string):string =
     ## 
     ## 
     ## .. code-block:: nim
-    ##      import private
+    ##      import cx
     ##      # get next 10 mondays
     ##      var dw = "2015-08-10"
     ##      for x in 1.. 10:
@@ -2144,7 +2144,7 @@ proc printBigNumber*(anumber:string,fgr:string = yellowgreen ,bgr:string = black
     ##    printBigNumber($23456345,steelblue)
     ##
     ## .. code-block:: nim
-    ##    import private 
+    ##    import cx 
     ##    for x in countdown(10,0):
     ##         cleanScreen()
     ##         if x == 5:
@@ -2311,7 +2311,7 @@ proc superHeader*(bstring:string,strcol:string,frmcol:string) =
     ## can be set to clrainbow too .
     ##
     ## .. code-block:: nim
-    ##    import private
+    ##    import cx
     ##
     ##    superheader("Ok That's it for Now !",clrainbow,white)
     ##    echo()
@@ -2380,7 +2380,7 @@ proc superHeaderA*(bb:string = "",strcol:string = white,frmcol:string = green,an
   ## Example :
   ##
   ## .. code-block:: nim
-  ##    import private
+  ##    import cx
   ##    cleanScreen()
   ##    let bb = "NIM the system language for the future, which extends to as far as you need !!"
   ##    superHeaderA(bb,white,red,true,1)
@@ -2492,7 +2492,7 @@ proc getHosts*(dm:string):seq[string] =
     ## may resolve multiple IP pointing to same domain
     ## 
     ## .. code-block:: Nim
-    ##    import private
+    ##    import cx
     ##    var z = getHosts("bbc.co.uk")
     ##    for x in z:
     ##      echo x
@@ -2537,7 +2537,7 @@ proc showHosts*(dm:string) =
     ## may resolve multiple IP pointing to same domain
     ## 
     ## .. code-block:: Nim
-    ##    import private
+    ##    import cx
     ##    showHosts("bbc.co.uk")  
     ##    doFinish()
     ## 
@@ -2565,7 +2565,7 @@ proc getRandomInt*(mi:int = 0,ma:int = int.high):int =
     ##
     ##
     ## .. code-block:: nim
-    ##    import private,math
+    ##    import cx,math
     ##    var ps : Runningstat
     ##    loopy(0.. 1000000,ps.push(getRandomInt(0,10000)))
     ##    showStats(ps)
@@ -2658,7 +2658,7 @@ proc getRandomPointInCircle*(radius:float) : seq[float] =
   ## 
   ## 
   ## .. code-block:: nim
-  ##    import private,math,strfmt  
+  ##    import cx,math,strfmt  
   ##    # get randompoints in a circle
   ##    var crad:float = 1
   ##    for x in 0.. 100:
@@ -2692,7 +2692,7 @@ template getCard* :auto =
   ## gets a random card from the Cards seq
   ## 
   ## .. code-block:: nim
-  ##    import private
+  ##    import cx
   ##    printPos(getCard(),randCol(),xpos = tw div 2)  # get card and print in random color at xpos
   ##    doFinish()
   ## 
@@ -2765,7 +2765,7 @@ proc showStats*(x:Runningstat) =
     ##  
     ## .. code-block:: nim 
     ##  
-    ##    import private,math
+    ##    import cx,math
     ##    var rs:Runningstat
     ##    var z =  createSeqFloat(500000)
     ##    for x in z:
@@ -3212,7 +3212,7 @@ proc infoLine*() =
     printColStr(brightblack," | ")
     printColStr(brightgreen,"Nim : ")
     printColStr(brightblack,NimVersion & " | ")
-    printColStr(peru,"private : ")
+    printColStr(peru,"cx : ")
     printColStr(brightblack,PRIVATLIBVERSION)
     printColStr(brightblack," | ")
     qqTop()
@@ -3231,7 +3231,7 @@ proc doFinish*() =
     infoLine()
     printLnColStr(brightblack," - " & year(getDateStr())) 
     printColStr(yellowgreen,"{:<14}".fmt("Elapsed     : "))
-    printLn("{:<.3f} {}".fmt(epochtime() - private.start,"secs"),goldenrod)
+    printLn("{:<.3f} {}".fmt(epochtime() - cx.start,"secs"),goldenrod)
     echo()
     quit 0
 
@@ -3258,10 +3258,10 @@ proc handler*() {.noconv.} =
     cechoLn(yellowgreen,"Thank you for using     : ",getAppFilename())
     msgc() do: echo "{}{:<11}{:>9}".fmt("Last compilation on     : ",CompileDate ,CompileTime)
     hlineLn()
-    echo "private Version         : ", PRIVATLIBVERSION
+    echo "cx Version         : ", PRIVATLIBVERSION
     echo "Nim Version             : ", NimVersion
     printColStr(yellow,"{:<14}".fmt("Elapsed     : "))
-    printLnColStr(brightblack,"{:<.3f} {}".fmt(epochtime() - private.start,"secs"))
+    printLnColStr(brightblack,"{:<.3f} {}".fmt(epochtime() - cx.start,"secs"))
     echo()
     rainbow("Have a Nice Day !")  ## change or add custom messages as required
     decho(2)
@@ -3279,4 +3279,4 @@ setControlCHook(handler)
 # this will reset any color changes in the terminal
 # so no need for this line in the calling prog
 system.addQuitProc(resetAttributes)
-# end of private.nim
+# end of cx.nim
