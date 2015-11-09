@@ -8,21 +8,21 @@ Color utilities for the terminal
 
 |Code            | Demos            | Tests            |
 |----------------|------------------|------------------|
-|private.nim     | privateDemo.nim  |privateTest.nim   |
+|cx.nim     | cxDemo.nim  |cxTest.nim   |
 
 
 
 For Linux only.
 
 
-Documentation for private.nim : http://qqtop.github.io/private.html
+Documentation for cx.nim : http://qqtop.github.io/cx.html
 
 
 ![Image](http://qqtop.github.io/gnu.png?raw=true)
 
 
 
-Screenshots from privateTest
+Screenshots from cxTest
 
 
 ![Image](http://qqtop.github.io/nimcolors9.png?raw=true)
