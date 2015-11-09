@@ -20,10 +20,6 @@ For Linux only.
 Documentation for cx.nim : http://qqtop.github.io/cx.html
 
 
-![Image](http://qqtop.github.io/gnu.png?raw=true)
-
-
-
 Screenshots from cxTest
 
 
@@ -41,7 +37,10 @@ Screenshots from cxTest
 
 
 
-
+Brought to you by :
+  
+  
+        ![Image](http://qqtop.github.io/gnu.png?raw=true)
 
 
 
