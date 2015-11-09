@@ -40,6 +40,6 @@ Screenshots from cxTest
 
 
 
-Cx color your Nim !
+![Image](http://qqtop.github.io/nimcolors11.png?raw=true)
 
 
