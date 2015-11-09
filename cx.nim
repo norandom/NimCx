@@ -52,7 +52,7 @@ import random,strfmt
 type
       PStyle* = terminal.Style  ## make terminal style constants available in the calling prog
 
-const PRIVATLIBVERSION* = "0.9.2"
+const CXLIBVERSION* = "0.9.2"
   
 
 proc getfg(fg:ForegroundColor):string =
@@ -3213,7 +3213,7 @@ proc infoLine*() =
     printColStr(brightgreen,"Nim : ")
     printColStr(brightblack,NimVersion & " | ")
     printColStr(peru,"cx : ")
-    printColStr(brightblack,PRIVATLIBVERSION)
+    printColStr(brightblack,CXLIBVERSION)
     printColStr(brightblack," | ")
     qqTop()
     
@@ -3258,7 +3258,7 @@ proc handler*() {.noconv.} =
     cechoLn(yellowgreen,"Thank you for using     : ",getAppFilename())
     msgc() do: echo "{}{:<11}{:>9}".fmt("Last compilation on     : ",CompileDate ,CompileTime)
     hlineLn()
-    echo "cx Version         : ", PRIVATLIBVERSION
+    echo "cx Version         : ", CXLIBVERSION
     echo "Nim Version             : ", NimVersion
     printColStr(yellow,"{:<14}".fmt("Elapsed     : "))
     printLnColStr(brightblack,"{:<.3f} {}".fmt(epochtime() - cx.start,"secs"))
