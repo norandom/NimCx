@@ -3,18 +3,15 @@
 ![Image](http://qqtop.github.io/nimcolors11.png?raw=true)
 
 
-Color utilities for the terminal
---------------------------------
+Color utilities for the Linux terminal
+--------------------------------------
 
 
 
 |Code            | Demos            | Tests            |
 |----------------|------------------|------------------|
-|cx.nim     | cxDemo.nim  |cxTest.nim   |
+| cx.nim         | cxDemo.nim       | cxTest.nim       |
 
-
-
-For Linux only.
 
 
 Documentation for cx.nim : http://qqtop.github.io/cx.html
