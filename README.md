@@ -37,7 +37,7 @@ Screenshots from cxTest
 Brought to you by :
   
   
-  ![Image](http://qqtop.github.io/gnu.png?raw=true)
+   ![Image](http://qqtop.github.io/gnu2.png?raw=true)  ![Image](http://qqtop.github.io/gnu.png?raw=true)
 
 
 
