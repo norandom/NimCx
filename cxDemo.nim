@@ -281,3 +281,90 @@ proc wideDotFieldDemo*()=
   for x in 0.. 1000:
       loopy(1.. tw div 2, doty(1,randcol()))
       echo()       
+
+
+
+
+proc cxYourNimDemo*() =
+    # cxYourNimDemo
+    # 
+    # best viewed on a full width terminal
+    # 
+    for y in 0.. 30:
+      cleanScreen()  
+      curdn(10)
+      for x in 0.. 4:
+         curfw(10)
+         println(cbx[x] & xbx[x] & hybx[x] & " " & cbx[x] & obx[x] & lbx[x] & obx[x] & rbx[x] & "  " & ybx[x] & obx[x] & ubx[x] & rbx[x] & "  " & nbx[x] & ibx[x] & mbx[x],randcol())
+      sleepy(0.8)
+    decho(10)    
+    
+
+
+
+
+proc bigPanelDemo*() =
+        ## bigPanelDemo
+        ## 
+        ## best viewed in full width terminal
+        ## 
+        var xpos = 5
+        template abc(s:stmt) =
+          for x in 0.. 4:
+              printLnPos(s[x],randcol(),xpos=xpos)
+          curup(5)
+          xpos = xpos + 9
+              
+        abc(abx)
+        abc(bbx)
+        abc(cbx)
+        abc(dbx)
+        abc(ebx)
+        abc(fbx)
+        abc(gbx) 
+        abc(hbx)
+        abc(ibx)
+        abc(jbx)
+        abc(kbx)
+        abc(lbx)
+        abc(mbx)
+        decho(8)
+        xpos = 5
+        abc(nbx)
+        abc(obx)
+        abc(pbx)
+        abc(qbx)
+        abc(rbx)
+        abc(sbx)
+        abc(tbx)
+        abc(ubx)
+        abc(vbx)
+        abc(wbx)
+        abc(xbx)
+        abc(ybx)
+        abc(zbx)
+
+        decho(10)
+        xpos = 5
+        abc(hybx)
+        abc(plbx)
+        xpos = xpos + 3
+        printBigNumber("0123456789",xpos = xpos)
+
+        decho(10)  
+        xpos = 30
+        abc(nbx)
+        abc(ibx)
+        abc(mbx)
+        abc(hybx)
+        abc(cbx)
+        abc(xbx)
+        decho(10)
+   
+    
+    
+    
+    
+    
+
+

@@ -156,6 +156,19 @@ randomCardsClockDemo()
 
 decho(2)
 
+
+
+#testing bigblock characters
+
+cxYourNimDemo()
+
+bigPanelDemo()
+
+sleepy(3)
+
+decho(10)
+
+
 # testing emojis
 
 printLn(heart & " Nim " & heart,red)    

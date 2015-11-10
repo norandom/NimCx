@@ -280,6 +280,259 @@ const
       yellowgreen*          =  "\x1b[38;2;154;205;50m"
 
 
+
+let a1 = "   █   "
+let a2 = "  █ █  "
+let a3 = " █   █ " 
+let a4 = " █ █ █ "
+let a5 = " █   █ "
+
+
+let b1 = "███ █  "
+let b2 = "██   █ "
+let b3 = "███ █  "
+let b4 = "██   █ "
+let b5 = "███ █  "
+
+
+let c1 = " █████ "
+let c2 = "██     "
+let c3 = "██     "
+let c4 = "██     "
+let c5 = " █████ "
+
+
+
+let d1 = "███ █  "
+let d2 = "██   █ "
+let d3 = "██   █ "
+let d4 = "██   █ "
+let d5 = "███ █  "
+
+
+let e1 = "█████  "
+let e2 = "██     "
+let e3 = "████   "
+let e4 = "██     "
+let e5 = "█████  "
+
+
+let f1 = "█████  "
+let f2 = "██     "
+let f3 = "████   "
+let f4 = "██     "
+let f5 = "██     "
+
+
+
+let g1 = " ████  "
+let g2 = "██     "
+let g3 = "██  ██ "
+let g4 = "██   █ "
+let g5 = " ████  "
+
+
+  
+let h1 = "██   █ "
+let h2 = "██   █ "
+let h3 = "██████ "
+let h4 = "██   █ "
+let h5 = "██   █ "  
+
+
+let i1 = "  ██   "
+let i2 = "  ██   "
+let i3 = "  ██   "
+let i4 = "  ██   "
+let i5 = "  ██   "
+  
+
+  
+let j1 = "    ██ "
+let j2 = "    ██ "
+let j3 = "    ██ "
+let j4 = " █  ██ "
+let j5 = "  ██   "  
+
+
+let k1 = "██   █ "
+let k2 = "██  █  "
+let k3 = "██ █   "
+let k4 = "██  █  "
+let k5 = "██   █ "
+
+
+let l1 = "██     "
+let l2 = "██     "
+let l3 = "██     "
+let l4 = "██     "
+let l5 = "██████ "
+
+
+
+let m1 = "███  ██ "
+let m2 = "██ ██ █ "
+let m3 = "██  █ █ "
+let m4 = "██  █ █ "
+let m5 = "██    █ "  
+
+
+let n1 = "██   █ "
+let n2 = "███  █ "
+let n3 = "██ █ █ "
+let n4 = "██  ██ "
+let n5 = "██   █ "  
+
+          
+let o1 = " ████  "
+let o2 = "██   █ "
+let o3 = "██   █ "
+let o4 = "██   █ "
+let o5 = " ████  "
+  
+  
+let p1 = "██ ██  "
+let p2 = "██   █ "
+let p3 = "██ ██  "
+let p4 = "██     "
+let p5 = "██     "
+
+
+let q1 = " ████  "
+let q2 = "██   █ "
+let q3 = "██   █ "
+let q4 = "██ █ █ "
+let q5 = " ██ █  "
+  
+         
+
+let r1 = "███ █  "
+let r2 = "██   █ "
+let r3 = "███ █  "
+let r4 = "██   █ "
+let r5 = "██   █ "
+  
+  
+  
+let s1 = "  █ █  "
+let s2 = " █     "
+let s3 = "   █   "
+let s4 = "█   █  "
+let s5 = " █ █   "
+  
+
+let t1 = "██████ "
+let t2 = "  ██   "
+let t3 = "  ██   "
+let t4 = "  ██   "
+let t5 = "  ██   "
+
+
+let u1 = "██   █ "
+let u2 = "██   █ "
+let u3 = "██   █ "
+let u4 = "██   █ " 
+let u5 = "██████ "
+
+
+
+let v1 = "██   █ "
+let v2 = "██   █ "
+let v3 = "██   █ "
+let v4 = " █  █  " 
+let v5 = "  ██   "
+
+
+
+
+let w1 = "██   █ "
+let w2 = "██   █ "
+let w3 = "██ █ █ "
+let w4 = " █ █ █ " 
+let w5 = "  █ █  "
+
+  
+let x1 = "██   █ "  
+let x2 = "  █ █  " 
+let x3 = "   █   "
+let x4 = "  █ █  "
+let x5 = "██   █ "   
+  
+  
+  
+let y1 = "██   █ "  
+let y2 = " ██ █  " 
+let y3 = "  ██   "
+let y4 = "  ██   "
+let y5 = "  ██   "
+
+
+
+let z1 = "██████ "
+let z2 = "    █  "
+let z3 = "   █   "
+let z4 = " █     "
+let z5 = "██████ "
+
+
+  
+let hy1= "       "
+let hy2= "       "
+let hy3= " █████ "
+let hy4= "       "
+let hy5= "       "
+
+
+let pl1= "       "
+let pl2= "   █   "
+let pl3= " █████ "
+let pl4= "   █   "
+let pl5= "       "
+
+
+ 
+let abx* = @[a1,a2,a3,a4,a5]   
+let bbx* = @[b1,b2,b3,b4,b5]  
+let cbx* = @[c1,c2,c3,c4,c5]  
+let dbx* = @[d1,d2,d3,d4,d5]  
+let ebx* = @[e1,e2,e3,e4,e5]  
+let fbx* = @[f1,f2,f3,f4,f5]  
+let gbx* = @[g1,g2,g3,g4,g5]  
+let hbx* = @[h1,h2,h3,h4,h5]  
+let ibx* = @[i1,i2,i3,i4,i5]
+let jbx* = @[j1,j2,j3,j4,j5]  
+let kbx* = @[k1,k2,k3,k4,k5]  
+let lbx* = @[l1,l2,l3,l4,l5]
+let mbx* = @[m1,m2,m3,m4,m5]
+let nbx* = @[n1,n2,n3,n4,n5]
+let obx* = @[o1,o2,o3,o4,o5]
+let pbx* = @[p1,p2,p3,p4,p5]
+let qbx* = @[q1,q2,q3,q4,q5]
+let rbx* = @[r1,r2,r3,r4,r5]
+let sbx* = @[s1,s2,s3,s4,s5]
+let tbx* = @[t1,t2,t3,t4,t5]
+let ubx* = @[u1,u2,u3,u4,u5]
+let vbx* = @[v1,v2,v3,v4,v5]
+let wbx* = @[w1,w2,w3,w4,w5]
+let xbx* = @[x1,x2,x3,x4,x5]
+let ybx* = @[y1,y2,y3,y4,y5]
+let zbx* = @[z1,z2,z3,z4,z5]
+
+let hybx* = @[hy1,hy2,hy3,hy4,hy5]
+let plbx* = @[pl1,pl2,pl3,pl4,pl5]
+
+
+
+
+
+
+
+
+
+
+
+
+
 # a big block number set
 #  can be used with printBigNumber
 
@@ -2826,7 +3079,7 @@ proc remDir*(dirname:string) =
 
 # Unicode random word creators
 
-proc newWordCJK*(maxwl:int = 10):string =
+proc newWordCJK*(minwl:int = 3 ,maxwl:int = 10):string =
       ## newWordCJK
       ##
       ## creates a new random string consisting of n chars default = max 10
@@ -2845,7 +3098,7 @@ proc newWordCJK*(maxwl:int = 10):string =
       let chc = toSeq(parsehexint("3400").. parsehexint("4DB5"))
       var nw = ""
       # words with length range 3 to maxwl
-      let maxws = toSeq(3.. <maxwl)
+      let maxws = toSeq(minwl.. maxwl)
       # get a random length for a new word choosen from between 3 and maxwl
       let nwl = maxws.randomChoice()
       for x in 0.. <nwl:
