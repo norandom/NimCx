@@ -1561,7 +1561,7 @@ proc printLnCenter*(astring:string,fg:string = termwhite,bg:string = termblack) 
 proc printTK*[T](st:T , cols: varargs[string, `$`] = @[white] ) =
      ## printTK
      ##
-     ## echoing of colored tokenized strings  without newline
+     ## echoing of colored tokenized strings without newline
      ## 
      ## strings will be tokenized and colored according to colors in cols
      ## 
@@ -1581,7 +1581,7 @@ proc printTK*[T](st:T , cols: varargs[string, `$`] = @[white] ) =
      ##
      ##
      ## another way to achieve a similar effect is to use the build in
-     ## styledEcho template directly like so:
+     ## `styledEcho <http://nim-lang.org/docs/terminal.html#styledEcho.t,varargs[expr]`_  template directly like so:
      ##
      ## .. code-block:: nim
      ##    styledEcho(green,"Nice ","try ",pastelgreen,"1234 ",steelblue," yep blue")
