@@ -44,6 +44,18 @@
 ##   Required    : see imports for modules currently expected to be available
 ##  
 
+when defined(macosx):
+  {.hint    : "Switch to linux !".}
+  {.warning : "Sorry we support Linux only at this stage ! Your mileage may vary".}
+  
+when defined(windows):  
+  {.hint    : "Switch to linux !".}
+  {.fatal   : "Sorry we support Linux only at this stage !".}
+  
+when defined(linux):
+  {.hint    : "Aha, nice Linux flavour detected .... CX loves Linux !".}  
+
+
 import os,osproc,macros,posix,terminal,math,unicode,times,tables,json,sets
 import sequtils,parseutils,strutils,httpclient,rawsockets,browsers
 # imports based on modules available from nimble
@@ -370,11 +382,11 @@ let l5 = "██████ "
 
 
 
-let m1 = "███  ██ "
-let m2 = "██ ██ █ "
-let m3 = "██  █ █ "
-let m4 = "██  █ █ "
-let m5 = "██    █ "  
+let m1 = "██  ██ "
+let m2 = "█ ██ █ "
+let m3 = "█  █ █ "
+let m4 = "█  █ █ "
+let m5 = "█    █ "  
 
 
 let n1 = "██   █ "
@@ -417,7 +429,7 @@ let r5 = "██   █ "
 let s1 = "  █ █  "
 let s2 = " █     "
 let s3 = "   █   "
-let s4 = "█   █  "
+let s4 = "    █  "
 let s5 = " █ █   "
   
 
@@ -490,6 +502,12 @@ let pl4= "   █   "
 let pl5= "       "
 
 
+let ul1 = "      "
+let ul2 = "      "
+let ul3 = "      "
+let ul4 = "      " 
+let ul5 = "██████"
+
  
 let abx* = @[a1,a2,a3,a4,a5]   
 let bbx* = @[b1,b2,b3,b4,b5]  
@@ -520,18 +538,10 @@ let zbx* = @[z1,z2,z3,z4,z5]
 
 let hybx* = @[hy1,hy2,hy3,hy4,hy5]
 let plbx* = @[pl1,pl2,pl3,pl4,pl5]
+let ulbx* = @[ul1,ul2,ul3,ul4,ul5]
 
 
-
-
-
-
-
-
-
-
-
-
+let bigLetters* = @[abx,bbx,cbx,dbx,ebx,fbx,gbx,hbx,ibx,jbx,kbx,lbx,mbx,nbx,obx,pbx,qbx,rbx,sbx,tbx,ubx,vbx,wbx,xbx,ybx,zbx,hybx,plbx,ulbx]
 
 # a big block number set
 #  can be used with printBigNumber
@@ -2376,12 +2386,17 @@ proc getNextMonday*(adate:string):string =
 
 # large font printing, numbers are implemented  
 
-proc printBigNumber*(anumber:string,fgr:string = yellowgreen ,bgr:string = black,xpos:int = 1) =
+proc printBigNumber*(anumber:string,fgr:string = yellowgreen ,bgr:string = black,xpos:int = 1,fun:bool = false) =
     ## printBigNumber
     ## 
     ## prints a string in big block font
     ## 
     ## available 1234567890:
+    ##
+    ##
+    ## if fun parameter = true then foregrouncolor will be ignored and every block
+    ## 
+    ## element colored individually
     ## 
     ## 
     ## usufull for big counter etc , a clock can also be build easily but
@@ -2434,8 +2449,87 @@ proc printBigNumber*(anumber:string,fgr:string = yellowgreen ,bgr:string = black
     for x in 0.. numberlen:
         curSetx(xpos) 
         for y in 0.. <printseq.len:
-            print(" " & printseq[y][x],fgr,bgr)
+            if fun == false:
+               print(" " & printseq[y][x],fgr,bgr)
+            else:
+               print(" " & printseq[y][x],randcol(),bgr)
         echo()   
+
+
+
+
+proc printBigLetters*(aword:string,fgr:string = yellowgreen ,bgr:string = black,xpos:int = 1,k:int = 7,fun:bool = false) =
+  ## printBigLetters
+  ## 
+  ## prints big block letters in desired color at desired position
+  ## 
+  ## note position must be specified as global in format :   var xpos = 5 
+  ## 
+  ## if fun parameter = true then foregrouncolor will be ignored and every block
+  ## 
+  ## element colored individually
+  ##
+  ## k parameter specifies character distance reasonable values are 7,8,9,10 . Default = 7
+  ## 
+  ## also note that depending on terminal width only a limited number of chars can be displayed
+  ## 
+  ## 
+  var xpos = xpos
+  template abc(s:stmt,xpos:int) =
+      # abc
+      # 
+      # template to support printBigLetters
+      #  
+      
+      for x in 0.. 4: 
+        if fun == false: 
+           printLnPos(s[x],fgr = fgr,bgr = bgr ,xpos = xpos)
+        else:
+           printLnPos(s[x],fgr = randcol(),bgr = bgr ,xpos = xpos)
+         
+      curup(5)
+      xpos = xpos + k
+
+  
+  
+  for aw in aword:
+      var ak = tolower($aw)
+      case ak 
+      of "a" : abc(abx,xpos)
+      of "b" : abc(bbx,xpos)
+      of "c" : abc(cbx,xpos)
+      of "d" : abc(dbx,xpos)
+      of "e" : abc(ebx,xpos)
+      of "f" : abc(fbx,xpos)
+      of "g" : abc(gbx,xpos) 
+      of "h" : abc(hbx,xpos)
+      of "i" : abc(ibx,xpos)
+      of "j" : abc(jbx,xpos)
+      of "k" : abc(kbx,xpos)
+      of "l" : abc(lbx,xpos)
+      of "m" : abc(mbx,xpos)
+      of "n" : abc(nbx,xpos)
+      of "o" : abc(obx,xpos)
+      of "p" : abc(pbx,xpos)
+      of "q" : abc(qbx,xpos)
+      of "r" : abc(rbx,xpos)
+      of "s" : abc(sbx,xpos)
+      of "t" : abc(tbx,xpos)
+      of "u" : abc(ubx,xpos)
+      of "v" : abc(vbx,xpos)
+      of "w" : abc(wbx,xpos)
+      of "x" : abc(xbx,xpos)
+      of "y" : abc(ybx,xpos)
+      of "z" : abc(zbx,xpos)
+      of "-" : abc(hybx,xpos)
+      of "+" : abc(plbx,xpos)
+      of "_" : abc(ulbx,xpos)
+      of "1","2","3","4","5","6","7","8","9","0",":": 
+               printBigNumber($aw,fgr = fgr , bgr = bgr,xpos = xpos,fun = fun)
+               curup(5)
+               xpos = xpos + k
+      else: discard
+      
 
 
 
@@ -3094,7 +3188,7 @@ proc newWordCJK*(minwl:int = 3 ,maxwl:int = 10):string =
       ## .. code-block:: nim
       ##    # create a string of chinese or CJK chars
       ##    # with max length 20 and show it in green
-      ##    msgg() do : echo newWordCJK(20)
+      ##    msgg() do : echo newWordCJK(20,20)
       # set the char set
       let chc = toSeq(parsehexint("3400").. parsehexint("4DB5"))
       var nw = ""

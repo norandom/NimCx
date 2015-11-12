@@ -230,7 +230,7 @@ proc `^`*(base: int, exp: int): int =
     exp = exp shr 1
     base *= base
  
-proc inCarpet(x, y): bool =
+proc inCarpet(x:int, y:int): bool =
   var x = x
   var y = y
   while true:
@@ -242,7 +242,7 @@ proc inCarpet(x, y): bool =
     x = x div 3
     y = y div 3
  
-proc sierpCarpetDemo*(n) =
+proc sierpCarpetDemo*(n:int) =
   ## sierpCarpetDemo
   ## 
   ## draws the carpet in color
@@ -308,62 +308,57 @@ proc bigPanelDemo*() =
         ## 
         ## best viewed in full width terminal
         ## 
-        var xpos = 5
-        template abc(s:stmt) =
-          for x in 0.. 4:
-              printLnPos(s[x],randcol(),xpos=xpos)
-          curup(5)
-          xpos = xpos + 9
-              
-        abc(abx)
-        abc(bbx)
-        abc(cbx)
-        abc(dbx)
-        abc(ebx)
-        abc(fbx)
-        abc(gbx) 
-        abc(hbx)
-        abc(ibx)
-        abc(jbx)
-        abc(kbx)
-        abc(lbx)
-        abc(mbx)
+        
+        let lx = @["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"]
+        var xpos = 16
+       
+        var c = 0
+        for y in lx:
+            printBigLetters($y,fgr = steelblue,bgr = black,xpos = xpos,fun = true)
+            inc c
+            if c == 13 :
+               decho(8)
+               xpos = 16
+            elif c == 26 :   
+               decho(8)
+               xpos = 1
+            else:
+               xpos = xpos + 8
+            
+            if c > 26:
+              break
+        
+        
+        decho(4)
+        xpos = 6     
+        printBigLetters("-",xpos = xpos + 11,fun = true)
+        printBigLetters("+",xpos = xpos + 20,fun = true)
+        printBigLetters("0123456789",xpos = xpos + 29,fun = true)
+        decho(10)
+        printBigLetters(repeat("_",18),fgr = randcol(),xpos = 10,fun = true)
         decho(8)
-        xpos = 5
-        abc(nbx)
-        abc(obx)
-        abc(pbx)
-        abc(qbx)
-        abc(rbx)
-        abc(sbx)
-        abc(tbx)
-        abc(ubx)
-        abc(vbx)
-        abc(wbx)
-        abc(xbx)
-        abc(ybx)
-        abc(zbx)
+        printBigLetters("CX - COLOR",xpos = 40 ,fun=true)
+        decho(5)
+        printBigLetters(repeat("_",18),fgr = randcol(),xpos = 10,fun = true)
+        decho(8)
 
-        decho(10)
-        xpos = 5
-        abc(hybx)
-        abc(plbx)
-        xpos = xpos + 3
-        printBigNumber("0123456789",xpos = xpos)
+        printBigLetters("  _____:   E N D   :_____",fgr = randcol(),k= 8,xpos = 10,fun = true)
+        decho(8)
 
-        decho(10)  
-        xpos = 30
-        abc(nbx)
-        abc(ibx)
-        abc(mbx)
-        abc(hybx)
-        abc(cbx)
-        abc(xbx)
-        decho(10)
    
+
+proc colorCJKDemo*() =   
+    ## colorCJKDemo
+    ##
+    ## carpet with CJK characters
+    ##
     
-    
-    
+    for y in 0.. 20:
+       for x in 0.. 50:
+           print(newwordCJK(1,1),randcol())
+       echo()   
+    sleepy(3)   
+        
     
     
 

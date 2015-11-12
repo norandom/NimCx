@@ -162,8 +162,6 @@ decho(2)
 
 cxYourNimDemo()
 
-bigPanelDemo()
-
 sleepy(3)
 
 decho(10)
@@ -205,6 +203,13 @@ printLn(cow,randcol())
 happyemojis()
 sleepy(2)
 
+colorCJKDemo()
+decho(5)    
+
+
+bigPanelDemo()
+sleepy(2)
+decho(10)
 
 proc printNimSxR*(col:string = yellowgreen, xpos: int = 1) = 
    ## printNimSx
@@ -221,14 +226,13 @@ proc printNimSxR*(col:string = yellowgreen, xpos: int = 1) =
             print(repeat(" ",maxpos) & x,randcol())
             
 
-for x in 0 .. 10:
+for x in 0 .. 5:
    cleanscreen()
    curset()
    decho(toSeq(1.. th - 8).randomchoice())
    printNimsxR(randcol(),xpos = toSeq(0.. tw - 20).randomchoice())
    sleepy(1)
    curup(6)
-
 
 
 decho(2)
