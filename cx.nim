@@ -2528,6 +2528,7 @@ proc printBigLetters*(aword:string,fgr:string = yellowgreen ,bgr:string = black,
                printBigNumber($aw,fgr = fgr , bgr = bgr,xpos = xpos,fun = fun)
                curup(5)
                xpos = xpos + k
+      of " " : xpos = xpos + 2        
       else: discard
       
 

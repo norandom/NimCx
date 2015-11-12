@@ -308,12 +308,11 @@ proc bigPanelDemo*() =
         ## 
         ## best viewed in full width terminal
         ## 
-        
-        let lx = @["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"]
+                
         var xpos = 16
-       
         var c = 0
-        for y in lx:
+       
+        for y in {'A'..'Z'}:
             printBigLetters($y,fgr = steelblue,bgr = black,xpos = xpos,fun = true)
             inc c
             if c == 13 :
@@ -342,9 +341,7 @@ proc bigPanelDemo*() =
         printBigLetters(repeat("_",18),fgr = randcol(),xpos = 10,fun = true)
         decho(8)
 
-        printBigLetters("  _____:   E N D   :_____",fgr = randcol(),k= 8,xpos = 10,fun = true)
-        decho(8)
-
+      
    
 
 proc colorCJKDemo*() =   
