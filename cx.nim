@@ -6,21 +6,22 @@
 ##
 ##   License     : MIT opensource
 ##
-##   Version     : 0.9.2
+##   Version     : 0.9.3
 ##
 ##   ProjectStart: 2015-06-20
 ##
-##   Compiler    : Nim 0.12.0 dev
+##   Compiler    : Nim 0.12.1 dev
 ##   
 ##   OS          : Linux  
 ##
 ##   Description :
 ##   
-##                 cx.nim is a public library with a collection of simple procs and templates
+##                 cx.nim is a collection of simple procs and templates
 ##
 ##                 for easy colored display in a linux terminal , date handling and more
 ##
 ##                 some procs may mirror functionality found in other moduls for convenience
+##                 
 ##                 
 ##   Usage       : import cx              
 ##
@@ -29,6 +30,7 @@
 ##   Docs        : http://qqtop.github.io/cx.html
 ##
 ##   Tested      :  on Ubuntu 14.04 , OpenSuse 13.2 , OpenSuse Leap42.1 , Mint 17  
+##                
 ##   
 ##   Related     : 
 ##   
@@ -45,15 +47,15 @@
 ##  
 
 when defined(macosx):
-  {.hint    : "Switch to linux !".}
-  {.warning : "Sorry we support Linux only at this stage ! Your mileage may vary".}
+  {.hint    : "Switch to Linux !".}
+  {.warning : "CX is only tested on Linux ! Your mileage may vary".}
   
 when defined(windows):  
-  {.hint    : "Switch to linux !".}
-  {.fatal   : "Sorry we support Linux only at this stage !".}
+  {.hint    : "Time to switch to Linux !".}
+  {.fatal   : "Sorry CX does not support Windows at this stage !".}
   
-when defined(linux):
-  {.hint    : "Aha, nice Linux flavour detected .... CX loves Linux !".}  
+when defined(posix):
+  {.hint    : "Aha, nice Os flavour detected .... CX loves Linux !".}  
 
 
 import os,osproc,macros,posix,terminal,math,unicode,times,tables,json,sets
@@ -64,7 +66,7 @@ import random,strfmt
 type
       PStyle* = terminal.Style  ## make terminal style constants available in the calling prog
 
-const CXLIBVERSION* = "0.9.2"
+const CXLIBVERSION* = "0.9.3"
   
 
 proc getfg(fg:ForegroundColor):string =
