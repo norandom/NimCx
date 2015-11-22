@@ -46,6 +46,11 @@
 ##   Required    : see imports for modules currently expected to be available
 ##  
 
+import os,osproc,macros,posix,terminal,math,unicode,times,tables,json,sets
+import sequtils,parseutils,strutils,httpclient,rawsockets,browsers,intsets, algorithm
+# imports based on modules available from nimble
+import random,strfmt
+
 when defined(macosx):
   {.hint    : "Switch to Linux !".}
   {.warning : "CX is only tested on Linux ! Your mileage may vary".}
@@ -58,10 +63,7 @@ when defined(posix):
   {.hint    : "Aha, nice Os flavour detected .... CX loves Linux !".}  
 
 
-import os,osproc,macros,posix,terminal,math,unicode,times,tables,json,sets
-import sequtils,parseutils,strutils,httpclient,rawsockets,browsers
-# imports based on modules available from nimble
-import random,strfmt
+
 
 type
       PStyle* = terminal.Style  ## make terminal style constants available in the calling prog
@@ -639,6 +641,16 @@ let NIMX5 = "██     █    ██    ██     █\n\n"
 let nimsx* = @[NIMX1,NIMX2,NIMX3,NIMX4,NIMX5]
 
 
+let NIMX6  = "███   ██  ██  ██     █  ██"
+let NIMX7  = "██ █ █ █  ██  ██ █   █  ██"
+let NIMX8  = "██  █  █  ██  ██  █  █  ██"
+let NIMX9  = "██  █  █  ██  ██   █ █  ██"
+let NIMX10 = "██     █  ██  ██     █  ██"
+
+let nimsx2* = @[NIMX6,NIMX7,NIMX8,NIMX9,NIMX10]
+
+
+
 # slim numbers can be used with printSlimNumber
 
 const snumber0 = 
@@ -985,15 +997,14 @@ when defined(Linux):
 
 
 # forward declarations
+
 converter colconv*(cx:string) : string
-proc printColStr*(colstr:string,astr:string)  ## forward declaration
-proc printLnColStr*(colstr:string,mvastr: varargs[string, `$`]) ## forward declaration
-proc printBiCol*(s:string,sep:string,colLeft:string = yellowgreen ,colRight:string = termwhite) ## forward declaration
-proc printLnBiCol*(s:string,sep:string,colLeft:string = yellowgreen ,colRight:string = termwhite) ## forward declaration
 proc rainbow*[T](s : T)  ## forward declaration
+proc print*[T](astring:T,fgr:string = white , bgr:string = black,xpos:int = 0,fitLine = false)
+proc printBiCol*(s:string,sep:string,colLeft:string = yellowgreen ,colRight:string = termwhite,xpos:int = 0) ## forward declaration
+proc printLnBiCol*(s:string,sep:string,colLeft:string = yellowgreen ,colRight:string = termwhite,xpos:int = 0) ## forward declaration
 proc printStyledsimple*[T](ss:T,fg:string,astyle:set[Style]) ## forward declaration
 proc printStyled*[T](ss:T,substr:string,col:string,astyle : set[Style]) ## forward declaration
-proc print*[T](astring:T,fgr:string = white , bgr:string = black)  
 proc hline*(n:int = tw,col:string = white) ## forward declaration
 proc hlineLn*(n:int = tw,col:string = white) ## forward declaration
 
@@ -1127,13 +1138,12 @@ template hdx*(code:stmt):stmt =
    ## 
    ## a simple sandwich frame made with +
    ## 
-   echo ""
-   echo repeat("+",tw)
-   setForeGroundColor(fgCyan)
+   echo()
+   var lx = repeat("+",tw.int)
+   printLn(lx)
    code
-   setForeGroundColor(fgWhite)
-   echo repeat("+",tw)
-   echo ""
+   printLn(lx)
+   echo()
       
 template prxBCol():stmt = 
       ## internal template
@@ -1238,7 +1248,125 @@ proc checkColor*(colname: string): bool =
           break
        else:
           result = false
-  
+
+
+
+
+ 
+converter colconv*(cx:string) : string = 
+     # converter so we can use the same terminal color names for
+     # fore- and background colors in print and printLn procs.
+     var bg : string = ""
+     case cx
+      of black        : bg = bblack
+      of white        : bg = bwhite
+      of green        : bg = bgreen
+      of yellow       : bg = byellow
+      of cyan         : bg = bcyan
+      of magenta      : bg = bmagenta
+      of red          : bg = bred
+      of blue         : bg = bblue
+      of brightred    : bg = bbrightred
+      of brightgreen  : bg = bbrightgreen 
+      of brightblue   : bg = bbrightblue  
+      of brightcyan   : bg = bbrightcyan  
+      of brightyellow : bg = bbrightyellow 
+      of brightwhite  : bg = bbrightwhite 
+      of brightmagenta: bg = bbrightmagenta 
+      of brightblack  : bg = bbrightblack
+      of gray         : bg = gray
+      else            : bg = bblack # default
+     result = bg
+
+
+
+proc print*[T](astring:T,fgr:string = white , bgr:string = black,xpos:int = 0,fitLine = false) =
+    ## print
+    ##
+    ## same as printLn without new line , allows positioning
+    ##
+    ## for extended colorset background colors use printStyled with styleReverse
+    ## 
+    ## fitLine = true will try to write the text into the current line irrespective of xpos 
+    ##
+        
+    if xpos > 0:
+        setCursorxpos(xpos)
+            
+    if ($astring).len + xpos >= tw:
+      # force to write on same line within in terminal whatever the xpos says
+      if fitLine == true:
+            setCursorXPos(tw - ($astring).len) 
+       
+    case fgr 
+      of clrainbow: rainbow($astring)
+      else:  
+           write(stdout,fgr & colconv(bgr) & $astring)
+                 
+    prxBCol()
+    
+    
+
+proc printLn*[T](astring:T,fgr:string = white , bgr:string = black,xpos:int = 0,fitLine = false) =
+    ## printLn
+    ## 
+    ## similar to echo but with foregroundcolor and backgroundcolor
+    ## 
+    ## selection.
+    ## 
+    ## see testPrintLn.nim for usage examples
+    ## 
+    ## all colornames are supported for font color:
+    ## 
+    ## color names supported for background color:
+    ## 
+    ## white,red,green,blue,yellow,cyan,magenta,black
+    ## 
+    ## brightwhite,brightred,brightgreen,brightblue,brightyellow,
+    ## 
+    ## brightcyan,brightmagenta,brightblack
+    ## 
+    ## .. code-block:: nim
+    ##    printLn("Yes ,  we made it.",clrainbow,brightyellow) # background has no effect with font in  clrainbow
+    ##    printLn("Yes ,  we made it.",green,brightyellow) 
+    ##
+    ## 
+    ## As a side effect we also can do this now :
+    ## 
+    ## 
+    ## .. code-block:: nim
+    ##    echo(yellowgreen,"aha nice",termwhite) 
+    ##    echo(rosybrown)
+    ##    echo("grizzly bear")
+    ##    echo(termwhite)  # reset to usual terminal white color
+    ## 
+    ## 
+    ## that is we print the string in yellowgreen , but need to reset the color manually
+    ## 
+    ## 
+    ## also see cechoLn  
+    ## 
+    ## 
+    
+    print(astring,fgr,bgr,xpos,fitLine)
+    writeline(stdout,"")
+    
+
+
+proc rainbow*[T](s : T) =
+    ## rainbow
+    ##
+    ## multicolored string
+    ##
+    ## may not work with certain Rune
+    ##
+    var astr = $s
+    var c = 0
+    var a = toSeq(1.. <colorNames.len)
+    for x in 0.. <astr.len:
+       c = a[randomInt(a.len)]
+       print(astr[x],colorNames[c][1],black)
+
 
 # output  horizontal lines
 
@@ -1253,7 +1381,7 @@ proc hline*(n:int = tw,col:string = white) =
      ##    hline(30,green)
      ##     
      
-     printColStr(col,repeat("_",n))
+     print(repeat("_",n),col)
           
 
 
@@ -1267,7 +1395,7 @@ proc hlineLn*(n:int = tw,col:string = white) =
      ## .. code-block:: nim
      ##    hlineLn(30,green)
      ##     
-     printColStr(col,repeat("_",n))
+     print(repeat("_",n),col)
      writeLine(stdout,"") 
      
 
@@ -1285,7 +1413,7 @@ proc dline*(n:int = tw,lt:string = "-",col:string = termwhite) =
      ## 
      if lt.len <= n:
          #writeLine(stdout,repeat(lt,n div lt.len))
-         printColStr(col,repeat(lt,n div lt.len))
+         print(repeat(lt,n div lt.len),col)
      
 
 proc dlineLn*(n:int = tw,lt:string = "-",col:string = termwhite) =
@@ -1303,7 +1431,7 @@ proc dlineLn*(n:int = tw,lt:string = "-",col:string = termwhite) =
      ##    dlineLn(60,col = salmon) 
      ##
      if lt.len <= n:
-         printColStr(col,repeat(lt,n div lt.len))
+         print(repeat(lt,n div lt.len),col)
      writeLine(stdout,"")   
  
  
@@ -1378,124 +1506,19 @@ template clearLine*() =
      ##
      ## mirrors terminal eraseLine
      eraseLine() 
- 
+
+proc sleepy*(secs: float) =
+  ## sleepy
+  ## 
+  ## imitates sleep but in seconds
+  ##
+  ## better cpu usage than prev. but still see spikes
+  ## 
+  ## despite this being same as os.sleep 
+  var milsecs = (secs * 1000).int
+  sleep(milsecs)
 
 
-proc sleepy*[T:float|int](s:T) =
-    ## sleepy
-    ## 
-    ## imitates sleep but in seconds
-    ##
-    let ss = epochtime()
-    let ee = ss + s.float
-    var c:bool = false
-    while ee > epochtime():
-        c = false
-    c = true
-    # feedback line can be commented out
-    # cechoLn(red,"Loops during waiting for ",s,"secs : ",c)
-
- 
-converter colconv*(cx:string) : string = 
-     # converter so we can use the same terminal color names for
-     # fore- and background colors in print and printLn procs.
-     var bg : string = ""
-     case cx
-      of black        : bg = bblack
-      of white        : bg = bwhite
-      of green        : bg = bgreen
-      of yellow       : bg = byellow
-      of cyan         : bg = bcyan
-      of magenta      : bg = bmagenta
-      of red          : bg = bred
-      of blue         : bg = bblue
-      of brightred    : bg = bbrightred
-      of brightgreen  : bg = bbrightgreen 
-      of brightblue   : bg = bbrightblue  
-      of brightcyan   : bg = bbrightcyan  
-      of brightyellow : bg = bbrightyellow 
-      of brightwhite  : bg = bbrightwhite 
-      of brightmagenta: bg = bbrightmagenta 
-      of brightblack  : bg = bbrightblack
-      of gray         : bg = gray
-      else            : bg = bblack # default
-     result = bg
-
-
-proc rainbow*[T](s : T) =
-    ## rainbow
-    ##
-    ## multicolored string
-    ##
-    ## may not work with certain Rune
-    ##
-    var astr = $s
-    var c = 0
-    var a = toSeq(1.. <colorNames.len)
-    for x in 0.. <astr.len:
-       c = a[randomInt(a.len)]
-       print(astr[x],colorNames[c][1],black)
-
-
-proc print*[T](astring:T,fgr:string = white , bgr:string = black ) =
-    ## print
-    ##
-    ## same as printLn without new line
-    ##
-    ## for extended colorset background colors use printStyled with styleReverse
-    ## 
-    ## also see cecho 
-    ##
-    ##
-    case fgr 
-      of clrainbow: rainbow($astring)
-      else:  stdout.write(fgr & colconv(bgr) & $astring)
-    prxBCol()
-    
-
-proc printLn*[T](astring:T,fgr:string = white , bgr:string = black)  =
-    ## printLn
-    ## 
-    ## similar to echo but with foregroundcolor and backgroundcolor
-    ## 
-    ## selection.
-    ## 
-    ## see testPrintLn.nim for usage examples
-    ## 
-    ## all colornames are supported for font color:
-    ## 
-    ## color names supported for background color:
-    ## 
-    ## white,red,green,blue,yellow,cyan,magenta,black
-    ## 
-    ## brightwhite,brightred,brightgreen,brightblue,brightyellow,
-    ## 
-    ## brightcyan,brightmagenta,brightblack
-    ## 
-    ## .. code-block:: nim
-    ##    printLn("Yes ,  we made it.",clrainbow,brightyellow) # background has no effect with font in  clrainbow
-    ##    printLn("Yes ,  we made it.",green,brightyellow) 
-    ##
-    ## 
-    ## As a side effect we also can do this now :
-    ## 
-    ## 
-    ## .. code-block:: nim
-    ##    echo(yellowgreen,"aha nice",termwhite) 
-    ##    echo(rosybrown)
-    ##    echo("grizzly bear")
-    ##    echo(termwhite)  # reset to usual terminal white color
-    ## 
-    ## 
-    ## that is we print the string in yellowgreen , but need to reset the color manually
-    ## 
-    ## 
-    ## also see cechoLn  
-    ## 
-    ## 
-    print(astring,fgr,bgr)       
-    stdout.writeLine("")
-    
 
 
 # Var. convenience procs for colorised data output
@@ -1504,58 +1527,17 @@ proc printLn*[T](astring:T,fgr:string = white , bgr:string = black)  =
 # printTK and printLnTK tokenize strings for selective coloring if required
 # and can be used for most standard echo like displaying jobs
       
-proc printPos*[T](astring:T,fgr:string = white , bgr:string = black,xpos = -1,fitLine = true) =
-    ## print
-    ##
-    ## same as print but allows positioning
-    ##
-    ## fitLine = true will try to write the text into the current line irrespective of xpos 
-    ##
-    ##
-    if xpos > 0:
-        setCursorxpos(xpos)
-    else:
-        setCursorxpos(0)  
-        
-    if ($astring).len + xpos >= tw:
-      # force to write on same line within in terminal whatever the xpos says
-      if fitLine == true:
-            setCursorXPos(tw - ($astring).len) 
-       
-    case fgr 
-      of clrainbow: rainbow($astring)
-      else:  stdout.write(fgr & colconv(bgr) & $astring)
-    prxBCol()
-    
-
-proc printLnPos*[T](astring:T,fgr:string = white , bgr:string = black,xpos = -1,fitLine = true) =
-     ## printLnPos
-     ## 
-     ## same as printPos but with new line
-     ## 
-     ## .. code-block:: nim
-     ##      printLnPos("This is nice",xpos=30)
-     ##      printLnPos("This is nice",lime)
-     ##      printLnPos("This is nice",bgr = red,xpos = 135,fitLine = false)
-     ##      printLnPos("This is nice",bgr = green,xpos = 135,fitLine = true) 
-     ##      printLnPos("This is nice", clrainbow,xpos = tw div 2 -10)  
-     ##
-          
-     printPos(astring,fgr,bgr,xpos,fitLine)
-     writeln(stdout,"")
 
 
-
-proc printCenter*(astring:string,fg:string = termwhite,bg:string = termblack) =
+proc printCenter*(astring:string,fgr:string = termwhite,bgr:string = termblack,fitLine = true) =
      ## printCenter
      ## 
      ## attempts to print a string centered in terminal 
      ## 
      ## fore and backgroundcolor can be set
      ## 
-  
-     centerpos(astring)
-     print(astring,fg,bg)
+      
+     print(astring,fgr = fgr,bgr = bgr , tw div 2 - astring.len div 2 - 1 ,fitline)
      
      
 proc printLnCenter*(astring:string,fg:string = termwhite,bg:string = termblack) =
@@ -1684,38 +1666,7 @@ proc printLnRainbow*[T](s : T,astyle:set[Style]) =
     writeln(stdout,"")
     
 
-
-proc printColStr*(colstr:string,astr:string) =
-     
-      ## printColStr
-      ##
-      ## prints a string with a named color in colstr
-      ##
-    
-      ## .. code-block:: nim
-      ##    printColStr(yellowgreen,"Nice, it is in yellowgreen !")
-      ##
-      print(astr,colstr)
-
-
-proc printLnColStr*(colstr:string,mvastr: varargs[string, `$`]) =
-    ## printLnColStr
-    ##
-    ## similar to printColStr but issues a writeLine() command that is
-    ##
-    ## every item will be shown on a new line in the same given color
-    ##
-    ## and most everything passed in will be converted to string
-    ##
-    ## .. code-block:: nim
-    ##    printLnColStr lightsalmon,"Nice try 1", 2.52234, @[4, 5, 6]
-    ##
-
-    for vastr in mvastr:
-        printLn(vastr,colstr)
-
-
-proc printBiCol*(s:string,sep:string,colLeft:string = yellowgreen ,colRight:string = termwhite) =
+proc printBiCol*(s:string,sep:string,colLeft:string = yellowgreen ,colRight:string = termwhite,xpos:int = 0) =
      ## printBiCol
      ##
      ## echos a line in 2 colors based on a seperators first occurance
@@ -1740,12 +1691,12 @@ proc printBiCol*(s:string,sep:string,colLeft:string = yellowgreen ,colRight:stri
      if z.len > 2:
        for x in 2.. <z.len:
           z[1] = z[1] & sep & z[x]
-     print(z[0] & sep,colLeft,black)
-     print(z[1],colRight,black)  
+     print(z[0] & sep,fgr = colLeft,bgr = black,xpos = xpos)
+     print(z[1],fgr = colRight,bgr = black)  
      
 
 
-proc printLnBiCol*(s:string,sep:string, colLeft:string = yellowgreen, colRight:string = termwhite) =
+proc printLnBiCol*(s:string,sep:string, colLeft:string = yellowgreen, colRight:string = termwhite,xpos:int = 0) =
      ## printLnBiCol
      ##
      ## same as printBiCol but issues a new line
@@ -1770,8 +1721,8 @@ proc printLnBiCol*(s:string,sep:string, colLeft:string = yellowgreen, colRight:s
      if z.len > 2:
        for x in 2.. <z.len:
            z[1] = z[1] & sep & z[x]
-     print(z[0] & sep,colLeft,black)
-     printLn(z[1],colRight,black)  
+     print(z[0] & sep,fgr = colLeft,bgr = black,xpos = xpos)
+     printLn(z[1],fgr = colRight,bgr = black)  
           
 
 
@@ -1954,9 +1905,9 @@ proc showColors*() =
   ## display all colorNames in color !
   ## 
   for x in colorNames:
-     print("{:<23} {}  {}  {} --> {} ".fmt(x[0] , repeat("▒",10), repeat("⌘",10) ,"ABCD abcd 1234567890"," Nim Colors " ),x[1],black)  # note x[1] is the color itself.
+     print("{:<23} {}  {}  {} --> {} ".fmt(x[0] , "▒".repeat(10), "⌘".repeat(10) ,"ABCD abcd 1234567890"," Nim Colors " ),x[1],black)  # note x[1] is the color itself.
      printLnStyled("{:<23}".fmt("  " & x[0]),"{:<23}".fmt("  " & x[0]),x[1],{styleReverse})
-     sleepy(0.05)
+     sleep(500)
   decho(2)   
   
 
@@ -1974,12 +1925,12 @@ proc doty*(d:int,col:string = white, bgr = black) =
      ##      printLnBiCol("Test for  :  doty\n",":",truetomato,lime)
      ##      dotyLn(22 ,lime)
      ##      dotyLn(18 ,salmon,blue)
-     ##      dotyLn(tw div 2,red)  # full line
+     ##      dotyLn(tw div 2,red)  # full widedotted line
      ##      
      ## color clrainbow is not supported and will be in white
      ## 
     
-     var astr = $(repeat(wideDot,d))
+     var astr = $(wideDot.repeat(d))
      if col == clrainbow:
         print(astring = astr,white,bgr) 
      else:
@@ -2049,7 +2000,7 @@ proc drawRect*(h:int = 0 ,w:int = 3, frhLine:string = "_", frVLine:string = "|",
       
       # topline
       printDotPos(xpos,dotCol,blink)
-      print(repeat(frhLine,w-1),frcol)
+      print(frhLine.repeat(w-1),frcol)
       if frhLine == widedot:
             printDotPos(xpos + w * 2 -1 ,dotCol,blink)
       else:
@@ -2057,23 +2008,21 @@ proc drawRect*(h:int = 0 ,w:int = 3, frhLine:string = "_", frVLine:string = "|",
       writeLine(stdout,"")
       # sidelines
       for x in 2.. h:
-         printPos(frVLine,frcol,xpos = xpos)
+         print(frVLine,frcol,xpos = xpos)
          if frhLine == widedot:
-             printPos(frVLine,frcol,xpos = xpos + w * 2 -1)
+             print(frVLine,frcol,xpos = xpos + w * 2 -1)
          else:    
-              printPos(frVLine,frcol,xpos = xpos + w)
+              print(frVLine,frcol,xpos = xpos + w)
          writeLine(stdout,"")
       # bottom line
       printDotPos(xpos,dotCol,blink)
-      print(repeat(frhLine,w-1),frcol)
+      print(frhLine.repeat(w-1),frcol)
       if frhLine == widedot:
             printDotPos(xpos + w * 2 -1 ,dotCol,blink)
       else:
             printDotPos(xpos + w,dotCol,blink)
             
       writeLine(stdout,"")
-
-
  
 
 # Var. date and time handling procs mainly to provide convenience for
@@ -2408,7 +2357,7 @@ proc printBigNumber*(anumber:string,fgr:string = yellowgreen ,bgr:string = black
     ##    for x in 990.. 1105:
     ##         cleanScreen()
     ##         printBigNumber($x)
-    ##         sleepy(0.008)
+    ##         sleep(80)
     ##
     ##    cleanScreen()   
     ##    
@@ -2422,10 +2371,10 @@ proc printBigNumber*(anumber:string,fgr:string = yellowgreen ,bgr:string = black
     ##             for y in countup(10,25):
     ##                 cleanScreen()
     ##                 printBigNumber($y,tomato)
-    ##                 sleepy(0.5)
+    ##                 sleep(500)
     ##         cleanScreen()    
     ##         printBigNumber($x)
-    ##         sleepy(1)
+    ##         sleep(1000)
     ##    doFinish()
     
     
@@ -2485,15 +2434,13 @@ proc printBigLetters*(aword:string,fgr:string = yellowgreen ,bgr:string = black,
       
       for x in 0.. 4: 
         if fun == false: 
-           printLnPos(s[x],fgr = fgr,bgr = bgr ,xpos = xpos)
+           printLn(s[x],fgr = fgr,bgr = bgr ,xpos = xpos)
         else:
-           printLnPos(s[x],fgr = randcol(),bgr = bgr ,xpos = xpos)
+           printLn(s[x],fgr = randcol(),bgr = bgr ,xpos = xpos)
          
       curup(5)
       xpos = xpos + k
-
-  
-  
+ 
   for aw in aword:
       var ak = tolower($aw)
       case ak 
@@ -2535,7 +2482,6 @@ proc printBigLetters*(aword:string,fgr:string = yellowgreen ,bgr:string = black,
       
 
 
-
 proc printSlimNumber*(anumber:string,fgr:string = yellowgreen ,bgr:string = black,xpos:int = 1) =
     ## printSlimNumber
     ## 
@@ -2551,13 +2497,13 @@ proc printSlimNumber*(anumber:string,fgr:string = yellowgreen ,bgr:string = blac
     ##    for x in 990.. 1005:
     ##         cleanScreen()
     ##         printSlimNumber($x)
-    ##         sleepy(0.075)
+    ##         sleep(750)
     ##    echo()   
     ##
     ##    printSlimNumber($23456345,blue)
     ##    decho(2)
     ##    printSlimNumber("1234567:345,23.789",fgr=salmon,xpos=20)
-    ##    sleepy(1.5)  
+    ##    sleep(1500)  
     ##    import times
     ##    cleanScreen()
     ##    decho(2)
@@ -2567,7 +2513,7 @@ proc printSlimNumber*(anumber:string,fgr:string = yellowgreen ,bgr:string = blac
     ##    for x in rxCol:
     ##       printSlimNumber($x,colorNames[x][1])    
     ##       curup(3)
-    ##       sleepy(0.05)
+    ##       sleep(500)
     ##    curdn(3)  
     
     var asn = newSeq[string]()
@@ -2601,162 +2547,164 @@ proc printSlimNumber*(anumber:string,fgr:string = yellowgreen ,bgr:string = blac
 # Framed headers with var. colorising options
 
 proc superHeader*(bstring:string) =
-  ## superheader
-  ##
-  ## a framed header display routine
-  ##
-  ## suitable for one line headers , overlong lines will
-  ##
-  ## be cut to terminal window width without ceremony
-  ##
-  var astring = bstring
-  # minimum default size that is string max len = 43 and
-  # frame = 46
-  let mmax = 43
-  var mddl = 46
-  ## max length = tw-2
-  let okl = tw - 6
-  let astrl = astring.len
-  if astrl > okl :
-     astring = astring[0.. okl]
-     mddl = okl + 5
-  elif astrl > mmax :
-       mddl = astrl + 4
-  else :
-      # default or smaller
-       let n = mmax - astrl
-       for x in 0.. <n:
-          astring = astring & " "
-       mddl = mddl + 1
-  
-  # some framechars
-  #let framechar = "▒"
-  let framechar = "⌘"  
-  #let framechar = "⏺"  
-  let pdl = repeat(framechar,mddl)  
-  # now show it with the framing in yellow and text in white
-  # really want a terminal color checker to avoid invisible lines
-  echo ()
-  printLn(pdl,yellowgreen)
-  print(framechar & " ",yellowgreen)
-  print(astring)
-  printLn(" " & framechar,yellowgreen)
-  printLn(pdl,yellowgreen)
-  echo ()
+      ## superheader
+      ##
+      ## a framed header display routine
+      ##
+      ## suitable for one line headers , overlong lines will
+      ##
+      ## be cut to terminal window width without ceremony
+      ##
+      var astring = bstring
+      # minimum default size that is string max len = 43 and
+      # frame = 46
+      let mmax = 43
+      var mddl = 46
+      ## max length = tw-2
+      let okl = tw - 6
+      let astrl = astring.len
+      if astrl > okl :
+        astring = astring[0.. okl]
+        mddl = okl + 5
+      elif astrl > mmax :
+          mddl = astrl + 4
+      else :
+          # default or smaller
+          let n = mmax - astrl
+          for x in 0.. <n:
+              astring = astring & " "
+          mddl = mddl + 1
+      
+      # some framechars
+      #let framechar = "▒"
+      let framechar = "⌘"  
+      #let framechar = "⏺"
+      #let framechar = "~"  
+      let pdl = framechar.repeat(mddl)  
+      # now show it with the framing in yellow and text in white
+      # really want a terminal color checker to avoid invisible lines
+      echo ()
+      printLn(pdl,yellowgreen)
+      print(framechar & " ",yellowgreen)
+      print(astring)
+      printLn(" " & framechar,yellowgreen)
+      printLn(pdl,yellowgreen)
+      echo ()
 
 
 
 proc superHeader*(bstring:string,strcol:string,frmcol:string) =
-    ## superheader
-    ##
-    ## a framed header display routine
-    ##
-    ## suitable for one line headers , overlong lines will
-    ##
-    ## be cut to terminal window size without ceremony
-    ##
-    ## the color of the string can be selected, available colors
-    ##
-    ## green,red,cyan,white,yellow and for going completely bonkers the frame
-    ##
-    ## can be set to clrainbow too .
-    ##
-    ## .. code-block:: nim
-    ##    import cx
-    ##
-    ##    superheader("Ok That's it for Now !",clrainbow,white)
-    ##    echo()
-    ##
-    var astring = bstring
-    # minimum default size that is string max len = 43 and
-    # frame = 46
-    let mmax = 43
-    var mddl = 46
-    let okl = tw - 6
-    let astrl = astring.len
-    if astrl > okl :
-       astring = astring[0.. okl]
-       mddl = okl + 5
-    elif astrl > mmax :
-         mddl = astrl + 4
-    else :
-        # default or smaller
-         let n = mmax - astrl
-         for x in 0.. <n:
-            astring = astring & " "
-         mddl = mddl + 1
+        ## superheader
+        ##
+        ## a framed header display routine
+        ##
+        ## suitable for one line headers , overlong lines will
+        ##
+        ## be cut to terminal window size without ceremony
+        ##
+        ## the color of the string can be selected, available colors
+        ##
+        ## green,red,cyan,white,yellow and for going completely bonkers the frame
+        ##
+        ## can be set to clrainbow too .
+        ##
+        ## .. code-block:: nim
+        ##    import cx
+        ##
+        ##    superheader("Ok That's it for Now !",clrainbow,white)
+        ##    echo()
+        ##
+        var astring = bstring
+        # minimum default size that is string max len = 43 and
+        # frame = 46
+        let mmax = 43
+        var mddl = 46
+        let okl = tw - 6
+        let astrl = astring.len
+        if astrl > okl :
+          astring = astring[0.. okl]
+          mddl = okl + 5
+        elif astrl > mmax :
+            mddl = astrl + 4
+        else :
+            # default or smaller
+            let n = mmax - astrl
+            for x in 0.. <n:
+                astring = astring & " "
+            mddl = mddl + 1
 
-    let framechar = "⌘"
-    let pdl = repeat(framechar,mddl)
-    # now show it with the framing in yellow and text in white
-    # really want to have a terminal color checker to avoid invisible lines
-    echo ()
+        let framechar = "⌘"
+        #let framechar = "~"  
+        let pdl = framechar.repeat(mddl)
+        # now show it with the framing in yellow and text in white
+        # really want to have a terminal color checker to avoid invisible lines
+        echo ()
 
-    # frame line
-    proc frameline(pdl:string) =
-        print(pdl,frmcol)
+        # frame line
+        proc frameline(pdl:string) =
+            print(pdl,frmcol)
+            echo()
+
+        proc framemarker(am:string) =
+            print(am,frmcol)
+            
+        proc headermessage(astring:string)  =
+            print(astring,strcol)
+            
+
+        # draw everything
+        frameline(pdl)
+        #left marker
+        framemarker(framechar & " ")
+        # header message sring
+        headermessage(astring)
+        # right marker
+        framemarker(" " & framechar)
+        # we need a new line
         echo()
-
-    proc framemarker(am:string) =
-        print(am,frmcol)
-        
-    proc headermessage(astring:string)  =
-        print(astring,strcol)
-        
-
-    # draw everything
-    frameline(pdl)
-    #left marker
-    framemarker(framechar & " ")
-    # header message sring
-    headermessage(astring)
-    # right marker
-    framemarker(" " & framechar)
-    # we need a new line
-    echo()
-    # bottom frame line
-    frameline(pdl)
-    # finished drawing
+        # bottom frame line
+        frameline(pdl)
+        # finished drawing
 
 
 proc superHeaderA*(bb:string = "",strcol:string = white,frmcol:string = green,anim:bool = true,animcount:int = 1) =
-  ## superHeaderA
-  ##
-  ## attempt of an animated superheader , some defaults are given
-  ##
-  ## parameters for animated superheaderA :
-  ##
-  ## headerstring, txt color, frame color, left/right animation : true/false ,animcount
-  ##
-  ## Example :
-  ##
-  ## .. code-block:: nim
-  ##    import cx
-  ##    cleanScreen()
-  ##    let bb = "NIM the system language for the future, which extends to as far as you need !!"
-  ##    superHeaderA(bb,white,red,true,1)
-  ##    clearup(3)
-  ##    superheader("Ok That's it for Now !",salmon,yellowgreen)
-  ##    doFinish()
-  
-  for am in 0..<animcount:
-      for x in 0.. <1:
-        cleanScreen()
-        for zz in 0.. bb.len:
-              cleanScreen()
-              superheader($bb[0.. zz],strcol,frmcol)
-              sleepy(0.05)
-              curup(80)
-        if anim == true:
-            for zz in countdown(bb.len,-1,1):
-                  superheader($bb[0.. zz],strcol,frmcol)
-                  sleepy(0.1)
+      ## superHeaderA
+      ##
+      ## attempt of an animated superheader , some defaults are given
+      ##
+      ## parameters for animated superheaderA :
+      ##
+      ## headerstring, txt color, frame color, left/right animation : true/false ,animcount
+      ##
+      ## Example :
+      ##
+      ## .. code-block:: nim
+      ##    import cx
+      ##    cleanScreen()
+      ##    let bb = "NIM the system language for the future, which extends to as far as you need !!"
+      ##    superHeaderA(bb,white,red,true,1)
+      ##    clearup(3)
+      ##    superheader("Ok That's it for Now !",salmon,yellowgreen)
+      ##    doFinish()
+      
+      for am in 0..<animcount:
+          for x in 0.. <1:
+            cleanScreen()
+            for zz in 0.. bb.len:
                   cleanScreen()
-        else:
-             cleanScreen()
-        sleepy(0.5)
-        
-  echo()
+                  superheader($bb[0.. zz],strcol,frmcol)
+                  sleep(500)
+                  curup(80)
+            if anim == true:
+                for zz in countdown(bb.len,-1,1):
+                      superheader($bb[0.. zz],strcol,frmcol)
+                      sleep(100)
+                      cleanScreen()
+            else:
+                cleanScreen()
+            sleep(500)
+            
+      echo()
 
 
 # Var. internet related procs
@@ -3093,6 +3041,11 @@ template loopy*[T](ite:T,st:stmt) =
        st
 
 
+
+
+
+
+
 proc shift*[T](x: var seq[T], zz: Natural = 0): T =
     ## shift takes a seq and returns the first , and deletes it from the seq
     ##
@@ -3396,6 +3349,104 @@ proc katakana*():seq[string] =
     result = kat
 
 
+proc boxChars*():seq[string] = 
+  
+    ## chars to draw a box
+    ##
+    ## returns a seq containing unicode box drawing chars
+    ##
+    var boxy = newSeq[string]()
+    # s U+2500–U+257F.
+    for j in parsehexint("2500") .. parsehexint("257F"):
+        boxy.add($RUne(j))
+    result = boxy
+
+
+    
+proc drawBox*(hy:int = 1, wx:int = 1 , hsec:int = 1 ,vsec:int = 1,frCol:string = yellowgreen, cornerCol:string = truetomato,xpos:int = 1,blink:bool = false) =
+     ## drawBox
+     ## 
+     ## WORK IN PROGRESS FOR A BOX DRAWING PROC USING UNICODE BOX CHARS
+     ## 
+     # http://unicode.org/charts/PDF/U2500.pdf 
+     # left top corner and right top
+     
+     # almost ok we need to find a way to to make sure that grid size is
+     # ok if we w div sec and mod <> 0 we notice errors
+     # so maybe need someway to auto adjust the params nudge to correct suitable size.
+          
+     var h = hy
+     var w = wx
+     if h > th:
+       h = th 
+     if w > tw:
+       w = tw 
+       
+     curSetx(xpos) 
+     # top
+     if blink == true:  
+           printStyled($Rune(parsehexint("250C")),$Rune(parsehexint("250C")),cornerCol,{styleBlink})
+     else:   
+           printStyled($Rune(parsehexint("250C")),$Rune(parsehexint("250C")),cornerCol,{})
+          
+     print($Rune(parsehexint("2500")).repeat(w-2),fgr = frcol)
+     
+     if blink == true:  
+           printLnStyled($Rune(parsehexint("2510")),$Rune(parsehexint("2510")),cornerCol,{styleBlink})
+     else:   
+           printLnStyled($Rune(parsehexint("2510")),$Rune(parsehexint("2510")),cornerCol,{})
+       
+
+     #sides
+     for x in 0.. h - 2 :
+           print($Rune(parsehexint("2502")),fgr = frcol,xpos=xpos)
+           printLn($Rune(parsehexint("2502")),fgr = frcol,xpos=xpos + w - 1)
+                   
+          
+     # bottom left corner and bottom right
+     print($Rune(parsehexint("2514")),fgr = cornercol,xpos=xpos)
+     print(repeat($Rune(parsehexint("2500")),w-2),fgr = frcol)
+     printLn($Rune(parsehexint("2518")),fgr=cornercol)
+     
+     # try to build some dividers
+     var vsecwidth = w 
+     if vsec > 1:
+       vsecwidth = w div vsec 
+       curup(h +1)
+       for x in 1.. <vsec:
+           print($Rune(parsehexint("252C")),fgr = truetomato,xpos=xpos + vsecwidth * x)  
+           curdn(1)
+           for y in 0.. h - 2 :
+               printLn($Rune(parsehexint("2502")),fgr = truetomato,xpos=xpos + vsecwidth * x)  
+           print($Rune(parsehexint("2534")),fgr = truetomato,xpos=xpos + vsecwidth * x)  
+           curup(h)
+
+     var hsecheight = h 
+     var hpos = xpos
+     var npos = hpos
+     if hsec > 1:
+       hsecheight = h div hsec 
+       cursetx(hpos)
+       curdn(hsecheight)
+       
+       for x in 1.. <hsec:
+           print($Rune(parsehexint("251C")),fgr = truetomato,xpos=hpos)
+           #print a full line right thru the vlines
+           print(repeat($Rune(parsehexint("2500")),w-2),fgr = frcol)
+           # now we add the cross points
+           for x in 1.. <vsec:
+               npos = npos + vsecwidth 
+               cursetx(npos)
+               print($Rune(parsehexint("253C")),fgr = truetomato)
+           # print the right edge
+           npos = npos + vsecwidth +1   
+           print($Rune(parsehexint("2524")),fgr = truetomato,xpos=npos)
+           curdn(hsecheight)
+           npos = hpos
+           
+
+
+
 # string splitters with additional capabilities to original split()
 
 proc fastsplit*(s: string, sep: char): seq[string] =
@@ -3559,14 +3610,15 @@ proc infoLine*() =
     ## 
     hlineLn()
     print("{:<14}".fmt("Application :"),yellowgreen)
-    printColStr(brightblack,extractFileName(getAppFilename()))
-    printColStr(brightblack," | ")
-    printColStr(brightgreen,"Nim : ")
-    printColStr(brightblack,NimVersion & " | ")
-    printColStr(peru,"cx : ")
-    printColStr(brightblack,CXLIBVERSION)
-    printColStr(brightblack," | ")
+    print(extractFileName(getAppFilename()),brightblack)
+    print(" | ",brightblack)
+    print("Nim : ",lime)
+    print(NimVersion & " | ",brightblack)
+    print("cx : ",peru)
+    print(CXLIBVERSION,brightblack)
+    print(" | ",brightblack)
     qqTop()
+   
     
     
 proc doFinish*() =
@@ -3580,8 +3632,8 @@ proc doFinish*() =
     ##
     decho(2)
     infoLine()
-    printLnColStr(brightblack," - " & year(getDateStr())) 
-    printColStr(yellowgreen,"{:<14}".fmt("Elapsed     : "))
+    printLn(" - " & year(getDateStr()),brightblack) 
+    print("{:<14}".fmt("Elapsed     : "),yellowgreen)
     printLn("{:<.3f} {}".fmt(epochtime() - cx.start,"secs"),goldenrod)
     echo()
     quit 0
@@ -3607,12 +3659,13 @@ proc handler*() {.noconv.} =
     echo()
     hlineLn()
     cechoLn(yellowgreen,"Thank you for using     : ",getAppFilename())
-    msgc() do: echo "{}{:<11}{:>9}".fmt("Last compilation on     : ",CompileDate ,CompileTime)
+    printLn("{}{:<11}{:>9}".fmt("Last compilation on     : " , CompileDate , CompileTime),cyan)
     hlineLn()
-    echo "cx Version         : ", CXLIBVERSION
-    echo "Nim Version             : ", NimVersion
-    printColStr(yellow,"{:<14}".fmt("Elapsed     : "))
-    printLnColStr(brightblack,"{:<.3f} {}".fmt(epochtime() - cx.start,"secs"))
+    print("Nim Version   : " & NimVersion)
+    print(" | ",brightblack)
+    printLn("cx Version     : " & CXLIBVERSION)
+    print("{:<14}".fmt("Elapsed     : "),yellow)
+    printLn("{:<.3f} {}".fmt(epochtime() - cx.start,"secs"),brightblack)
     echo()
     rainbow("Have a Nice Day !")  ## change or add custom messages as required
     decho(2)
@@ -3623,6 +3676,7 @@ proc handler*() {.noconv.} =
 
 # putting decho here will put two blank lines before anyting else runs
 decho(2)
+
 # putting this here we can stop most programs which use this lib and get the
 # automatic exit messages , it may not work in tight loops involving execCMD or
 # waiting for readLine() inputs.

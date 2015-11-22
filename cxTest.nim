@@ -6,7 +6,7 @@
 ## best run in a large console window
 
 
-import cx,cxDemo,strfmt,strutils,sequtils,times,random
+import cx,cxDemo,strfmt,strutils,sequtils,times,random,unicode
 
 superHeader("Testing print and echo procs from cx.nim and run demos")
 
@@ -40,9 +40,6 @@ decho(2)
 
 printLnTK(s)
 printLnTK(s,green,brightred,blue)
-decho(1)
-
-printColStr(green,s)
 decho(1)
 
 printLnStyled(s,"t",clrainbow,{styleUnderScore,styleBlink})

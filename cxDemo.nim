@@ -30,7 +30,7 @@ proc futureIsNimDemo*(posx:int = 0) =
       curup(5)
       curSetx(xpos)
       doty(1,red)
-      printPos(" ",clrainbow,xpos = xpos + 20)
+      print(" ",clrainbow,xpos = xpos + 20)
       doty(1,lime)
       doty(1,tomato)
       print(" Nim",salmon)
@@ -104,9 +104,9 @@ proc printNimSx*(col:string = yellowgreen, xpos: int = 1) =
    var maxpos = tw - nimsx[0].len + 20
    for x in nimsx :
         if xpos <= maxpos  :
-            print(repeat(" ",xpos) & x,col)
+            cecho(" ".repeat(xpos) & x,col)
         else:    
-            print(repeat(" ",maxpos) & x,col)
+            cecho(" ".repeat(maxpos) & x,col)
             
             
 proc movNimDemo*() =
