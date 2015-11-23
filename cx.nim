@@ -1212,6 +1212,16 @@ template withFile*(f: expr, filename: string, mode: FileMode, body: stmt): stmt 
          quit()
 
 
+proc unquote*(s:string):string = 
+    ## unquote
+    ## 
+    ## remove any quotes from a string
+    ## 
+    var z = s
+    z = replace(z,$'"',"")
+    result = z
+
+
 proc cleanScreen*() =
       ## cleanScreen
       ## 
@@ -2480,6 +2490,40 @@ proc printBigLetters*(aword:string,fgr:string = yellowgreen ,bgr:string = black,
       of " " : xpos = xpos + 2        
       else: discard
       
+
+
+
+proc printNimSxR*(nimsx:seq[string],col:string = yellowgreen, xpos: int = 1) = 
+    ## printNimSxR
+    ## 
+    ## prints large Letters or a word which have been predefined
+    ## 
+    ## see values of nimsx1 and nimsx2 above
+    ## 
+    ## 
+    ## allows x positioning
+    ## 
+    ## in your calling code arrange that most right one is printed first
+    ## 
+          
+    var sxpos = xpos
+    var maxl = 0
+    
+    for x in nimsx:
+      if maxl < x.len:
+          maxl = x.len
+    
+    var maxpos = cx.tw - maxl div 2 
+    
+    if xpos > maxpos:
+          sxpos = maxpos
+
+    for x in nimsx :
+          printLn(" ".repeat(xpos) & x,randcol())
+   
+
+
+
 
 
 proc printSlimNumber*(anumber:string,fgr:string = yellowgreen ,bgr:string = black,xpos:int = 1) =
