@@ -720,6 +720,19 @@ const sdot =
    @["  ",
      "  ",
      " ."]
+   
+   
+const sup = 
+   @[" ╷ ",
+     "╷ ╷",
+     "╷╷╷"]
+   
+const sdown =
+   @["╷╷╷",
+     "╷ ╷",
+     " ╷"]
+
+
 
 const snumberlen = 2
 
@@ -1211,6 +1224,24 @@ template withFile*(f: expr, filename: string, mode: FileMode, body: stmt): stmt 
          printLnBiCol("Error : Cannot open file " & curFile,":",red,yellow)
          quit()
 
+
+    
+proc showRune*(s:string) : string  =
+     ## showRune
+     ## 
+     ## utility proc to show a single unicode char
+     ## 
+     ## note that not all unicode chars may be available on all systems
+     ## 
+     ## .. code-block : nim
+     ##      print(showRune("FFEA"),lime)
+     ##      print(showRune("FFEC"),red)
+     ##
+     ##
+
+
+     result = $Rune(parsehexint(s))
+    
 
 proc unquote*(s:string):string = 
     ## unquote
