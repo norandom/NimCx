@@ -1221,7 +1221,7 @@ template withFile*(f: expr, filename: string, mode: FileMode, body: stmt): stmt 
              close(f)
      else:
          echo ()
-         printLnBiCol("Error : Cannot open file " & curFile,":",red,yellow)
+         printLnBiCol("Error : Cannot open file " & filename,":",red,yellow)
          quit()
 
 
@@ -1238,8 +1238,6 @@ proc showRune*(s:string) : string  =
      ##      print(showRune("FFEC"),red)
      ##
      ##
-
-
      result = $Rune(parsehexint(s))
     
 
@@ -1548,7 +1546,7 @@ template clearLine*() =
      ## mirrors terminal eraseLine
      eraseLine() 
 
-proc sleepy*(secs: float) =
+proc sleepy*[T:float|int](secs:T) =
   ## sleepy
   ## 
   ## imitates sleep but in seconds
