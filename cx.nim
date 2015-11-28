@@ -29,7 +29,7 @@
 ##
 ##   Docs        : http://qqtop.github.io/cx.html
 ##
-##   Tested      :  on Ubuntu 14.04 , OpenSuse 13.2 , OpenSuse Leap42.1 , Mint 17  
+##   Tested      : on Ubuntu 14.04 , OpenSuse 13.2 , OpenSuse Leap42.1 , Mint 17  
 ##                
 ##   
 ##   Related     : 
@@ -512,6 +512,13 @@ let ul3 = "      "
 let ul4 = "      " 
 let ul5 = "██████"
 
+
+let clb1 = "      "
+let clb2 = "      "
+let clb3 = "      "
+let clb4 = "      " 
+let clb5 = "      "
+
  
 let abx* = @[a1,a2,a3,a4,a5]   
 let bbx* = @[b1,b2,b3,b4,b5]  
@@ -544,8 +551,9 @@ let hybx* = @[hy1,hy2,hy3,hy4,hy5]
 let plbx* = @[pl1,pl2,pl3,pl4,pl5]
 let ulbx* = @[ul1,ul2,ul3,ul4,ul5]
 
+let clbx* = @[clb1,clb2,clb3,clb4,clb5]
 
-let bigLetters* = @[abx,bbx,cbx,dbx,ebx,fbx,gbx,hbx,ibx,jbx,kbx,lbx,mbx,nbx,obx,pbx,qbx,rbx,sbx,tbx,ubx,vbx,wbx,xbx,ybx,zbx,hybx,plbx,ulbx]
+let bigLetters* = @[abx,bbx,cbx,dbx,ebx,fbx,gbx,hbx,ibx,jbx,kbx,lbx,mbx,nbx,obx,pbx,qbx,rbx,sbx,tbx,ubx,vbx,wbx,xbx,ybx,zbx,hybx,plbx,ulbx,clbx]
 
 # a big block number set
 #  can be used with printBigNumber
@@ -626,6 +634,14 @@ const colon =
   ,"  ██  "
   ,"      "
   ,"  ██  "
+  ,"      "]
+
+
+const clrb =
+ @["      "
+  ,"      "
+  ,"      "
+  ,"      "
   ,"      "]
 
 const numberlen = 4
@@ -1551,8 +1567,6 @@ proc sleepy*[T:float|int](secs:T) =
   ## 
   ## imitates sleep but in seconds
   ##
-  ## better cpu usage than prev. but still see spikes
-  ## 
   ## despite this being same as os.sleep 
   var milsecs = (secs * 1000).int
   sleep(milsecs)
@@ -2396,7 +2410,7 @@ proc printBigNumber*(anumber:string,fgr:string = yellowgreen ,bgr:string = black
     ##    for x in 990.. 1105:
     ##         cleanScreen()
     ##         printBigNumber($x)
-    ##         sleep(80)
+    ##         sleepy(3)
     ##
     ##    cleanScreen()   
     ##    
@@ -2404,16 +2418,16 @@ proc printBigNumber*(anumber:string,fgr:string = yellowgreen ,bgr:string = black
     ##
     ## .. code-block:: nim
     ##    import cx 
-    ##    for x in countdown(10,0):
+    ##    for x in countdown(9,0):
     ##         cleanScreen()
     ##         if x == 5:
     ##             for y in countup(10,25):
     ##                 cleanScreen()
     ##                 printBigNumber($y,tomato)
-    ##                 sleep(500)
+    ##                 sleepy(0.5)
     ##         cleanScreen()    
     ##         printBigNumber($x)
-    ##         sleep(1000)
+    ##         sleepy(0.5)
     ##    doFinish()
     
     
@@ -2434,6 +2448,7 @@ proc printBigNumber*(anumber:string,fgr:string = yellowgreen ,bgr:string = black
         of "8": printseq.add(number8)
         of "9": printseq.add(number9)
         of ":": printseq.add(colon)
+        of " ": printseq.add(clrb)
         else: discard
           
     for x in 0.. numberlen:
@@ -2464,6 +2479,12 @@ proc printBigLetters*(aword:string,fgr:string = yellowgreen ,bgr:string = black,
   ## also note that depending on terminal width only a limited number of chars can be displayed
   ## 
   ## 
+  ##
+  ## ..code-block:: nimble
+  ##       printBigLetters("ABABABA####RR",xpos = 1)
+  ##       printBigLetters("#",xpos = 1)   # the '#' char is used to denote a blank space or to overwrite
+  ##
+  
   var xpos = xpos
   template abc(s:stmt,xpos:int) =
       # abc
@@ -2512,6 +2533,7 @@ proc printBigLetters*(aword:string,fgr:string = yellowgreen ,bgr:string = black,
       of "-" : abc(hybx,xpos)
       of "+" : abc(plbx,xpos)
       of "_" : abc(ulbx,xpos)
+      of "#"  : abc(clbx,xpos)
       of "1","2","3","4","5","6","7","8","9","0",":": 
                printBigNumber($aw,fgr = fgr , bgr = bgr,xpos = xpos,fun = fun)
                curup(5)
