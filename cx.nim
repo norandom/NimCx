@@ -2480,8 +2480,8 @@ proc printBigLetters*(aword:string,fgr:string = yellowgreen ,bgr:string = black,
   ## 
   ## 
   ##
-  ## ..code-block:: nimble
-  ##       printBigLetters("ABABABA####RR",xpos = 1)
+  ## ..code-block:: nim
+  ##       printBigLetters("ABA###RR#3",xpos = 1)
   ##       printBigLetters("#",xpos = 1)   # the '#' char is used to denote a blank space or to overwrite
   ##
   
