@@ -648,11 +648,11 @@ const numberlen = 4
 
 # big NIM in block letters
 
-let NIMX1 = "██     █    ██    ███   ██\n"
-let NIMX2 = "██ █   █    ██    ██ █ █ █\n"
-let NIMX3 = "██  █  █    ██    ██  █  █\n"
-let NIMX4 = "██   █ █    ██    ██  █  █\n"
-let NIMX5 = "██     █    ██    ██     █\n\n"
+let NIMX1 = "██     █    ██    ███   ██"
+let NIMX2 = "██ █   █    ██    ██ █ █ █"
+let NIMX3 = "██  █  █    ██    ██  █  █"
+let NIMX4 = "██   █ █    ██    ██  █  █"
+let NIMX5 = "██     █    ██    ██     █"
 
 let nimsx* = @[NIMX1,NIMX2,NIMX3,NIMX4,NIMX5]
 
@@ -2551,6 +2551,9 @@ proc printNimSxR*(nimsx:seq[string],col:string = yellowgreen, xpos: int = 1) =
     ## 
     ## see values of nimsx1 and nimsx2 above
     ## 
+    ## 
+    ## .. code-block:: nim
+    ##    printNimSxR(nimsx)
     ## 
     ## allows x positioning
     ## 
