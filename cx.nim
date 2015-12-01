@@ -297,11 +297,11 @@ const
 
 
 
-let a1 = "   █   "
-let a2 = "  █ █  "
-let a3 = " █   █ " 
-let a4 = " █ █ █ "
-let a5 = " █   █ "
+let a1 = "  ██   "
+let a2 = " ██ █  "
+let a3 = "██   █ " 
+let a4 = "██ █ █ "
+let a5 = "██   █ "
 
 
 let b1 = "███ █  "
@@ -430,11 +430,11 @@ let r5 = "██   █ "
   
   
   
-let s1 = "  █ █  "
+let s1 = "  █ ██ "
 let s2 = " █     "
 let s3 = "   █   "
-let s4 = "    █  "
-let s5 = " █ █   "
+let s4 = "     █ "
+let s5 = " ██ █  "
   
 
 let t1 = "██████ "
@@ -477,10 +477,10 @@ let x5 = "██   █ "
   
   
 let y1 = "██   █ "  
-let y2 = " ██ █  " 
-let y3 = "  ██   "
-let y4 = "  ██   "
-let y5 = "  ██   "
+let y2 = "  █ █  " 
+let y3 = "   █   "
+let y4 = "   █   "
+let y5 = "   █   "
 
 
 
@@ -737,18 +737,6 @@ const sdot =
      "  ",
      " ."]
    
-   
-const sup = 
-   @[" ╷ ",
-     "╷ ╷",
-     "╷╷╷"]
-   
-const sdown =
-   @["╷╷╷",
-     "╷ ╷",
-     " ╷"]
-
-
 
 const snumberlen = 2
 
@@ -3461,7 +3449,7 @@ proc boxChars*():seq[string] =
 
 
     
-proc drawBox*(hy:int = 1, wx:int = 1 , hsec:int = 1 ,vsec:int = 1,frCol:string = yellowgreen, cornerCol:string = truetomato,xpos:int = 1,blink:bool = false) =
+proc drawBox*(hy:int = 1, wx:int = 1 , hsec:int = 1 ,vsec:int = 1,frCol:string = yellowgreen,brCol:string = black ,cornerCol:string = truetomato,xpos:int = 1,blink:bool = false) =
      ## drawBox
      ## 
      ## WORK IN PROGRESS FOR A BOX DRAWING PROC USING UNICODE BOX CHARS
@@ -3487,7 +3475,7 @@ proc drawBox*(hy:int = 1, wx:int = 1 , hsec:int = 1 ,vsec:int = 1,frCol:string =
      else:   
            printStyled($Rune(parsehexint("250C")),$Rune(parsehexint("250C")),cornerCol,{})
           
-     print($Rune(parsehexint("2500")).repeat(w-2),fgr = frcol)
+     print($Rune(parsehexint("2500")).repeat(w-1),fgr = frcol)
      
      if blink == true:  
            printLnStyled($Rune(parsehexint("2510")),$Rune(parsehexint("2510")),cornerCol,{styleBlink})
@@ -3498,12 +3486,12 @@ proc drawBox*(hy:int = 1, wx:int = 1 , hsec:int = 1 ,vsec:int = 1,frCol:string =
      #sides
      for x in 0.. h - 2 :
            print($Rune(parsehexint("2502")),fgr = frcol,xpos=xpos)
-           printLn($Rune(parsehexint("2502")),fgr = frcol,xpos=xpos + w - 1)
+           printLn($Rune(parsehexint("2502")),fgr = frcol,xpos=xpos + w )
                    
           
      # bottom left corner and bottom right
      print($Rune(parsehexint("2514")),fgr = cornercol,xpos=xpos)
-     print(repeat($Rune(parsehexint("2500")),w-2),fgr = frcol)
+     print(repeat($Rune(parsehexint("2500")),w-1),fgr = frcol)
      printLn($Rune(parsehexint("2518")),fgr=cornercol)
      
      # try to build some dividers
@@ -3530,7 +3518,7 @@ proc drawBox*(hy:int = 1, wx:int = 1 , hsec:int = 1 ,vsec:int = 1,frCol:string =
        for x in 1.. <hsec:
            print($Rune(parsehexint("251C")),fgr = truetomato,xpos=hpos)
            #print a full line right thru the vlines
-           print(repeat($Rune(parsehexint("2500")),w-2),fgr = frcol)
+           print(repeat($Rune(parsehexint("2500")),w-1),fgr = frcol)
            # now we add the cross points
            for x in 1.. <vsec:
                npos = npos + vsecwidth 
@@ -3538,7 +3526,7 @@ proc drawBox*(hy:int = 1, wx:int = 1 , hsec:int = 1 ,vsec:int = 1,frCol:string =
                print($Rune(parsehexint("253C")),fgr = truetomato)
            # print the right edge
            npos = npos + vsecwidth +1   
-           print($Rune(parsehexint("2524")),fgr = truetomato,xpos=npos)
+           print($Rune(parsehexint("2524")),fgr = truetomato,xpos=npos -1)
            curdn(hsecheight)
            npos = hpos
            
