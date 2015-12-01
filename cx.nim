@@ -30,7 +30,8 @@
 ##   Docs        : http://qqtop.github.io/cx.html
 ##
 ##   Tested      : on Ubuntu 14.04 , OpenSuse 13.2 , OpenSuse Leap42.1 , Mint 17  
-##                
+##     
+##                 with terminal font : monospace size 9.0            
 ##   
 ##   Related     : 
 ##   
@@ -1564,7 +1565,6 @@ proc sleepy*[T:float|int](secs:T) =
 
 # Var. convenience procs for colorised data output
 # these procs have similar functionality 
-# printPos and printLnPos allow x positional placement and work same print and printLn
 # printTK and printLnTK tokenize strings for selective coloring if required
 # and can be used for most standard echo like displaying jobs
       
@@ -3078,7 +3078,7 @@ template getCard* :auto =
   ## 
   ## .. code-block:: nim
   ##    import cx
-  ##    printPos(getCard(),randCol(),xpos = tw div 2)  # get card and print in random color at xpos
+  ##    print(getCard(),randCol(),xpos = tw div 2)  # get card and print in random color at xpos
   ##    doFinish()
   ## 
   cards[rxCards.randomChoice()] 
