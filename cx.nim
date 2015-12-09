@@ -64,12 +64,13 @@ when defined(posix):
   {.hint    : "Aha, nice Os flavour detected .... CX loves Linux !".}  
 
 
+# make terminal style constants available in the calling prog
+export terminal.Style
 
-
-type
-      PStyle* = terminal.Style  ## make terminal style constants available in the calling prog
 
 const CXLIBVERSION* = "0.9.3"
+
+let start* = epochTime()  ##  check execution timing with one line see doFinish
   
 
 proc getfg(fg:ForegroundColor):string =
@@ -971,8 +972,6 @@ template randCol*: string = colornames[rxCol.randomChoice()][1]
    ##    
   
 
-let start* = epochTime()  ##  check execution timing with one line see doFinish
-
 converter toTwInt(x: cushort): int = result = int(x)
 
 when defined(Linux):
@@ -1017,8 +1016,8 @@ when defined(Linux):
 # forward declarations
 
 converter colconv*(cx:string) : string
-proc rainbow*[T](s : T)  ## forward declaration
-proc print*[T](astring:T,fgr:string = white , bgr:string = black,xpos:int = 0,fitLine = false)
+proc rainbow*[T](s : T,xpos:int = 0,fitLine:bool = false ,centered:bool = false)  ## forward declaration
+proc print*[T](astring:T,fgr:string = white , bgr:string = black,xpos:int = 0,fitLine:bool = false,centered:bool = false)
 proc printBiCol*(s:string,sep:string,colLeft:string = yellowgreen ,colRight:string = termwhite,xpos:int = 0) ## forward declaration
 proc printLnBiCol*(s:string,sep:string,colLeft:string = yellowgreen ,colRight:string = termwhite,xpos:int = 0) ## forward declaration
 proc printStyledsimple*[T](ss:T,fg:string,astyle:set[Style]) ## forward declaration
@@ -1151,13 +1150,13 @@ template msgmb*(code: stmt): stmt =
       setForeGroundColor(fgWhite)    
 
   
-template hdx*(code:stmt):stmt =
+template hdx*(code:stmt,frm:string = "+"):stmt =
    ## hdx
    ## 
-   ## a simple sandwich frame made with +
+   ## a simple sandwich frame made with + default or any string passed in
    ## 
    echo()
-   var lx = repeat("+",tw.int)
+   var lx = repeat(frm,tw.int div frm.len)
    printLn(lx)
    code
    printLn(lx)
@@ -1249,11 +1248,10 @@ proc showRune*(s:string) : string  =
 proc unquote*(s:string):string = 
     ## unquote
     ## 
-    ## remove any quotes from a string
+    ## remove any double quotes from a string
     ## 
-    var z = s
-    z = replace(z,$'"',"")
-    result = z
+    result = replace(s,$'"',"")
+    
 
 
 proc cleanScreen*() =
@@ -1324,7 +1322,7 @@ converter colconv*(cx:string) : string =
 
 
 
-proc print*[T](astring:T,fgr:string = white , bgr:string = black,xpos:int = 0,fitLine = false) =
+proc print*[T](astring:T,fgr:string = white , bgr:string = black,xpos:int = 0,fitLine:bool = false,centered:bool = false) =
     ## print
     ##
     ## same as printLn without new line , allows positioning
@@ -1333,25 +1331,37 @@ proc print*[T](astring:T,fgr:string = white , bgr:string = black,xpos:int = 0,fi
     ## 
     ## fitLine = true will try to write the text into the current line irrespective of xpos 
     ##
-        
-    if xpos > 0:
-        setCursorxpos(xpos)
-            
-    if ($astring).len + xpos >= tw:
-      # force to write on same line within in terminal whatever the xpos says
-      if fitLine == true:
-            setCursorXPos(tw - ($astring).len) 
+    ## centered = true will try to center and disregard xpos
+    ##
+    
+    var npos = xpos
+    
+    if centered == false:
+    
+        if npos > 0:
+            setCursorxpos(npos)
+                
+        if ($astring).len + xpos >= tw:
+          # force to write on same line within in terminal whatever the xpos says
+          if fitLine == true:
+                npos = tw - ($astring).len
+                setCursorXPos(npos) 
+    
+    else:  # centered == true
+          npos = tw div 2 - ($astring).len div 2 - 1
+          setCursorXPos(npos)
+      
        
     case fgr 
-      of clrainbow: rainbow($astring)
+      of clrainbow: rainbow($astring,npos)
       else:  
-           write(stdout,fgr & colconv(bgr) & $astring)
-                 
-    prxBCol()
+            write(stdout,fgr & colconv(bgr) & $astring)
+                            
+    prxBCol()  #reset to default cols
     
     
 
-proc printLn*[T](astring:T,fgr:string = white , bgr:string = black,xpos:int = 0,fitLine = false) =
+proc printLn*[T](astring:T,fgr:string = white , bgr:string = black,xpos:int = 0,fitLine:bool = false,centered:bool = false) =
     ## printLn
     ## 
     ## similar to echo but with foregroundcolor and backgroundcolor
@@ -1392,27 +1402,45 @@ proc printLn*[T](astring:T,fgr:string = white , bgr:string = black,xpos:int = 0,
     ## 
     ## 
     
-    print(astring,fgr,bgr,xpos,fitLine)
+    print(astring,fgr,bgr,xpos,fitLine,centered)
     writeline(stdout,"")
     
 
 
-proc rainbow*[T](s : T) =
+proc rainbow*[T](s : T,xpos:int = 0,fitLine:bool = false,centered:bool = false) =
     ## rainbow
     ##
     ## multicolored string
     ##
     ## may not work with certain Rune
+    ## 
+    ## .. code-block:: nim
+    ##  
+    ##    # equivalent output  
+    ##    rainbow("what's up ?",centered = true)
+    ##    echo()
+    ##    println("what's up ?",clrainbow,centered = true)
+    ## 
+    ## 
     ##
+    var nxpos = xpos
     var astr = $s
     var c = 0
     var a = toSeq(1.. <colorNames.len)
+    
     for x in 0.. <astr.len:
        c = a[randomInt(a.len)]
-       print(astr[x],colorNames[c][1],black)
-
+       if centered == false:
+          nxpos = nxpos + 1
+          print(astr[x],colorNames[c][1],black,xpos = nxpos,fitLine)
+       else:
+          # need to calc the center here and increment by x
+          nxpos = tw div 2 - ($astr).len div 2  + x
+          print(astr[x],colorNames[c][1],black,xpos=nxpos,fitLine)
 
 # output  horizontal lines
+
+
 
 proc hline*(n:int = tw,col:string = white) =
      ## hline
@@ -1527,6 +1555,7 @@ template curSetx*(x:int) =
      ## mirrors terminal setCursorXPos
      setCursorXPos(stdout,x)
      
+     
 template curSet*(x:int = 0,y:int = 0) = 
      ## curSet
      ##
@@ -1550,6 +1579,7 @@ template clearLine*() =
      ##
      ## mirrors terminal eraseLine
      eraseLine() 
+     
 
 proc sleepy*[T:float|int](secs:T) =
   ## sleepy
@@ -1567,30 +1597,6 @@ proc sleepy*[T:float|int](secs:T) =
 # these procs have similar functionality 
 # printTK and printLnTK tokenize strings for selective coloring if required
 # and can be used for most standard echo like displaying jobs
-      
-
-
-proc printCenter*(astring:string,fgr:string = termwhite,bgr:string = termblack,fitLine = true) =
-     ## printCenter
-     ## 
-     ## attempts to print a string centered in terminal 
-     ## 
-     ## fore and backgroundcolor can be set
-     ## 
-      
-     print(astring,fgr = fgr,bgr = bgr , tw div 2 - astring.len div 2 - 1 ,fitline)
-     
-     
-proc printLnCenter*(astring:string,fg:string = termwhite,bg:string = termblack) =
-     ## printLnCenter
-     ## 
-     ## attempts to print a string centered in terminal and issues new line
-     ## 
-     ## fore and backgroundcolor can be set
-     ## 
-     printCenter(astring,fg,bg)     
-     writeline(stdout,"")
-
 
 
 proc printTK*[T](st:T , cols: varargs[string, `$`] = @[white] ) =
@@ -1672,6 +1678,7 @@ proc printLnTK*[T](st:T , cols: varargs[string, `$`]) =
 
 proc printRainbow*[T](s : T,astyle:set[Style]) =
     ## printRainbow
+    ## 
     ##
     ## print multicolored string with styles , for available styles see printStyled
     ##
@@ -1692,6 +1699,8 @@ proc printRainbow*[T](s : T,astyle:set[Style]) =
     
 proc printLnRainbow*[T](s : T,astyle:set[Style]) =
     ## printLnRainbow
+    ## 
+    ##  ## NOTE to be deprecated soon
     ##
     ## print multicolored string with styles , for available styles see printStyled
     ## 
@@ -1948,11 +1957,11 @@ proc showColors*() =
   for x in colorNames:
      print("{:<23} {}  {}  {} --> {} ".fmt(x[0] , "▒".repeat(10), "⌘".repeat(10) ,"ABCD abcd 1234567890"," Nim Colors " ),x[1],black)  # note x[1] is the color itself.
      printLnStyled("{:<23}".fmt("  " & x[0]),"{:<23}".fmt("  " & x[0]),x[1],{styleReverse})
-     sleep(500)
+     sleepy(0.1)
   decho(2)   
   
 
-proc doty*(d:int,col:string = white, bgr = black) =
+proc doty*(d:int,fgr:string = white, bgr = black,xpos:int = 1) =
      ## doty
      ## 
      ## prints number d of ⏺  style dots in given fore/background color
@@ -1972,13 +1981,13 @@ proc doty*(d:int,col:string = white, bgr = black) =
      ## 
     
      var astr = $(wideDot.repeat(d))
-     if col == clrainbow:
-        print(astring = astr,white,bgr) 
+     if fgr == clrainbow:
+        print(astring = astr,white,bgr,xpos) 
      else:
-        print(astring = astr,col,bgr) 
+        print(astring = astr,fgr,bgr,xpos) 
      
      
-proc dotyLn*(d:int,col:string = white, bgr = black) =
+proc dotyLn*(d:int,fgr:string = white, bgr = black,xpos:int = 1) =
      ## dotyLn
      ## 
      ## prints number d of ⏺  style widedots given fore/background color and issues new line
@@ -1988,7 +1997,7 @@ proc dotyLn*(d:int,col:string = white, bgr = black) =
      ## color clrainbow is not supported and will be in white
      ## 
      ## 
-     doty(d,col,bgr)
+     doty(d,fgr,bgr,xpos)
      writeLine(stdout,"")
           
 
@@ -2224,8 +2233,10 @@ proc dayOfWeekJulian*(datestr:string): string =
    ## 
    ## valid for dates up to 2099-12-31 
    ##
+   ## actually starts to fail with 2100-03-01 which shud be a monday but this proc says tuesday
    ##
-   if parseInt(year(datestr)) < 2100:
+   ##
+   if parseInt(year(datestr)) < 2200:
      let dw = dayofweekjulianA(parseInt(day(datestr)),parseInt(month(datestr)),parseInt(year(datestr))) 
      result = $dw
    else:
@@ -2541,7 +2552,7 @@ proc printNimSxR*(nimsx:seq[string],col:string = yellowgreen, xpos: int = 1) =
     ## 
     ## 
     ## .. code-block:: nim
-    ##    printNimSxR(nimsx)
+    ##    printNimSxR(nimsx,xpos = 10)
     ## 
     ## allows x positioning
     ## 
@@ -3012,12 +3023,12 @@ proc getRandomFloat*():float =
     result = rng.random()
 
 
-proc createSeqFloat*(n:int = 10) : seq[float] =
+proc createSeqFloat*(n:BiggestInt = 10) : seq[float] =
       ## createSeqFloat
       ##
       ## convenience proc to create a seq of random floats with
       ##
-      ## default length 10
+      ## default length 10 ( always consider how much memory is in the system )
       ##
       ## form @[0.34,0.056,...] or similar
       ##
@@ -3054,8 +3065,8 @@ proc getRandomPointInCircle*(radius:float) : seq[float] =
   ##    
   ##     
   
-  var t = 2 * math.Pi * getRandomFloat()
-  var u = getRandomFloat() + getRandomFloat()
+  let t = 2 * math.Pi * getRandomFloat()
+  let u = getRandomFloat() + getRandomFloat()
   var r = 0.00
   if u > 1 :
      r = 2-u 
@@ -3125,10 +3136,6 @@ template loopy*[T](ite:T,st:stmt) =
      ##     
      for x in ite:
        st
-
-
-
-
 
 
 

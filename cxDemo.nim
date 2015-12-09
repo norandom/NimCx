@@ -85,8 +85,7 @@ proc centerNimDemo*() =
            
    sleepy(0.1)
    echo()
-   centerpos("Nim")
-   printLnStyled(repeat("Nim ",20),"",red,{styleBright})
+   printLn("Nim",lime,centered=true)
    echo()
    for x in 0.. 4:
       centerpos(b)   
@@ -94,19 +93,6 @@ proc centerNimDemo*() =
 
 
 
-proc printNimSx*(col:string = yellowgreen, xpos: int = 1) = 
-   ## printNimSx
-   ## 
-   ## prints large Nim
-   ## 
-   ## 
-  
-   var maxpos = tw - nimsx[0].len + 20
-   for x in nimsx :
-        if xpos <= maxpos  :
-            cecho(" ".repeat(xpos) & x,col)
-        else:    
-            cecho(" ".repeat(maxpos) & x,col)
             
             
 proc movNimDemo*() =
@@ -118,26 +104,26 @@ proc movNimDemo*() =
     ##    import cx 
     ##    decho(5)
     ##    movNimDemo()
-    ##    printNimSx(salmon)
-    ##    printNimSx(lime,55)
+    ##    printNimSxR(salmon)
+    ##    printNimSxR(lime,55)
     ##    doFinish()
     ##
     cleanScreen()
     for xpos in 1.. tw - nimsx[0].len + 20:
         if float(xpos mod 8) == 0.0:
-            printNimSx(red,xpos)
+            printNimSxR(nimsx,xpos = xpos)
             sleepy(0.025)
         else:
-          printNimSx(gray,xpos)
+          printNimSxR(nimsx,xpos = xpos)
         sleepy(0.025)
         cleanScreen()
 
     for xpos in countdown(tw - nimsx[0].len + 20 ,1,1):
         if float(xpos mod 8) == 0.0:
-            printNimSx(red,xpos)
+            printNimSxR(nimsx,red,xpos=xpos)
             sleepy(0.025)
         else:
-          printNimSx(gray,xpos)
+          printNimSxR(nimsx,gray,xpos)
         sleepy(0.025)
         cleanScreen()
 
@@ -250,11 +236,13 @@ proc sierpCarpetDemo*(n:int) =
   for i in 0 .. <(3^n):
     for j in 0 .. <(3^n):
       if inCarpet(i, j):
-        print("* ",clrainbow)
+        print("* ",randcol())
       else:
         printStyled("  ","",truetomato,{stylereverse})
+        #print("  ","",lime)
         
     echo ""
+
 
 
 
@@ -296,7 +284,7 @@ proc cxYourNimDemo*() =
       for x in 0.. 4:
          curfw(10)
          println(cbx[x] & xbx[x] & hybx[x] & " " & cbx[x] & obx[x] & lbx[x] & obx[x] & rbx[x] & "  " & ybx[x] & obx[x] & ubx[x] & rbx[x] & "  " & nbx[x] & ibx[x] & mbx[x],randcol())
-      sleepy(0.8)
+      sleepy(0.1)
     decho(10)    
     
 

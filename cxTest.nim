@@ -206,30 +206,6 @@ decho(5)
 
 bigPanelDemo()
 sleepy(2)
-decho(10)
-
-proc printNimSxR*(col:string = yellowgreen, xpos: int = 1) = 
-   ## printNimSx
-   ## 
-   ## prints large Nim
-   ## 
-   ## 
-  
-   var maxpos = tw - nimsx[0].len + 20
-   for x in nimsx :
-        if xpos <= maxpos  :
-            print(repeat(" ",xpos) & x,randcol())
-        else:    
-            print(repeat(" ",maxpos) & x,randcol())
-            
-
-for x in 0 .. 5:
-   cleanscreen()
-   curset()
-   decho(toSeq(1.. th - 8).randomchoice())
-   printNimsxR(randcol(),xpos = toSeq(0.. tw - 20).randomchoice())
-   sleepy(1)
-   curup(6)
 
 
 decho(2)

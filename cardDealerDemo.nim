@@ -9,7 +9,7 @@ import cx
 
 cleanscreen()
 decho(2)
-printBigLetters("###CARD # DEALER",xpos= 10,fun = true)
+printBigLetters("#####CARD # DEALER",xpos= 10,fun = true)
 decho(8)
 var xxpos = 10
 
@@ -22,19 +22,15 @@ proc lb(xpos:int) =
      curup(1)
      nxpos = nxpos + 4
 
-for z in 0.. 200:
+for z in 0.. 1000:
   for y in 0.. 8:
     lb(xxpos)
     decho(3)
+    
   sleepy(0.01)  
   curset()
-  decho(10)
- 
-   
+  printSlimNumber($z & ":1000" ,randcol())
+  decho(7)
+     
 decho(28)
 doFinish()
-
-
-
-
-
