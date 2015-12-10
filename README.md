@@ -28,6 +28,8 @@ Screenshots from cxTest
 
 ![Image](http://qqtop.github.io/nimcolors5.png?raw=true)
 
+![Image](http://qqtop.github.io/colorCJKDemo.png?raw=true)
+
 ![Image](http://qqtop.github.io/nimcolors6.png?raw=true)
 
 ![Image](http://qqtop.github.io/nimcolors10.png?raw=true)

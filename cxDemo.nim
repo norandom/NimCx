@@ -337,8 +337,9 @@ proc colorCJKDemo*() =
     ##
     ## carpet with CJK characters
     ##
-    
+    decho(2)
     for y in 0.. 20:
+       curSetx(10)
        for x in 0.. 50:
            print(newwordCJK(1,1),randcol())
        echo()   

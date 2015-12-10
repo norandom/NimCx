@@ -10,17 +10,18 @@ import cx,cxDemo,strfmt,strutils,sequtils,times,random,unicode
 
 superHeader("Testing print and echo procs from cx.nim and run demos")
 
-var s = "Test color string"
-var n = 1234567
-var f = 123.4567
-var l = @[1234,4567,654]
+let s = "Test color string"
+let n = 1234567
+let f = 123.4567
+let l = @[1234,4567,654]
 
 
 # background colors for print and println are standard terminal colors
-# to use other colors use printStyled or printLnStyled
+# to use other colors use printStyled or printLnStyled with stylereverse
+
 printLn(s,white,brightblack)
-printLn(n,white,red)
-printLn(f,white,blue)
+printLn(n,white,red,xpos = 20)
+printLn(f,white,blue,xpos = 50)
 printLnStyled(l,$l,steelblue,{stylereverse})
 printLnStyled(f,$f,rosybrown,{stylereverse})
 
@@ -63,8 +64,8 @@ printLn(s,clrainbow,brightyellow)
 printLn(s,lime)
 decho(1)
 
-printLn(s,black,brightmagenta)
-printLn(s &  " ---> this is white")
+print(s,black,brightmagenta)
+printLn(s &  " ---> this is white at position x = 45",xpos = 45)
 
 
 printLnStyled("Everyone and the cat likes fresh salmon.","the cat",yellowgreen,{styleUnderScore})
