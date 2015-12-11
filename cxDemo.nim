@@ -236,9 +236,9 @@ proc sierpCarpetDemo*(n:int) =
   for i in 0 .. <(3^n):
     for j in 0 .. <(3^n):
       if inCarpet(i, j):
-        print("* ",randcol())
+        print("* ",skyblue)
       else:
-        printStyled("  ","",truetomato,{stylereverse})
+        printStyled("  ","",randcol(),{stylereverse})
         #print("  ","",lime)
         
     echo ""
