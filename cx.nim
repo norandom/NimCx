@@ -6,7 +6,7 @@
 ##
 ##   License     : MIT opensource
 ##
-##   Version     : 0.9.3
+##   Version     : 0.9.5
 ##
 ##   ProjectStart: 2015-06-20
 ##
@@ -65,10 +65,10 @@ when defined(posix):
 
 
 # make terminal style constants available in the calling prog
-export terminal.Style
+export terminal.Style,terminal.getch
 
 
-const CXLIBVERSION* = "0.9.3"
+const CXLIBVERSION* = "0.9.5"
 
 let start* = epochTime()  ##  check execution timing with one line see doFinish
   
@@ -90,6 +90,36 @@ proc bbright(bg:BackgroundColor): string =
     var gBG = ord(bg)
     inc(gBG, 60)
     result = "\e[" & $gBG & 'm'
+
+
+const 
+  
+      # Terminal consts for bash terminal cleanup
+      # usage : print clearbol
+      #         printLn(cleareol,green,red,xpos = 20)
+      #  
+      clearbol*      =   "\x1b[1K"         ## clear to begin of line
+      cleareol*      =   "\x1b[K"          ## clear to end of line  
+      clearscreen*   =   "\x1b[2J\x1b[H"   ## clear screen
+      clearline*     =   "\x1b[2K\x1b[G"   ## clear line 
+      clearbos*      =   "\x1b[1J"         ## clear to begin of screen
+      cleareos*      =   "\x1b[J"          ## clear to end of screen
+    
+const
+  
+      # Terminal consts for bash movements ( still testing )
+      cup*      = "\x1b[A"  # ok
+      cdown*    = "\x1b[B"  # ok
+      cright*   = "\x1b[C"  # ok
+      cleft*    = "\x1b[D"  # ok
+      cend*     = "\x1b[F"  # ok
+      cpos1*    = "\x1b[H"  # ok moves cursor to screen position 0/0
+      cins*     = "\x1b[2~" # no effect
+      cdel*     = "\x1b[3~" # no effect
+      cpgup*    = "\x1b[5~" # no effect
+      cpgdn*    = "\x1b[6~" # no effect
+   
+   
 
 
 const
@@ -1259,9 +1289,10 @@ proc cleanScreen*() =
       ## 
       ## clear screen with escape seqs
       ## 
-      ## similar to terminal.eraseScreen() but seems to clean the terminal window completely
+      ## similar to terminal.eraseScreen() but cleans the terminal window completely
       ## 
       write(stdout,"\e[H\e[J") 
+      
       
 
 proc centerPos*(astring:string) =
@@ -1340,12 +1371,14 @@ proc print*[T](astring:T,fgr:string = white , bgr:string = black,xpos:int = 0,fi
     
         if npos > 0:
             setCursorxpos(npos)
-                
+        
+       
         if ($astring).len + xpos >= tw:
-          # force to write on same line within in terminal whatever the xpos says
-          if fitLine == true:
+            # force to write on same line within in terminal whatever the xpos says
+            if fitLine == true:
                 npos = tw - ($astring).len
                 setCursorXPos(npos) 
+       
     
     else:  # centered == true
           npos = tw div 2 - ($astring).len div 2 - 1
@@ -1431,17 +1464,18 @@ proc rainbow*[T](s : T,xpos:int = 0,fitLine:bool = false,centered:bool = false) 
     for x in 0.. <astr.len:
        c = a[randomInt(a.len)]
        if centered == false:
-          nxpos = nxpos + 1
+          
           print(astr[x],colorNames[c][1],black,xpos = nxpos,fitLine)
+          
        else:
           # need to calc the center here and increment by x
           nxpos = tw div 2 - ($astr).len div 2  + x
           print(astr[x],colorNames[c][1],black,xpos=nxpos,fitLine)
+       
+       inc nxpos
+
 
 # output  horizontal lines
-
-
-
 proc hline*(n:int = tw,col:string = white) =
      ## hline
      ## 
@@ -1574,12 +1608,7 @@ template clearup*(x:int = 80) =
      curup(x)
 
 
-template clearLine*() =
-     ## clearLine
-     ##
-     ## mirrors terminal eraseLine
-     eraseLine() 
-     
+
 
 proc sleepy*[T:float|int](secs:T) =
   ## sleepy
@@ -1721,6 +1750,8 @@ proc printBiCol*(s:string,sep:string,colLeft:string = yellowgreen ,colRight:stri
      ##
      ## echos a line in 2 colors based on a seperators first occurance
      ## 
+     ## Note : clrainbow not useable for right side color
+     ## 
      ## .. code-block:: nim
      ##    import cx,strutils,strfmt
      ##    
@@ -1772,7 +1803,10 @@ proc printLnBiCol*(s:string,sep:string, colLeft:string = yellowgreen, colRight:s
        for x in 2.. <z.len:
            z[1] = z[1] & sep & z[x]
      print(z[0] & sep,fgr = colLeft,bgr = black,xpos = xpos)
-     printLn(z[1],fgr = colRight,bgr = black)  
+     if colRight == clrainbow:   # we currently do this as rainbow implementation has changed 
+          printLn(z[1],fgr = randcol(),bgr = black)  
+     else:     
+          printLn(z[1],fgr = colRight,bgr = black)  
           
 
 
@@ -3778,3 +3812,18 @@ setControlCHook(handler)
 # so no need for this line in the calling prog
 system.addQuitProc(resetAttributes)
 # end of cx.nim
+
+
+
+when isMainModule:
+  for x in 0.. 10:
+        cleanScreen()
+        decho(5)
+        printBigLetters("NIM-CX",xpos = 35,fun=true)
+        decho(8)
+        printLnBiCol("import cx into your project and your terminal becomes alive with color",sep = "and ",colLeft = yellowgreen,colRight = clrainbow,xpos = 20)
+        sleepy(0.2)
+        curup(1)
+        print("import cx into your project and your terminal becomes alive with color",clrainbow,xpos = 20)
+        decho(2)
+  doFinish()
