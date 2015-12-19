@@ -238,8 +238,8 @@ proc sierpCarpetDemo*(n:int) =
       if inCarpet(i, j):
         print("* ",skyblue)
       else:
-        printStyled("  ","",randcol(),{stylereverse})
-        #print("  ","",lime)
+          printStyled("  ","",randcol(),{stylereverse,styleunderscore,styleblink})
+          # print("  ","",lime)
         
     echo ""
 

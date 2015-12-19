@@ -1048,14 +1048,14 @@ when defined(Linux):
 converter colconv*(cx:string) : string
 proc rainbow*[T](s : T,xpos:int = 0,fitLine:bool = false ,centered:bool = false)  ## forward declaration
 proc print*[T](astring:T,fgr:string = white , bgr:string = black,xpos:int = 0,fitLine:bool = false,centered:bool = false)
-proc printBiCol*(s:string,sep:string,colLeft:string = yellowgreen ,colRight:string = termwhite,xpos:int = 0) ## forward declaration
-proc printLnBiCol*(s:string,sep:string,colLeft:string = yellowgreen ,colRight:string = termwhite,xpos:int = 0) ## forward declaration
+proc printBiCol*[T](s:T,sep:string,colLeft:string = yellowgreen ,colRight:string = termwhite,xpos:int = 0,centered:bool = false) ## forward declaration
+proc printLnBiCol*[T](s:T,sep:string,colLeft:string = yellowgreen ,colRight:string = termwhite,xpos:int = 0,centered:bool = false) ## forward declaration
 proc printStyledsimple*[T](ss:T,fg:string,astyle:set[Style]) ## forward declaration
 proc printStyled*[T](ss:T,substr:string,col:string,astyle : set[Style]) ## forward declaration
 proc hline*(n:int = tw,col:string = white) ## forward declaration
 proc hlineLn*(n:int = tw,col:string = white) ## forward declaration
 
-# procs lifted from terminal.nim as they are not exported from there
+# procs lifted from terminal.nim as they are currently not exported from there
 proc styledEchoProcessArg(s: string) = write stdout, s
 proc styledEchoProcessArg(style: Style) = setStyle({style})
 proc styledEchoProcessArg(style: set[Style]) = setStyle style
@@ -1321,8 +1321,6 @@ proc checkColor*(colname: string): bool =
           break
        else:
           result = false
-
-
 
 
  
@@ -1729,7 +1727,7 @@ proc printRainbow*[T](s : T,astyle:set[Style]) =
 proc printLnRainbow*[T](s : T,astyle:set[Style]) =
     ## printLnRainbow
     ## 
-    ##  ## NOTE to be deprecated soon
+    ##  ## NOTE to mayve deprecated soon
     ##
     ## print multicolored string with styles , for available styles see printStyled
     ## 
@@ -1745,7 +1743,7 @@ proc printLnRainbow*[T](s : T,astyle:set[Style]) =
     writeln(stdout,"")
     
 
-proc printBiCol*(s:string,sep:string,colLeft:string = yellowgreen ,colRight:string = termwhite,xpos:int = 0) =
+proc printBiCol*[T](s:T,sep:string,colLeft:string = yellowgreen ,colRight:string = termwhite,xpos:int = 0,centered:bool = false) =
      ## printBiCol
      ##
      ## echos a line in 2 colors based on a seperators first occurance
@@ -1767,17 +1765,25 @@ proc printBiCol*(s:string,sep:string,colLeft:string = yellowgreen ,colRight:stri
      ##    printBiCol("{} : {}     {}".fmt("Good Idea","Number",50),":",yellow,green)  
      ##
      ##
-     var z = s.split(sep)
+     
+     var zz = $s
+     var z = zz.split(sep)
+   
      # in case sep occures multiple time we only consider the first one
      if z.len > 2:
        for x in 2.. <z.len:
           z[1] = z[1] & sep & z[x]
-     print(z[0] & sep,fgr = colLeft,bgr = black,xpos = xpos)
-     print(z[1],fgr = colRight,bgr = black)  
-     
+          
+     if centered == false:      
+          print(z[0] & sep,fgr = colLeft,bgr = black,xpos = xpos)
+          print(z[1],fgr = colRight,bgr = black)  
+     else:  # centered == true
+          let npos = tw div 2 - (zz).len div 2 - 1
+          print(z[0] & sep,fgr = colLeft,bgr = black,xpos = npos)
+          print(z[1],fgr = colRight,bgr = black)  
 
 
-proc printLnBiCol*(s:string,sep:string, colLeft:string = yellowgreen, colRight:string = termwhite,xpos:int = 0) =
+proc printLnBiCol*[T](s:T,sep:string, colLeft:string = yellowgreen, colRight:string = termwhite,xpos:int = 0,centered:bool = false) =
      ## printLnBiCol
      ##
      ## same as printBiCol but issues a new line
@@ -1797,17 +1803,27 @@ proc printLnBiCol*(s:string,sep:string, colLeft:string = yellowgreen, colRight:s
      ##    printLnBiCol("{} : {}     {}".fmt("Good Idea","Number",50),":",yellow,green)  
      ##
      ##
-     var z = s.split(sep)
+     var zz = $s
+     var z = zz.split(sep)
      # in case sep occures multiple time we only consider the first one
      if z.len > 2:
        for x in 2.. <z.len:
            z[1] = z[1] & sep & z[x]
-     print(z[0] & sep,fgr = colLeft,bgr = black,xpos = xpos)
-     if colRight == clrainbow:   # we currently do this as rainbow implementation has changed 
-          printLn(z[1],fgr = randcol(),bgr = black)  
-     else:     
-          printLn(z[1],fgr = colRight,bgr = black)  
-          
+           
+     if centered == false:      
+          print(z[0] & sep,fgr = colLeft,bgr = black,xpos = xpos)
+          if colRight == clrainbow:   # we currently do this as rainbow implementation has changed 
+                printLn(z[1],fgr = randcol(),bgr = black)  
+          else:     
+                printLn(z[1],fgr = colRight,bgr = black)  
+            
+     else:  # centered == true
+          let npos = tw div 2 - (zz).len div 2 - 1 
+          print(z[0] & sep,fgr = colLeft,bgr = black,xpos = npos)
+          if colRight == clrainbow:   # we currently do this as rainbow implementation has changed 
+                printLn(z[1],fgr = randcol(),bgr = black)  
+          else:     
+                printLn(z[1],fgr = colRight,bgr = black)  
 
 
 proc printHl*(s:string,substr:string,col:string = termwhite) =
@@ -1853,6 +1869,8 @@ proc printStyledSimple*[T](ss:T,fg:string,astyle:set[Style]) =
    ## an extended version of writestyled to enable colors
    ##
    ## 
+   #  Note this also will be extended to accommodate xpos and centered soon
+   #
    var astr = $ss
    case fg 
       of clrainbow   : printRainbow($astr,astyle)
@@ -3816,14 +3834,18 @@ system.addQuitProc(resetAttributes)
 
 
 when isMainModule:
+  let smm = "import cx into your project and your terminal becomes alive with color"
   for x in 0.. 10:
         cleanScreen()
         decho(5)
         printBigLetters("NIM-CX",xpos = 35,fun=true)
         decho(8)
-        printLnBiCol("import cx into your project and your terminal becomes alive with color",sep = "and ",colLeft = yellowgreen,colRight = clrainbow,xpos = 20)
+        printLnBiCol(smm,sep = "and ",colLeft = yellowgreen,colRight = clrainbow,centered = true)
         sleepy(0.2)
         curup(1)
-        print("import cx into your project and your terminal becomes alive with color",clrainbow,xpos = 20)
+        println(smm,clrainbow,termblue,centered = true)
+        echo()
+        printLn(kitty,white,red,centered=true)
+        
         decho(2)
   doFinish()

@@ -46,6 +46,7 @@ decho(1)
 printLnStyled(s,"t",clrainbow,{styleUnderScore,styleBlink})
 decho(2)
 
+# change color upon first separator 
 printLnBiCol(s,"c",brightgreen,brightwhite)
 printLnBiCol(s,"c")  # default colors
 decho(2)
@@ -98,7 +99,6 @@ echo()
 print("Everyone and the cat likes fresh salmon. ",salmon)
 print("The dog disagrees here. ",steelblue)
 printLn("Cannot please everyone.",greenyellow)
-
 decho(2)
 
 dline() # white dashed line
@@ -111,7 +111,6 @@ echo()
 superHeader("Sierp Carpet in Multi Color - Sierp Carpet in Multi Color",clrainbow,lightsteelblue)
 echo()
 sierpCarpetDemo(3)
-
 decho(3)
 
 
@@ -151,17 +150,13 @@ sleepy(3)
 
 decho(3)
 randomCardsClockDemo() 
-
 decho(2)
 
 
 
 #testing bigblock characters
-
 cxYourNimDemo()
-
-sleepy(3)
-
+sleepy(2)
 decho(10)
 
 
