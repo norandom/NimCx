@@ -1614,8 +1614,8 @@ proc sleepy*[T:float|int](secs:T) =
   ## sleepy
   ## 
   ## imitates sleep but in seconds
-  ##
-  ## despite this being same as os.sleep 
+  ## suitable for shorter sleeps
+  ## 
   var milsecs = (secs * 1000).int
   sleep(milsecs)
 
@@ -2067,6 +2067,8 @@ proc printDotPos*(xpos:int,dotCol:string,blink:bool) =
       else:   
         printStyled(wideDot,wideDot,dotCol,{})
         
+
+
        
 proc drawRect*(h:int = 0 ,w:int = 3, frhLine:string = "_", frVLine:string = "|",frCol:string = darkgreen,dotCol = truetomato,xpos:int = 1,blink:bool = false) =
       ## drawRect
@@ -3590,6 +3592,28 @@ proc drawBox*(hy:int = 1, wx:int = 1 , hsec:int = 1 ,vsec:int = 1,frCol:string =
            curdn(hsecheight)
            npos = hpos
            
+
+
+
+proc randpos*():int =
+    ## randpos
+    ## 
+    ## sets cursor to a random position in the visible terminal window
+    ## 
+    ## .. code-block: nim
+    ## 
+    ##    while 1 == 1:  
+    ##       for z in 1.. 50:  
+    ##          print($z,randcol(),xpos = randpos())  
+    ##       sleepy(0.0015)
+    ## 
+    curset()
+    let x = getRandomInt(0, tw - 1)
+    let y = getRandomInt(0, th - 1)
+    curdn(y)
+    result = x
+  
+
 
 
 
