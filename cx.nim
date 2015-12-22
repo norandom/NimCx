@@ -61,7 +61,7 @@ when defined(windows):
   {.fatal   : "Sorry CX does not support Windows at this stage !".}
   
 when defined(posix):
-  {.hint    : "Aha, nice Os flavour detected .... CX loves Linux !".}  
+  {.hint    : "Aha, delicious Os flavour detected .... CX loves Linux !".}  
 
 
 # make terminal style constants available in the calling prog
@@ -104,22 +104,25 @@ const
       clearline*     =   "\x1b[2K\x1b[G"   ## clear line 
       clearbos*      =   "\x1b[1J"         ## clear to begin of screen
       cleareos*      =   "\x1b[J"          ## clear to end of screen
+      resetcols*      =  "\x1b[0m"         ## reset colors     
     
 const
   
       # Terminal consts for bash movements ( still testing )
-      cup*      = "\x1b[A"  # ok
-      cdown*    = "\x1b[B"  # ok
-      cright*   = "\x1b[C"  # ok
-      cleft*    = "\x1b[D"  # ok
-      cend*     = "\x1b[F"  # ok
-      cpos1*    = "\x1b[H"  # ok moves cursor to screen position 0/0
-      cins*     = "\x1b[2~" # no effect
-      cdel*     = "\x1b[3~" # no effect
-      cpgup*    = "\x1b[5~" # no effect
-      cpgdn*    = "\x1b[6~" # no effect
-   
-   
+      cup*      = "\x1b[A"      # ok
+      cdown*    = "\x1b[B"      # ok
+      cright*   = "\x1b[C"      # ok
+      cleft*    = "\x1b[D"      # ok
+      cend*     = "\x1b[F"      # ok
+      cpos1*    = "\x1b[H"      # ok moves cursor to screen position 0/0
+      cins*     = "\x1b[2~"     # no effect
+      cdel*     = "\x1b[3~"     # no effect
+      cpgup*    = "\x1b[5~"     # no effect
+      cpgdn*    = "\x1b[6~"     # no effect
+      csave*     = "\x1b[s"     # ok saves last xpos (but not ypos)
+      crestore*  = "\x1b[u"     # ok restores saved xpos
+      chide*     = "\x1b[?25l"  # ok hide cursor
+      cshow*     = "\x1b[?25h"  # ok show cursor
 
 
 const
@@ -1399,7 +1402,6 @@ proc printLn*[T](astring:T,fgr:string = white , bgr:string = black,xpos:int = 0,
     ## 
     ## selection.
     ## 
-    ## see testPrintLn.nim for usage examples
     ## 
     ## all colornames are supported for font color:
     ## 
@@ -1727,7 +1729,6 @@ proc printRainbow*[T](s : T,astyle:set[Style]) =
 proc printLnRainbow*[T](s : T,astyle:set[Style]) =
     ## printLnRainbow
     ## 
-    ##  ## NOTE to mayve deprecated soon
     ##
     ## print multicolored string with styles , for available styles see printStyled
     ## 
