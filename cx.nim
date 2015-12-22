@@ -3600,7 +3600,7 @@ proc randpos*():int =
     ## 
     ## sets cursor to a random position in the visible terminal window
     ## 
-    ## .. code-block: nim
+    ## .. code-block:: nim 
     ## 
     ##    while 1 == 1:  
     ##       for z in 1.. 50:  
