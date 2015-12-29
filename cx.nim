@@ -6,7 +6,7 @@
 ##
 ##   License     : MIT opensource
 ##
-##   Version     : 0.9.5
+##   Version     : 0.9.6
 ##
 ##   ProjectStart: 2015-06-20
 ##
@@ -19,7 +19,7 @@
 ##                 cx.nim is a collection of simple procs and templates
 ##
 ##                 for easy colored display in a linux terminal , date handling and more
-##
+##                 
 ##                 some procs may mirror functionality found in other moduls for convenience
 ##                 
 ##                 
@@ -29,20 +29,36 @@
 ##
 ##   Docs        : http://qqtop.github.io/cx.html
 ##
-##   Tested      : on Ubuntu 14.04 , OpenSuse 13.2 , OpenSuse Leap42.1 , Mint 17  
+##   Tested      : OpenSuse 13.2 , OpenSuse Leap42.1  kde editions
+##   
+##                 mint 17 , ubuntu 14.04 LTS
 ##     
-##                 with terminal font : monospace size 9.0            
+##                 with var. terminal font : monospace size 9.0 - 15 depending on screen resolution           
+##         
+##                 xterm,bash,st terminals seem ok 
+##                 
+##                 some ubuntu based gnome-terminals may not be able to display all colors
+##                 
+##                 as they are not correctly linked for whatever reason , see ubuntu forum questions.
+##                 
+##                 
+##                 
 ##   
 ##   Related     : 
 ##   
-##                * demos : cxDemo.nim   
+##                * demos : cxDemo.nim   (demo library)
 ##   
-##                * tests : cxTest.nim  
+##                * tests : cxTest.nim   (run some rough demos)
 ##                 
 ##
 ##   Programming : qqTop
 ##
 ##   Note        : may be improved at any time
+##   
+##                 mileage may vary depending on the available
+##                 
+##                 unicode libraries and terminal support in the system
+##   
 ##
 ##   Required    : see imports for modules currently expected to be available
 ##  
@@ -68,7 +84,7 @@ when defined(posix):
 export terminal.Style,terminal.getch
 
 
-const CXLIBVERSION* = "0.9.5"
+const CXLIBVERSION* = "0.9.6"
 
 let start* = epochTime()  ##  check execution timing with one line see doFinish
   
@@ -113,7 +129,7 @@ const
       cdown*    = "\x1b[B"      # ok
       cright*   = "\x1b[C"      # ok
       cleft*    = "\x1b[D"      # ok
-      cend*     = "\x1b[F"      # ok
+      cend*     = "\x1b[F"      # no effect
       cpos1*    = "\x1b[H"      # ok moves cursor to screen position 0/0
       cins*     = "\x1b[2~"     # no effect
       cdel*     = "\x1b[3~"     # no effect
@@ -974,6 +990,45 @@ let colorNames* = @[
 
 let rxCol* = toSeq(colorNames.low.. colorNames.high) ## index into colorNames
 
+template randCol*: string = colorNames[rxCol.randomChoice()][1]
+   ## randCol
+   ## 
+   ## get a randomcolor from colorNames
+   ## 
+   ## .. code-block:: nim
+   ##    # print a string 6 times in a random color selected from colorNames
+   ##    loopy(0..5,printLn("Hello Random Color",randCol()))
+   ##    
+   ##    
+
+# subsets of colorNames  
+# 
+# more colorsets may be added in the future  currently used in rainbow2
+# 
+# 
+let pastelSet* = @[
+      ("pastelbeige",pastelbeige),
+      ("pastelblue",pastelblue),
+      ("pastelgreen",pastelgreen),
+      ("pastelorange",pastelorange),
+      ("pastelpink",pastelpink),
+      ("pastelwhite",pastelwhite),
+      ("pastelyellow",pastelyellow),
+      ("pastelyellowgreen",pastelyellowgreen)]
+
+let rxPastelCol* = toSeq(pastelSet.low.. pastelSet.high) ## index into pastelSet
+
+template randPastelCol*: string = pastelSet[rxPastelCol.randomChoice()][1]
+## randPastelCol
+   ## 
+   ## get a randomcolor from pastelSet
+   ## 
+   ## .. code-block:: nim
+   ##    # print a string 6 times in a random color selected from pastelSet
+   ##    loopy(0..5,printLn("Hello Random Color",randPastelCol()))
+   ##    
+   ##     
+
 let cards* = @[
  "🂡" ,"🂱" ,"🃁" ,"🃑", 
  "🂢" ,"🂲" ,"🃂" ,"🃒",
@@ -993,17 +1048,6 @@ let cards* = @[
 
 let rxCards* = toSeq(cards.low.. cards.high) ## index into cards
 
-template randCol*: string = colornames[rxCol.randomChoice()][1]
-   ## randCol
-   ## 
-   ## get a randomcolor from colorNames
-   ## 
-   ## .. code-block:: nim
-   ##    # print a string 6 times in a random color selected from colorNames
-   ##    loopy(0..5,printLn("Hello Random Color",randCol()))
-   ##    
-   ##    
-  
 
 converter toTwInt(x: cushort): int = result = int(x)
 
@@ -1438,7 +1482,8 @@ proc printLn*[T](astring:T,fgr:string = white , bgr:string = black,xpos:int = 0,
     print(astring,fgr,bgr,xpos,fitLine,centered)
     writeline(stdout,"")
     
-
+    
+    
 
 proc rainbow*[T](s : T,xpos:int = 0,fitLine:bool = false,centered:bool = false) =
     ## rainbow
@@ -1469,10 +1514,46 @@ proc rainbow*[T](s : T,xpos:int = 0,fitLine:bool = false,centered:bool = false) 
           
        else:
           # need to calc the center here and increment by x
-          nxpos = tw div 2 - ($astr).len div 2  + x
+          nxpos = tw div 2 - ($astr).len div 2  + x - 1
           print(astr[x],colorNames[c][1],black,xpos=nxpos,fitLine)
        
        inc nxpos
+
+    
+    
+    
+proc rainbow2*[T](s : T,xpos:int = 0,fitLine:bool = false,centered:bool = false, colorset:seq[(string, string)] = colorNames) = 
+    ## rainbow2
+    ##
+    ## multicolored string  based on colorsets  see pastelSet
+    ##
+    ## may not work with certain Rune
+    ## 
+    ## .. code-block:: nim
+    ##    rainbow2("what's up ?\n",centered = true,colorset = pastelSet)
+    ##    
+    ##    
+    ## 
+    ## 
+    ##
+    var nxpos = xpos
+    var astr = $s
+    var c = 0
+    var a = toSeq(1.. <colorset.len)
+    
+    for x in 0.. <astr.len:
+       c = a[randomInt(a.len)]
+       if centered == false:
+          
+          print(astr[x],colorset[c][1],black,xpos = nxpos,fitLine)
+          
+       else:
+          # need to calc the center here and increment by x
+          nxpos = tw div 2 - ($astr).len div 2  + x -1
+          print(astr[x],colorset[c][1],black,xpos=nxpos,fitLine)
+       
+       inc nxpos
+
 
 
 # output  horizontal lines
@@ -3600,6 +3681,8 @@ proc randpos*():int =
     ## 
     ## sets cursor to a random position in the visible terminal window
     ## 
+    ## returns x position 
+    ## 
     ## .. code-block:: nim 
     ## 
     ##    while 1 == 1:  
@@ -3611,6 +3694,7 @@ proc randpos*():int =
     let x = getRandomInt(0, tw - 1)
     let y = getRandomInt(0, th - 1)
     curdn(y)
+    #print($x & "/" & $y,xpos = x)
     result = x
   
 
@@ -3859,7 +3943,7 @@ system.addQuitProc(resetAttributes)
 
 
 when isMainModule:
-  let smm = "import cx into your project and your terminal becomes alive with color"
+  let smm = "import cx into your project and your terminal comes alive with color , if it supports color that is."
   for x in 0.. 10:
         cleanScreen()
         decho(5)
@@ -3868,7 +3952,7 @@ when isMainModule:
         printLnBiCol(smm,sep = "and ",colLeft = yellowgreen,colRight = clrainbow,centered = true)
         sleepy(0.2)
         curup(1)
-        println(smm,clrainbow,termblue,centered = true)
+        rainbow2(smm,centered = true,colorset=pastelSet)
         echo()
         printLn(kitty,white,red,centered=true)
         
