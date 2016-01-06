@@ -1123,7 +1123,7 @@ macro styledEchoPrint*(m: varargs[expr]): stmt =
 
 
 template randPastelCol*: string = pastelSet[rxPastelCol.randomChoice()][1]
-## randPastelCol
+   ## randPastelCol
    ## 
    ## get a randomcolor from pastelSet
    ## 
