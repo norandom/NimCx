@@ -1057,6 +1057,10 @@ when defined(Linux):
         ##
         ## and get linux terminal width in columns
         ##
+        ##
+        ## for a similar attempt see:
+        ## https://github.com/c-blake/cligen/blob/master/termwidth.nim
+        ##
         
         type WinSize = object
           row, col, xpixel, ypixel: cushort
@@ -1359,7 +1363,7 @@ proc centerPos*(astring:string) =
 proc checkColor*(colname: string): bool =
      ## checkColor
      ## 
-     ## returns true if colname is a known color name , obviously
+     ## returns true if colname is a known color name in colorNames
      ## 
      ## 
      for x in  colorNames:
@@ -1689,7 +1693,19 @@ template clearup*(x:int = 80) =
      curup(x)
 
 
-
+proc curMove*(up:int=0,dn:int=0,fw:int=0,bk:int=0) =
+     ## curMove
+     ## 
+     ## conveniently move the cursor to where you need it
+     ## 
+     ## relative of current postion , which you app need to track itself
+     ## 
+     ## setting cursor off terminal will wrap output to next line
+     ## 
+     curup(up)
+     curdn(dn)
+     curfw(fw)
+     curbk(bk)
 
 proc sleepy*[T:float|int](secs:T) =
   ## sleepy
@@ -3143,105 +3159,105 @@ proc sum*[T](aseq: seq[T]): T = foldl(aseq, a + b)
 
 
 proc ff*(zz:float,n:int64 = 5):string =
-    ## ff
-    ## 
-    ## formats a float to string with n decimals
-    ##  
-    result = $formatFloat(zz,ffDecimal,n)
+     ## ff
+     ## 
+     ## formats a float to string with n decimals
+     ##  
+     result = $formatFloat(zz,ffDecimal,n)
       
 
 proc getRandomFloat*():float =
-    ## getRandomFloat
-    ##
-    ## convenience proc so we do not need to import random in calling prog
-    ## 
-    ## 
-    result = rng.random()
+     ## getRandomFloat
+     ##
+     ## convenience proc so we do not need to import random in calling prog
+     ## 
+     ## 
+     result = rng.random()
 
 
 proc createSeqFloat*(n:BiggestInt = 10) : seq[float] =
-      ## createSeqFloat
-      ##
-      ## convenience proc to create a seq of random floats with
-      ##
-      ## default length 10 ( always consider how much memory is in the system )
-      ##
-      ## form @[0.34,0.056,...] or similar
-      ##
-      ## .. code-block:: nim
-      ##    # create a seq with 50 random floats
-      ##    echo createSeqFloat(50)
+     ## createSeqFloat
+     ##
+     ## convenience proc to create a seq of random floats with
+     ##
+     ## default length 10 ( always consider how much memory is in the system )
+     ##
+     ## form @[0.34,0.056,...] or similar
+     ##
+     ## .. code-block:: nim
+     ##    # create a seq with 50 random floats
+     ##    echo createSeqFloat(50)
 
-      var z = newSeq[float]()
-      for x in 0.. <n:
+     var z = newSeq[float]()
+     for x in 0.. <n:
           z.add(getRandomFloat())
-      result = z
+     result = z
 
 
 
 
 proc getRandomPointInCircle*(radius:float) : seq[float] =
-  ## getRandomPointInCircle
-  ## 
-  ## based on answers found in
-  ## 
-  ## http://stackoverflow.com/questions/5837572/generate-a-random-point-within-a-circle-uniformly
-  ## 
-  ## 
-  ## 
-  ## .. code-block:: nim
-  ##    import cx,math,strfmt  
-  ##    # get randompoints in a circle
-  ##    var crad:float = 1
-  ##    for x in 0.. 100:
-  ##       var k = getRandomPointInCircle(crad)
-  ##       assert k[0] <= crad and k[1] <= crad
-  ##       printLnBiCol("{:<25}  :  {}".fmt($k[0],$k[1]),":")
-  ##    doFinish()
-  ##    
-  ##     
-  
-  let t = 2 * math.Pi * getRandomFloat()
-  let u = getRandomFloat() + getRandomFloat()
-  var r = 0.00
-  if u > 1 :
-     r = 2-u 
-  else:
-     r = u 
-  var z = newSeq[float]()
-  z.add(radius * r * math.cos(t))
-  z.add(radius * r * math.sin(t))
-  return z
-      
+    ## getRandomPointInCircle
+    ## 
+    ## based on answers found in
+    ## 
+    ## http://stackoverflow.com/questions/5837572/generate-a-random-point-within-a-circle-uniformly
+    ## 
+    ## 
+    ## 
+    ## .. code-block:: nim
+    ##    import cx,math,strfmt  
+    ##    # get randompoints in a circle
+    ##    var crad:float = 1
+    ##    for x in 0.. 100:
+    ##       var k = getRandomPointInCircle(crad)
+    ##       assert k[0] <= crad and k[1] <= crad
+    ##       printLnBiCol("{:<25}  :  {}".fmt($k[0],$k[1]),":")
+    ##    doFinish()
+    ##    
+    ##     
+    
+    let t = 2 * math.Pi * getRandomFloat()
+    let u = getRandomFloat() + getRandomFloat()
+    var r = 0.00
+    if u > 1 :
+      r = 2-u 
+    else:
+      r = u 
+    var z = newSeq[float]()
+    z.add(radius * r * math.cos(t))
+    z.add(radius * r * math.sin(t))
+    return z
+        
       
       
 # Misc. routines 
 
 
 template getCard* :auto = 
-  ## getCard
-  ## 
-  ## gets a random card from the Cards seq
-  ## 
-  ## .. code-block:: nim
-  ##    import cx
-  ##    print(getCard(),randCol(),xpos = tw div 2)  # get card and print in random color at xpos
-  ##    doFinish()
-  ## 
-  cards[rxCards.randomChoice()] 
+    ## getCard
+    ## 
+    ## gets a random card from the Cards seq
+    ## 
+    ## .. code-block:: nim
+    ##    import cx
+    ##    print(getCard(),randCol(),xpos = tw div 2)  # get card and print in random color at xpos
+    ##    doFinish()
+    ## 
+    cards[rxCards.randomChoice()] 
  
  
 proc centerMark*(showpos :bool = false) =
-  ## centerMark
-  ## 
-  ## draws a red dot in the middle of the screen xpos only
-  ## and also can show pos 
-  ## 
-  centerPos(".")
-  print(".",truetomato)
-  if showpos == true:  print "x" & $(tw/2) 
- 
+     ## centerMark
+     ## 
+     ## draws a red dot in the middle of the screen xpos only
+     ## and also can show pos 
+     ## 
+     centerPos(".")
+     print(".",truetomato)
+     if showpos == true:  print "x" & $(tw/2) 
   
+    
 proc tupleToStr*(xs: tuple): string =
      ## tupleToStr
      ##
@@ -3276,83 +3292,84 @@ template loopy*[T](ite:T,st:stmt) =
 
 
 proc shift*[T](x: var seq[T], zz: Natural = 0): T =
-    ## shift takes a seq and returns the first , and deletes it from the seq
-    ##
-    ## build in pop does the same from the other side
-    ##
-    ## .. code-block:: nim
-    ##    var a: seq[float] = @[1.5, 23.3, 3.4]
-    ##    echo shift(a)
-    ##    echo a
-    ##
-    ##
-    result = x[zz]
-    x.delete(zz)
+   
+     ## shift takes a seq and returns the first , and deletes it from the seq
+     ##
+     ## build in pop does the same from the other side
+     ##
+     ## .. code-block:: nim
+     ##    var a: seq[float] = @[1.5, 23.3, 3.4]
+     ##    echo shift(a)
+     ##    echo a
+     ##
+     ##
+     result = x[zz]
+     x.delete(zz)
 
 
 
 proc showStats*(x:Runningstat) =
-    ## showStats
-    ## 
-    ## quickly display runningStat data
-    ##  
-    ## .. code-block:: nim 
-    ##  
-    ##    import cx,math
-    ##    var rs:Runningstat
-    ##    var z =  createSeqFloat(500000)
-    ##    for x in z:
-    ##        rs.push(x)
-    ##    showStats(rs)
-    ##    doFinish()
-    ## 
-    var sep = ":"
-    printLnBiCol("Sum     : " & ff(x.sum),sep,yellowgreen,white)
-    printLnBiCol("Var     : " & ff(x.variance),sep,yellowgreen,white)
-    printLnBiCol("Mean    : " & ff(x.mean),sep,yellowgreen,white)
-    printLnBiCol("Std     : " & ff(x.standardDeviation),sep,yellowgreen,white)
-    printLnBiCol("Min     : " & ff(x.min),sep,yellowgreen,white)
-    printLnBiCol("Max     : " & ff(x.max),sep,yellowgreen,white)
-    
+     ## showStats
+     ## 
+     ## quickly display runningStat data
+     ##  
+     ## .. code-block:: nim 
+     ##  
+     ##    import cx,math
+     ##    var rs:Runningstat
+     ##    var z =  createSeqFloat(500000)
+     ##    for x in z:
+     ##        rs.push(x)
+     ##    showStats(rs)
+     ##    doFinish()
+     ## 
+     var sep = ":"
+     printLnBiCol("Sum     : " & ff(x.sum),sep,yellowgreen,white)
+     printLnBiCol("Var     : " & ff(x.variance),sep,yellowgreen,white)
+     printLnBiCol("Mean    : " & ff(x.mean),sep,yellowgreen,white)
+     printLnBiCol("Std     : " & ff(x.standardDeviation),sep,yellowgreen,white)
+     printLnBiCol("Min     : " & ff(x.min),sep,yellowgreen,white)
+     printLnBiCol("Max     : " & ff(x.max),sep,yellowgreen,white)
+     
 
 
 proc newDir*(dirname:string) = 
-  ## newDir
-  ## 
-  ## creates a new directory and provides some feedback 
-  
-  if not existsDir(dirname):
-        try:
-           createDir(dirname)
-           printLn("Directory " & dirname & " created ok",green)
-        except OSError:   
-           printLn(dirname & " creation failed. Check permissions.",red)
-  else:
-      printLn("Directory " & dirname & " already exists !",red)
+     ## newDir
+     ## 
+     ## creates a new directory and provides some feedback 
+    
+     if not existsDir(dirname):
+          try:
+            createDir(dirname)
+            printLn("Directory " & dirname & " created ok",green)
+          except OSError:   
+            printLn(dirname & " creation failed. Check permissions.",red)
+     else:
+        printLn("Directory " & dirname & " already exists !",red)
 
 
 
 proc remDir*(dirname:string) =
-  ## remDir
-  ## 
-  ## deletes an existing directory , all subdirectories and files  and provides some feedback
-  ## 
-  ## root and home directory removal is disallowed 
-  ## 
+     ## remDir
+     ## 
+     ## deletes an existing directory , all subdirectories and files  and provides some feedback
+     ## 
+     ## root and home directory removal is disallowed 
+     ## 
   
-  if dirname == "/home" or dirname == "/" :
-       printLn("Directory " & dirname & " removal not allowed !",brightred)
+     if dirname == "/home" or dirname == "/" :
+        printLn("Directory " & dirname & " removal not allowed !",brightred)
      
-  else:
+     else:
     
-      if existsDir(dirname):
+        if existsDir(dirname):
           
           try:
               removeDir(dirname)
               printLn("Directory " & dirname & " deleted ok",yellowgreen)
           except OSError:
               printLn("Directory " & dirname & " deletion failed",red)
-      else:
+        else:
               printLn("Directory " & dirname & " does not exists !",red)
 
 
@@ -3597,13 +3614,23 @@ proc drawBox*(hy:int = 1, wx:int = 1 , hsec:int = 1 ,vsec:int = 1,frCol:string =
      ## 
      ## WORK IN PROGRESS FOR A BOX DRAWING PROC USING UNICODE BOX CHARS
      ## 
+     ## 
+     ## .. code-block:: nim
+     ##    import cx
+     ##    cleanscreen()
+     ##    decho(5)
+     ##    drawBox(hy=10, wx= 60 , hsec = 5 ,vsec = 5,frCol = randcol(),brCol= black ,cornerCol = truetomato,xpos = 1,blink = false) 
+     ##    curmove(up=2,bk=11)
+     ##    print(widedot & "NIM " & widedot,yellowgreen)
+     ##    decho(5)
+     ##    showTerminalSize()
+     ##    doFinish()
+     ##    
+     ##    
      # http://unicode.org/charts/PDF/U2500.pdf 
-     # left top corner and right top
-     
-     # almost ok we need to find a way to to make sure that grid size is
-     # ok if we w div sec and mod <> 0 we notice errors
-     # so maybe need someway to auto adjust the params nudge to correct suitable size.
-          
+     # almost ok we need to find a way to to make sure that grid size is fine
+     # if we use dynamic sizes like width = tw-1 etc.
+
      var h = hy
      var w = wx
      if h > th:
@@ -3646,7 +3673,7 @@ proc drawBox*(hy:int = 1, wx:int = 1 , hsec:int = 1 ,vsec:int = 1,frCol:string =
            print($Rune(parsehexint("252C")),fgr = truetomato,xpos=xpos + vsecwidth * x)  
            curdn(1)
            for y in 0.. h - 2 :
-               printLn($Rune(parsehexint("2502")),fgr = truetomato,xpos=xpos + vsecwidth * x)  
+               printLn($Rune(parsehexint("2502")),fgr = frcol,xpos=xpos + vsecwidth * x)  
            print($Rune(parsehexint("2534")),fgr = truetomato,xpos=xpos + vsecwidth * x)  
            curup(h)
 
