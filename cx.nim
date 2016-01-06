@@ -1018,16 +1018,6 @@ let pastelSet* = @[
 
 let rxPastelCol* = toSeq(pastelSet.low.. pastelSet.high) ## index into pastelSet
 
-template randPastelCol*: string = pastelSet[rxPastelCol.randomChoice()][1]
-## randPastelCol
-   ## 
-   ## get a randomcolor from pastelSet
-   ## 
-   ## .. code-block:: nim
-   ##    # print a string 6 times in a random color selected from pastelSet
-   ##    loopy(0..5,printLn("Hello Random Color",randPastelCol()))
-   ##    
-   ##     
 
 let cards* = @[
  "🂡" ,"🂱" ,"🃁" ,"🃑", 
@@ -1131,6 +1121,17 @@ macro styledEchoPrint*(m: varargs[expr]): stmt =
 
 # templates
 
+
+template randPastelCol*: string = pastelSet[rxPastelCol.randomChoice()][1]
+## randPastelCol
+   ## 
+   ## get a randomcolor from pastelSet
+   ## 
+   ## .. code-block:: nim
+   ##    # print a string 6 times in a random color selected from pastelSet
+   ##    loopy(0..5,printLn("Hello Random Color",randPastelCol()))
+   ##    
+   ##    
 
 template msgg*(code: stmt): stmt =
       ## msgX templates
