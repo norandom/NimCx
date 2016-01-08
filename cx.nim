@@ -35,15 +35,31 @@
 ##     
 ##                 with var. terminal font : monospace size 9.0 - 15 depending on screen resolution           
 ##         
-##                 xterm,bash,st terminals seem ok 
+##                 xterm,bash,st terminals support truecolor ok 
 ##                 
 ##                 some ubuntu based gnome-terminals may not be able to display all colors
 ##                 
 ##                 as they are not correctly linked for whatever reason , see ubuntu forum questions.
 ##                 
+##                 run this awk script to see if your terminal supports truecolor
+##                 
+##                 script from : https://gist.github.com/XVilka/8346728
+##                 
+##                  awk 'BEGIN{
+##                      s="/\\/\\/\\/\\/\\"; s=s s s s s s s s;
+##                      for (colnum = 0; colnum<77; colnum++) {
+##                          r = 255-(colnum*255/76);
+##                          g = (colnum*510/76);
+##                          b = (colnum*255/76);
+##                          if (g>255) g = 510-g;
+##                          printf "\033[48;2;%d;%d;%dm", r,g,b;
+##                          printf "\033[38;2;%d;%d;%dm", 255-r,255-g,255-b;
+##                          printf "%s\033[0m", substr(s,colnum+1,1);
+##                      }
+##                      printf "\n";
+##                  }'
 ##                 
 ##                 
-##   
 ##   Related     : 
 ##   
 ##                * demos : cxDemo.nim   (demo library)
@@ -111,6 +127,8 @@ proc bbright(bg:BackgroundColor): string =
 const 
   
       # Terminal consts for bash terminal cleanup
+      # mileage may very on your system
+      # 
       # usage : print clearbol
       #         printLn(cleareol,green,red,xpos = 20)
       #  
@@ -120,7 +138,7 @@ const
       clearline*     =   "\x1b[2K\x1b[G"   ## clear line 
       clearbos*      =   "\x1b[1J"         ## clear to begin of screen
       cleareos*      =   "\x1b[J"          ## clear to end of screen
-      resetcols*      =  "\x1b[0m"         ## reset colors     
+      resetcols*     =   "\x1b[0m"         ## reset colors     
     
 const
   
@@ -202,7 +220,8 @@ const
         
       # other colors of interest  
       truetomato*           =   "\x1b[38;2;255;100;0m"
-
+              
+        
       # colors lifted from colors.nim and massaged into rgb escape seqs
 
       aliceblue*            =  "\x1b[38;2;240;248;255m"
@@ -987,6 +1006,7 @@ let colorNames* = @[
       ("pastelyellow",pastelyellow),
       ("pastelyellowgreen",pastelyellowgreen),
       ("truetomato",truetomato)]
+      
 
 let rxCol* = toSeq(colorNames.low.. colorNames.high) ## index into colorNames
 
@@ -1088,7 +1108,7 @@ when defined(Linux):
 
 converter colconv*(cx:string) : string
 proc rainbow*[T](s : T,xpos:int = 0,fitLine:bool = false ,centered:bool = false)  ## forward declaration
-proc print*[T](astring:T,fgr:string = white , bgr:string = black,xpos:int = 0,fitLine:bool = false,centered:bool = false)
+proc print*[T](astring:T,fgr:string = termwhite , bgr:string = bblack,xpos:int = 0,fitLine:bool = false,centered:bool = false)
 proc printBiCol*[T](s:T,sep:string,colLeft:string = yellowgreen ,colRight:string = termwhite,xpos:int = 0,centered:bool = false) ## forward declaration
 proc printLnBiCol*[T](s:T,sep:string,colLeft:string = yellowgreen ,colRight:string = termwhite,xpos:int = 0,centered:bool = false) ## forward declaration
 proc printStyledsimple*[T](ss:T,fg:string,astyle:set[Style]) ## forward declaration
@@ -1244,11 +1264,7 @@ template hdx*(code:stmt,frm:string = "+"):stmt =
    printLn(lx)
    echo()
       
-template prxBCol():stmt = 
-      ## internal template
-      setForeGroundColor(fgWhite)
-      setBackGroundColor(bgblack)
-
+     
 
 template withFile*(f: expr, filename: string, mode: FileMode, body: stmt): stmt {.immediate.} =
      ## withFile
@@ -1403,17 +1419,21 @@ converter colconv*(cx:string) : string =
 
 
 
-proc print*[T](astring:T,fgr:string = white , bgr:string = black,xpos:int = 0,fitLine:bool = false,centered:bool = false) =
+proc print*[T](astring:T,fgr:string = termwhite , bgr:string = bblack,xpos:int = 0,fitLine:bool = false,centered:bool = false) =
     ## print
     ##
-    ## same as printLn without new line , allows positioning
-    ##
-    ## for extended colorset background colors use printStyled with styleReverse
+    ## the workhorse print routine , which acts as an extended echo routine
     ## 
+    ## allows positioning
+    ##
     ## fitLine = true will try to write the text into the current line irrespective of xpos 
     ##
     ## centered = true will try to center and disregard xpos
     ##
+    ##
+    ## for extended colorset background colors use printStyled with styleReverse 
+    ## 
+    ## 
     
     var npos = xpos
     
@@ -1440,11 +1460,13 @@ proc print*[T](astring:T,fgr:string = white , bgr:string = black,xpos:int = 0,fi
       else:  
             write(stdout,fgr & colconv(bgr) & $astring)
                             
-    prxBCol()  #reset to default cols
-    
-    
+    # reset to white/black
+    setForeGroundColor(fgWhite)
+    setBackGroundColor(bgBlack)
 
-proc printLn*[T](astring:T,fgr:string = white , bgr:string = black,xpos:int = 0,fitLine:bool = false,centered:bool = false) =
+
+
+proc printLn*[T](astring:T,fgr:string = termwhite , bgr:string = bblack,xpos:int = 0,fitLine:bool = false,centered:bool = false) =
     ## printLn
     ## 
     ## similar to echo but with foregroundcolor and backgroundcolor
@@ -1465,7 +1487,9 @@ proc printLn*[T](astring:T,fgr:string = white , bgr:string = black,xpos:int = 0,
     ## .. code-block:: nim
     ##    printLn("Yes ,  we made it.",clrainbow,brightyellow) # background has no effect with font in  clrainbow
     ##    printLn("Yes ,  we made it.",green,brightyellow) 
-    ##
+    ##    # or use it as a replacement of echo
+    ##    printLn(red & "What's up ? " & green & "Grub's up ! "
+    ##    printLn("No need to reset the original color") 
     ## 
     ## As a side effect we also can do this now :
     ## 
