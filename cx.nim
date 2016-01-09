@@ -1888,30 +1888,42 @@ proc printBiCol*[T](s:T,sep:string = ":",colLeft:string = yellowgreen ,colRight:
      ##    printBiCol("{} : {}     {}".fmt("Good Idea","Number",50),":",yellow,green)  
      ##
      ##
-     
+     var nosepflag:bool = false
      var zz = $s
      var z = zz.split(sep)
    
      # in case sep occures multiple time we only consider the first one
-     if z.len > 2:
+     if z.len > 1:
        for x in 2.. <z.len:
+          # this now should contain the right part to be colored differently
           z[1] = z[1] & sep & z[x]
-          
-     if centered == false:      
-          print(z[0] & sep,fgr = colLeft,bgr = black,xpos = xpos)
-          print(z[1],fgr = colRight,bgr = black)  
-     else:  # centered == true
-          let npos = tw div 2 - (zz).len div 2 - 1
-          print(z[0] & sep,fgr = colLeft,bgr = black,xpos = npos)
-          print(z[1],fgr = colRight,bgr = black)  
-
+     
+     else:
+          # when the separator is not found
+          nosepflag = true
+          # no separator so we just execute print with left color
+          print(zz,fgr=colLeft,xpos=xpos,centered=centered) 
+     
+     if nosepflag == false:
+        
+            if centered == false:      
+                  print(z[0] & sep,fgr = colLeft,bgr = black,xpos = xpos)
+                  print(z[1],fgr = colRight,bgr = black)  
+            else:  # centered == true
+                  let npos = tw div 2 - (zz).len div 2 - 1
+                  print(z[0] & sep,fgr = colLeft,bgr = black,xpos = npos)
+                  print(z[1],fgr = colRight,bgr = black)  
+    
+      
+      
+       
 
 proc printLnBiCol*[T](s:T,sep:string = ":", colLeft:string = yellowgreen, colRight:string = termwhite,xpos:int = 0,centered:bool = false) =
      ## printLnBiCol
      ##
      ## same as printBiCol but issues a new line
      ## 
-     ## default seperator = ":"
+     ## default seperator = ":"  if not found we execute println with available params
      ## 
      ## .. code-block:: nim
      ##    import cx,strutils,strfmt
@@ -1928,28 +1940,39 @@ proc printLnBiCol*[T](s:T,sep:string = ":", colLeft:string = yellowgreen, colRig
      ##    printLnBiCol("{} : {}     {}".fmt("Good Idea","Number",50),":",yellow,green)  
      ##
      ##
+     var nosepflag:bool = false
      var zz = $s
      var z = zz.split(sep)
      # in case sep occures multiple time we only consider the first one
-     if z.len > 2:
+     
+     if z.len > 1:
        for x in 2.. <z.len:
            z[1] = z[1] & sep & z[x]
-           
-     if centered == false:      
-          print(z[0] & sep,fgr = colLeft,bgr = black,xpos = xpos)
-          if colRight == clrainbow:   # we currently do this as rainbow implementation has changed 
-                printLn(z[1],fgr = randcol(),bgr = black)  
-          else:     
-                printLn(z[1],fgr = colRight,bgr = black)  
-            
-     else:  # centered == true
-          let npos = tw div 2 - (zz).len div 2 - 1 
-          print(z[0] & sep,fgr = colLeft,bgr = black,xpos = npos)
-          if colRight == clrainbow:   # we currently do this as rainbow implementation has changed 
-                printLn(z[1],fgr = randcol(),bgr = black)  
-          else:     
-                printLn(z[1],fgr = colRight,bgr = black)  
+     else:
+          # when the separator is not found
+          nosepflag = true
+          # no separator so we just execute println with left color
+          println(zz,fgr=colLeft,xpos=xpos,centered=centered)
+     
+     if nosepflag == false:
+       
+        if centered == false:      
+              print(z[0] & sep,fgr = colLeft,bgr = black,xpos = xpos)
+              if colRight == clrainbow:   # we currently do this as rainbow implementation has changed 
+                    printLn(z[1],fgr = randcol(),bgr = black)  
+              else:     
+                    printLn(z[1],fgr = colRight,bgr = black)  
+                
+        else:  # centered == true
+              let npos = tw div 2 - (zz).len div 2 - 1 
+              print(z[0] & sep,fgr = colLeft,bgr = black,xpos = npos)
+              if colRight == clrainbow:   # we currently do this as rainbow implementation has changed 
+                    printLn(z[1],fgr = randcol(),bgr = black)  
+              else:     
+                    printLn(z[1],fgr = colRight,bgr = black)  
 
+    
+      
 
 proc printHl*(s:string,substr:string,col:string = termwhite) =
       ## printHl
@@ -2121,7 +2144,11 @@ proc cechoLn*(col:string,ggg: varargs[string, `$`] = @[""] )  =
       ##     cechoLn(steelblue,"We made it in $1 hours !" % $5)
       ##
       ## 
-      cecho(col & "\L",ggg)
+      var z = ""
+      for x in ggg:
+          z = $(x)
+      z = z & "\L"   
+      cecho(col ,z)
       
 
   
