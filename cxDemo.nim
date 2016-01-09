@@ -63,8 +63,8 @@ proc flyNimDemo*(astring:string = "Fly Nim",col:string = red,tx:float = 0.08) =
       for x in 0.. twc-asc:
         hline(x,yellowgreen)
         if x < twc - asc :
-              printStyled("✈","",brightyellow,{styleBlink})
-              hlineln(tw - 1 - x,clrainbow)
+              printStyled("✈\L","",brightyellow,{styleBlink})
+                           
         else:
               printStyled(astring,"",red,{styleBright})
               hlineln(sn - x,salmon)
@@ -228,12 +228,14 @@ proc inCarpet(x:int, y:int): bool =
     x = x div 3
     y = y div 3
  
-proc sierpCarpetDemo*(n:int) =
+ 
+proc sierpCarpetDemo*(n:int,xpos:int = 1) =
   ## sierpCarpetDemo
   ## 
   ## draws the carpet in color
   ## 
   for i in 0 .. <(3^n):
+    cursetx(xpos)
     for j in 0 .. <(3^n):
       if inCarpet(i, j):
         print("* ",skyblue)

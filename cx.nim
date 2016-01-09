@@ -64,7 +64,7 @@
 ##   
 ##                * demos : cxDemo.nim   (demo library)
 ##   
-##                * tests : cxTest.nim   (run some rough demos)
+##                * tests : cxTest.nim   (run some rough demos from cxDemo)
 ##                 
 ##
 ##   Programming : qqTop
@@ -73,7 +73,7 @@
 ##   
 ##                 mileage may vary depending on the available
 ##                 
-##                 unicode libraries and terminal support in the system
+##                 unicode libraries and terminal support in your system
 ##   
 ##
 ##   Required    : see imports for modules currently expected to be available
@@ -81,7 +81,7 @@
 
 import os,osproc,macros,posix,terminal,math,unicode,times,tables,json,sets
 import sequtils,parseutils,strutils,httpclient,rawsockets,browsers,intsets, algorithm
-# imports based on modules available from nimble
+# imports based on modules available via nimble
 import random,strfmt
 
 when defined(macosx):
@@ -1109,8 +1109,8 @@ when defined(Linux):
 converter colconv*(cx:string) : string
 proc rainbow*[T](s : T,xpos:int = 0,fitLine:bool = false ,centered:bool = false)  ## forward declaration
 proc print*[T](astring:T,fgr:string = termwhite , bgr:string = bblack,xpos:int = 0,fitLine:bool = false,centered:bool = false)
-proc printBiCol*[T](s:T,sep:string,colLeft:string = yellowgreen ,colRight:string = termwhite,xpos:int = 0,centered:bool = false) ## forward declaration
-proc printLnBiCol*[T](s:T,sep:string,colLeft:string = yellowgreen ,colRight:string = termwhite,xpos:int = 0,centered:bool = false) ## forward declaration
+proc printBiCol*[T](s:T,sep:string = ":",colLeft:string = yellowgreen ,colRight:string = termwhite,xpos:int = 0,centered:bool = false) ## forward declaration
+proc printLnBiCol*[T](s:T,sep:string = ":",colLeft:string = yellowgreen ,colRight:string = termwhite,xpos:int = 0,centered:bool = false) ## forward declaration
 proc printStyledsimple*[T](ss:T,fg:string,astyle:set[Style]) ## forward declaration
 proc printStyled*[T](ss:T,substr:string,col:string,astyle : set[Style]) ## forward declaration
 proc hline*(n:int = tw,col:string = white) ## forward declaration
@@ -1419,7 +1419,7 @@ converter colconv*(cx:string) : string =
 
 
 
-proc print*[T](astring:T,fgr:string = termwhite , bgr:string = bblack,xpos:int = 0,fitLine:bool = false,centered:bool = false) =
+proc print*[T](astring:T,fgr:string = termwhite ,bgr:string = bblack ,xpos:int = 0,fitLine:bool = false ,centered:bool = false) =
     ## print
     ##
     ## the workhorse print routine , which acts as an extended echo routine
@@ -1507,11 +1507,9 @@ proc printLn*[T](astring:T,fgr:string = termwhite , bgr:string = bblack,xpos:int
     ## also see cechoLn  
     ## 
     ## 
-    
-    print(astring,fgr,bgr,xpos,fitLine,centered)
-    writeline(stdout,"")
-    
-    
+       
+    print($(astring) & "\L",fgr,bgr,xpos,fitLine,centered)
+      
     
 
 proc rainbow*[T](s : T,xpos:int = 0,fitLine:bool = false,centered:bool = false) =
@@ -1611,8 +1609,8 @@ proc hlineLn*(n:int = tw,col:string = white) =
      ## .. code-block:: nim
      ##    hlineLn(30,green)
      ##     
-     print(repeat("_",n),col)
-     writeLine(stdout,"") 
+     print(repeat("_",n) & "\L",col)
+     
      
 
 
@@ -1822,8 +1820,8 @@ proc printLnTK*[T](st:T , cols: varargs[string, `$`]) =
      ##    printLnTK("blah",green,white,red,cyan)    
      ##    printLnTK("blah yep 1234      333122.12  [12,45] wahahahaha",@[green,brightred,black,yellow,cyan,clrainbow])
      ##
-     printTK(st,cols)
-     writeLine(stdout,"")
+     printTK($st & "\L",cols)
+     
    
      
 
@@ -1862,14 +1860,16 @@ proc printLnRainbow*[T](s : T,astyle:set[Style]) =
     ##    printLnRainBow("WoW So Nice",{styleUnderScore})
     ##    printLnRainBow("Aha --> No Style",{}) 
     ##
-    printRainBow(s,astyle)  
-    writeln(stdout,"")
+    printRainBow($(s) & "\L",astyle)  
+    
     
 
-proc printBiCol*[T](s:T,sep:string,colLeft:string = yellowgreen ,colRight:string = termwhite,xpos:int = 0,centered:bool = false) =
+proc printBiCol*[T](s:T,sep:string = ":",colLeft:string = yellowgreen ,colRight:string = termwhite,xpos:int = 0,centered:bool = false) =
      ## printBiCol
      ##
      ## echos a line in 2 colors based on a seperators first occurance
+     ## 
+     ## default seperator = ":"
      ## 
      ## Note : clrainbow not useable for right side color
      ## 
@@ -1906,10 +1906,12 @@ proc printBiCol*[T](s:T,sep:string,colLeft:string = yellowgreen ,colRight:string
           print(z[1],fgr = colRight,bgr = black)  
 
 
-proc printLnBiCol*[T](s:T,sep:string, colLeft:string = yellowgreen, colRight:string = termwhite,xpos:int = 0,centered:bool = false) =
+proc printLnBiCol*[T](s:T,sep:string = ":", colLeft:string = yellowgreen, colRight:string = termwhite,xpos:int = 0,centered:bool = false) =
      ## printLnBiCol
      ##
      ## same as printBiCol but issues a new line
+     ## 
+     ## default seperator = ":"
      ## 
      ## .. code-block:: nim
      ##    import cx,strutils,strfmt
@@ -1982,8 +1984,8 @@ proc printLnHl*(s:string,substr:string,col:string = termwhite) =
       ## this would highlight all T in yellowgreen
       ##
      
-      printHl(s,substr,col)
-      writeln(stdout,"")
+      printHl($(s) & "\L",substr,col)
+      
 
 
 proc printStyledSimple*[T](ss:T,fg:string,astyle:set[Style]) =
@@ -2076,8 +2078,8 @@ proc printLnStyled*[T](ss:T,substr:string,col:string,astyle : set[Style] ) =
       ##    
       ##   
       ##                    
-      printStyled($ss,substr,col,astyle)
-      writeLine(stdout,"")
+      printStyled($ss & "\L",substr,col,astyle)
+      
 
 
 proc cecho*(col:string,ggg: varargs[string, `$`] = @[""] )  =
@@ -2119,9 +2121,8 @@ proc cechoLn*(col:string,ggg: varargs[string, `$`] = @[""] )  =
       ##     cechoLn(steelblue,"We made it in $1 hours !" % $5)
       ##
       ## 
-      cecho(col,ggg)
-      writeLn(stdout,"")
-
+      cecho(col & "\L",ggg)
+      
 
   
 proc showColors*() =
@@ -4007,6 +4008,5 @@ when isMainModule:
         rainbow2(smm,centered = true,colorset=pastelSet)
         echo()
         printLn(kitty,white,red,centered=true)
-        
         decho(2)
   doFinish()
