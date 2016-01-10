@@ -39,9 +39,6 @@ printLnRainbow(f,{})
 printLnrainbow(l,{styleUnderscore})
 decho(2)
 
-printLnTK(s)
-printLnTK(s,green,brightred,blue)
-decho(1)
 
 printLnStyled(s,"t",clrainbow,{styleUnderScore,styleBlink})
 decho(2)
@@ -50,11 +47,6 @@ decho(2)
 printLnBiCol(s,"c",brightgreen,brightwhite)
 printLnBiCol(s,"c")  # default colors
 decho(2)
-
-# note : every item will be tokenized so we need more colors than strings passed in
-printLnTK("{} {} {} {}".fmt(s,n,f,l),brightgreen,brightcyan,brightyellow,brightmagenta,clrainbow,brightblue,brightred)
-
-printLnTK(s & " wuff",steelblue,brightgreen,clrainbow,yellow)  
 
 # all in one color
 printLn("{} {} {} {}".fmt(s,n,f,l),greenyellow)      
