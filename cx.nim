@@ -77,6 +77,12 @@
 ##   
 ##
 ##   Required    : see imports for modules currently expected to be available
+##   
+##                 these will be automatically installed with latest nimble if you do
+##                 
+##                 nimble install nimFinLib 
+##                 
+##                 a project which now uses cx.nim
 ##  
 
 import os,osproc,macros,posix,terminal,math,unicode,times,tables,json,sets
@@ -102,7 +108,7 @@ export terminal.Style,terminal.getch
 
 const CXLIBVERSION* = "0.9.6"
 
-let start* = epochTime()  ##  check execution timing with one line see doFinish
+let start* = epochTime()  ##  check execution timing with one line see doFinish()
   
 
 proc getfg(fg:ForegroundColor):string =
