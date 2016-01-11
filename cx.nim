@@ -3264,10 +3264,9 @@ template loopy*[T](ite:T,st:stmt) =
      ## the lazy programmer's quick simple for-loop template
      ##
      ## .. code-block:: nim            
-     ##     loopy(0.. 100,printLnTK("The house is in the back.",brightwhite,brightblack,salmon,yellowgreen))
+     ##       loopy(0.. 10,printLn("The house is in the back.",randcol()))
      ##     
-     for x in ite:
-       st
+     for x in ite: st
 
 
 
