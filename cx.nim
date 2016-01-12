@@ -3921,13 +3921,13 @@ proc handler*() {.noconv.} =
     cechoLn(yellowgreen,"Thank you for using     : ",getAppFilename())
     printLn("{}{:<11}{:>9}".fmt("Last compilation on     : " , CompileDate , CompileTime),cyan)
     hlineLn()
-    print("Nim Version   : " & NimVersion)
+    printBiCol("Nim Version   : " & NimVersion)
     print(" | ",brightblack)
-    printLn("cx Version     : " & CXLIBVERSION)
-    print("{:<14}".fmt("Elapsed     : "),yellow)
+    printLnBiCol("cx Version     : " & CXLIBVERSION)
+    print("{:<14}".fmt("Elapsed       : "),yellow)
     printLn("{:<.3f} {}".fmt(epochtime() - cx.start,"secs"),brightblack)
     echo()
-    rainbow("Have a Nice Day !")  ## change or add custom messages as required
+    rainbow(" Have a Nice Day !")  ## change or add custom messages as required
     decho(2)
     system.addQuitProc(resetAttributes)
     quit(0)
