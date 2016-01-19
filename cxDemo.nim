@@ -134,7 +134,7 @@ proc randomCardsDemo*() =
    ## 
    ## Demo for colorful cards deck ...
    decho(2)
-   for z in 0.. <th -3:
+   for z in 0.. <th - 3:
       for zz in 0.. <tw div 2 - 1:
           print cards[rxCards.randomChoice()],randCol()
       writeLine(stdout,"") 

@@ -10,7 +10,7 @@
 ##
 ##   ProjectStart: 2015-06-20
 ##
-##   Compiler    : Nim 0.12.1 dev
+##   Compiler    : Nim 0.13.0
 ##   
 ##   OS          : Linux  
 ##
@@ -85,7 +85,7 @@
 ##                 a project which now uses cx.nim
 ##  
 
-import os,osproc,macros,posix,terminal,math,unicode,times,tables,json,sets
+import os,osproc,macros,posix,terminal,math,stats,unicode,times,tables,json,sets
 import sequtils,parseutils,strutils,httpclient,rawsockets,browsers,intsets, algorithm
 # imports based on modules available via nimble
 import random,strfmt
@@ -214,7 +214,7 @@ const
      
       # Pastel color set 
       
-      pastelgreen*          =  "\x1b[38;2;179;226;205m"
+      pastelgreen*          =  "\x1b[38;2;179;226;205m"    
       pastelorange*         =  "\x1b[38;2;253;205;172m"  
       pastelblue*           =  "\x1b[38;2;203;213;232m"
       pastelpink*           =  "\x1b[38;2;244;202;228m"
@@ -588,6 +588,13 @@ let ul3 = "      "
 let ul4 = "      " 
 let ul5 = "██████"
 
+let el1 = "      "
+let el2 = "██████"
+let el3 = "      "
+let el4 = "██████" 
+let el5 = "      "
+
+
 
 let clb1 = "      "
 let clb2 = "      "
@@ -626,10 +633,11 @@ let zbx* = @[z1,z2,z3,z4,z5]
 let hybx* = @[hy1,hy2,hy3,hy4,hy5]
 let plbx* = @[pl1,pl2,pl3,pl4,pl5]
 let ulbx* = @[ul1,ul2,ul3,ul4,ul5]
+let elbx* = @[el1,el2,el3,el4,el5]
 
 let clbx* = @[clb1,clb2,clb3,clb4,clb5]
 
-let bigLetters* = @[abx,bbx,cbx,dbx,ebx,fbx,gbx,hbx,ibx,jbx,kbx,lbx,mbx,nbx,obx,pbx,qbx,rbx,sbx,tbx,ubx,vbx,wbx,xbx,ybx,zbx,hybx,plbx,ulbx,clbx]
+let bigLetters* = @[abx,bbx,cbx,dbx,ebx,fbx,gbx,hbx,ibx,jbx,kbx,lbx,mbx,nbx,obx,pbx,qbx,rbx,sbx,tbx,ubx,vbx,wbx,xbx,ybx,zbx,hybx,plbx,ulbx,elbx,clbx]
 
 # a big block number set
 #  can be used with printBigNumber
@@ -1582,7 +1590,7 @@ proc rainbow2*[T](s : T,xpos:int = 0,fitLine:bool = false,centered:bool = false,
           
        else:
           # need to calc the center here and increment by x
-          nxpos = tw div 2 - ($astr).len div 2  + x -1
+          nxpos = tw div 2 - ($astr).len div 2  + x - 1
           print(astr[x],colorset[c][1],black,xpos=nxpos,fitLine)
        
        inc nxpos
@@ -1615,7 +1623,8 @@ proc hlineLn*(n:int = tw,col:string = white) =
      ## .. code-block:: nim
      ##    hlineLn(30,green)
      ##     
-     print(repeat("_",n) & "\L",col)
+     print(repeat("_",n),col)
+     echo()
      
      
 
@@ -2184,7 +2193,7 @@ proc drawRect*(h:int = 0 ,w:int = 3, frhLine:string = "_", frVLine:string = "|",
       printDotPos(xpos,dotCol,blink)
       print(frhLine.repeat(w-1),frcol)
       if frhLine == widedot:
-            printDotPos(xpos + w * 2 -1 ,dotCol,blink)
+            printDotPos(xpos + w * 2 - 1 ,dotCol,blink)
       else:
             printDotPos(xpos + w,dotCol,blink)
       writeLine(stdout,"")
@@ -2192,7 +2201,7 @@ proc drawRect*(h:int = 0 ,w:int = 3, frhLine:string = "_", frVLine:string = "|",
       for x in 2.. h:
          print(frVLine,frcol,xpos = xpos)
          if frhLine == widedot:
-             print(frVLine,frcol,xpos = xpos + w * 2 -1)
+             print(frVLine,frcol,xpos = xpos + w * 2 - 1)
          else:    
               print(frVLine,frcol,xpos = xpos + w)
          writeLine(stdout,"")
@@ -2200,7 +2209,7 @@ proc drawRect*(h:int = 0 ,w:int = 3, frhLine:string = "_", frVLine:string = "|",
       printDotPos(xpos,dotCol,blink)
       print(frhLine.repeat(w-1),frcol)
       if frhLine == widedot:
-            printDotPos(xpos + w * 2 -1 ,dotCol,blink)
+            printDotPos(xpos + w * 2 - 1 ,dotCol,blink)
       else:
             printDotPos(xpos + w,dotCol,blink)
             
@@ -2521,7 +2530,7 @@ proc getNextMonday*(adate:string):string =
 
 # large font printing, numbers are implemented  
 
-proc printBigNumber*(anumber:string,fgr:string = yellowgreen ,bgr:string = black,xpos:int = 1,fun:bool = false) =
+proc printBigNumber*(xnumber:string|int,fgr:string = yellowgreen ,bgr:string = black,xpos:int = 1,fun:bool = false) =
     ## printBigNumber
     ## 
     ## prints a string in big block font
@@ -2534,13 +2543,15 @@ proc printBigNumber*(anumber:string,fgr:string = yellowgreen ,bgr:string = black
     ## element colored individually
     ## 
     ## 
+    ## xnumber can be given as int or string
+    ## 
     ## usufull for big counter etc , a clock can also be build easily but
     ## running in a tight while loop just uses up cpu cycles needlessly.
     ## 
     ## .. code-block:: nim
     ##    for x in 990.. 1105:
     ##         cleanScreen()
-    ##         printBigNumber($x)
+    ##         printBigNumber(x)
     ##         sleepy(3)
     ##
     ##    cleanScreen()   
@@ -2561,7 +2572,7 @@ proc printBigNumber*(anumber:string,fgr:string = yellowgreen ,bgr:string = black
     ##         sleepy(0.5)
     ##    doFinish()
     
-    
+    var anumber = $xnumber
     var asn = newSeq[string]()
     var printseq = newSeq[seq[string]]()
     for x in anumber: asn.add($x)
@@ -2588,8 +2599,13 @@ proc printBigNumber*(anumber:string,fgr:string = yellowgreen ,bgr:string = black
             if fun == false:
                print(" " & printseq[y][x],fgr,bgr)
             else:
-               print(" " & printseq[y][x],randcol(),bgr)
-        echo()   
+                # we want to avoid black
+                var funny = randcol()
+                while funny == black:
+                     funny = randcol()
+                print(" " & printseq[y][x],funny,bgr)
+        echo()  
+    curup(5)
 
 
 
@@ -2627,8 +2643,11 @@ proc printBigLetters*(aword:string,fgr:string = yellowgreen ,bgr:string = black,
         if fun == false: 
            printLn(s[x],fgr = fgr,bgr = bgr ,xpos = xpos)
         else:
-           printLn(s[x],fgr = randcol(),bgr = bgr ,xpos = xpos)
-         
+           # we want to avoid black
+           var funny = randcol()
+           while funny == black:
+               funny = randcol()
+           printLn(s[x],fgr = funny,bgr = bgr ,xpos = xpos)    
       curup(5)
       xpos = xpos + k
  
@@ -2664,7 +2683,8 @@ proc printBigLetters*(aword:string,fgr:string = yellowgreen ,bgr:string = black,
       of "-" : abc(hybx,xpos)
       of "+" : abc(plbx,xpos)
       of "_" : abc(ulbx,xpos)
-      of "#"  : abc(clbx,xpos)
+      of "=" : abc(elbx,xpos)
+      of "#" : abc(clbx,xpos)
       of "1","2","3","4","5","6","7","8","9","0",":": 
                printBigNumber($aw,fgr = fgr , bgr = bgr,xpos = xpos,fun = fun)
                curup(5)
@@ -2784,6 +2804,8 @@ proc superHeader*(bstring:string) =
       ##
       ## be cut to terminal window width without ceremony
       ##
+      ## for box with or without intersections see drawBox
+      ##
       var astring = bstring
       # minimum default size that is string max len = 43 and
       # frame = 46
@@ -2804,7 +2826,7 @@ proc superHeader*(bstring:string) =
               astring = astring & " "
           mddl = mddl + 1
       
-      # some framechars
+      # some framechars choose depending on what the system has installed
       #let framechar = "▒"
       let framechar = "⌘"  
       #let framechar = "⏺"
@@ -3086,7 +3108,7 @@ proc showHosts*(dm:string) =
 var rng = initMersenneTwister(urandom(2500))
 
 
-proc getRandomInt*(mi:int = 0,ma:int = int.high):int =
+proc getRandomInt*(mi:int = 0,ma:int = int.high):int {.inline.}=
     ## getRandomInt
     ##
     ## convenience proc so we do not need to import random in calling prog
@@ -3100,32 +3122,34 @@ proc getRandomInt*(mi:int = 0,ma:int = int.high):int =
     ##    doFinish()
     ##    
     ##    
+    
+    # we do this to avoid overflow error if a int exceeding int.high is specified
+    if ma > int.high:
+       result = rng.randomInt(mi,int.high)
+    else:
+       result = rng.randomInt(mi,ma + 1)
 
 
-    result = rng.randomInt(mi,ma + 1)
-
-
-proc createSeqInt*(n:int = 10,mi:int=0,ma:int=int.high) : seq[int] =
+proc createSeqInt*(n:int = 10,mi:int = 0,ma:int = int.high) : seq[int] {.inline.} =
     ## createSeqInt
     ##
     ## convenience proc to create a seq of random int with
     ##
     ## default length 10
     ##
-    ## form @[4556,455,888,234,...] or similar
+    ## gives @[4556,455,888,234,...] or similar
     ##
     ## .. code-block:: nim
     ##    # create a seq with 50 random integers ,of set 100 .. 2000
     ##    # including the limits 100 and 2000
     ##    echo createSeqInt(50,100,2000)
 
-    var z = newSeq[int]()
-    if mi <= ma:
-      for x in 0.. <n:
-         z.add(getRandomInt(mi,ma))
-      result = z   
-    else:
-      print("Error : Wrong parameters for min , max ",red)
+    result = newSeq[int]()
+    case  mi <= ma 
+      of true : 
+                for x in 0.. <n: result.add(getRandomInt(mi,ma))
+      of false: print("Error : Wrong parameters for min , max ",red)
+
 
 
 proc sum*[T](aseq: seq[T]): T = foldl(aseq, a + b)
@@ -3647,7 +3671,7 @@ proc drawBox*(hy:int = 1, wx:int = 1 , hsec:int = 1 ,vsec:int = 1,frCol:string =
      var vsecwidth = w 
      if vsec > 1:
        vsecwidth = w div vsec 
-       curup(h +1)
+       curup(h + 1)
        for x in 1.. <vsec:
            print($Rune(parsehexint("252C")),fgr = truetomato,xpos=xpos + vsecwidth * x)  
            curdn(1)
@@ -3667,15 +3691,15 @@ proc drawBox*(hy:int = 1, wx:int = 1 , hsec:int = 1 ,vsec:int = 1,frCol:string =
        for x in 1.. <hsec:
            print($Rune(parsehexint("251C")),fgr = truetomato,xpos=hpos)
            #print a full line right thru the vlines
-           print(repeat($Rune(parsehexint("2500")),w-1),fgr = frcol)
+           print(repeat($Rune(parsehexint("2500")),w - 1),fgr = frcol)
            # now we add the cross points
            for x in 1.. <vsec:
                npos = npos + vsecwidth 
                cursetx(npos)
                print($Rune(parsehexint("253C")),fgr = truetomato)
            # print the right edge
-           npos = npos + vsecwidth +1   
-           print($Rune(parsehexint("2524")),fgr = truetomato,xpos=npos -1)
+           npos = npos + vsecwidth + 1   
+           print($Rune(parsehexint("2524")),fgr = truetomato,xpos=npos - 1)
            curdn(hsecheight)
            npos = hpos
            
