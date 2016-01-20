@@ -322,7 +322,7 @@ proc bigPanelDemo*() =
         xpos = 6     
         printBigLetters("-",xpos = xpos + 11,fun = true)
         printBigLetters("+",xpos = xpos + 20,fun = true)
-        printBigLetters("0123456789",xpos = xpos + 29,fun = true)
+        printBigNumber(0123456789,xpos = xpos + 29,fun = true)
         decho(10)
         printBigLetters(repeat("_",18),fgr = randcol(),xpos = 10,fun = true)
         decho(8)
@@ -348,6 +348,24 @@ proc colorCJKDemo*() =
     sleepy(3)   
         
     
-    
+proc rainbow2Demo*() =
+  
+      # shows possible use of rainbow2 
+                      
+      var hi = iching()
+      var n  = 15
+
+      centerMark()
+      echo()
+      rainbow2("Iching it and know the future. Or not.",centered = true,colorset = pastelset)
+      echo()
+
+      for w in hi:
+        for x in 0.. n:
+          rainbow2(w,xpos = centerX() - n div 2 * w.len + x * w.len,colorset = colorNames)
+        echo()
+
+      rainbow2("What's up ?\n",centered = true,colorset = pastelSet)
+      centerMark()
 
 

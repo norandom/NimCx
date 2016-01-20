@@ -6,7 +6,7 @@
 ##
 ##   License     : MIT opensource
 ##
-##   Version     : 0.9.6
+##   Version     : 0.9.7
 ##
 ##   ProjectStart: 2015-06-20
 ##
@@ -106,7 +106,7 @@ when defined(posix):
 export terminal.Style,terminal.getch
 
 
-const CXLIBVERSION* = "0.9.6"
+const CXLIBVERSION* = "0.9.7"
 
 let start* = epochTime()  ##  check execution timing with one line see doFinish()
   
@@ -1389,7 +1389,14 @@ proc centerPos*(astring:string) =
      ## 
      ## 
      setCursorXPos(stdout,tw div 2 - astring.len div 2 - 1)
-     
+   
+   
+proc centerX*() : int = tw div 2
+     ## centerX
+     ## 
+     ## returns an int with terminal center position 
+     ## 
+     ## 
   
 proc checkColor*(colname: string): bool =
      ## checkColor
@@ -1560,41 +1567,7 @@ proc rainbow*[T](s : T,xpos:int = 0,fitLine:bool = false,centered:bool = false) 
        
        inc nxpos
 
-    
-    
-    
-proc rainbow2*[T](s : T,xpos:int = 0,fitLine:bool = false,centered:bool = false, colorset:seq[(string, string)] = colorNames) = 
-    ## rainbow2
-    ##
-    ## multicolored string  based on colorsets  see pastelSet
-    ##
-    ## may not work with certain Rune
-    ## 
-    ## .. code-block:: nim
-    ##    rainbow2("what's up ?\n",centered = true,colorset = pastelSet)
-    ##    
-    ##    
-    ## 
-    ## 
-    ##
-    var nxpos = xpos
-    var astr = $s
-    var c = 0
-    var a = toSeq(1.. <colorset.len)
-    
-    for x in 0.. <astr.len:
-       c = a[randomInt(a.len)]
-       if centered == false:
-          
-          print(astr[x],colorset[c][1],black,xpos = nxpos,fitLine)
-          
-       else:
-          # need to calc the center here and increment by x
-          nxpos = tw div 2 - ($astr).len div 2  + x - 1
-          print(astr[x],colorset[c][1],black,xpos=nxpos,fitLine)
-       
-       inc nxpos
-
+   
 
 
 # output  horizontal lines
@@ -3598,6 +3571,61 @@ proc katakana*():seq[string] =
     result = kat
 
 
+
+    
+    
+    
+    
+proc rainbow2*[T](s : T,xpos:int = 0,fitLine:bool = false,centered:bool = false, colorset:seq[(string, string)] = colorNames) = 
+    ## rainbow2
+    ##
+    ## multicolored string  based on colorsets  see pastelSet
+    ##
+    ## may not work with certain Rune
+    ## 
+    ## .. code-block:: nim
+    ##    rainbow2("what's up ?\n",centered = true,colorset = pastelSet)
+    ##    
+    ##    
+    ##    
+    var nxpos = xpos
+    var astr = $s
+    var c = 0
+    var a = toSeq(1.. <colorset.len)
+
+   
+    if astr in emojis or astr in hiragana() or astr in katakana() or astr in iching():
+          
+          c = a[randomInt(a.len)]
+          if centered == false:
+             print(astr,colorset[c][1],black,xpos = nxpos,fitLine)
+            
+                
+          else:
+              # need to calc the center here and increment by x
+              nxpos = tw div 2 - ($astr).len div 2  - 1
+              print(astr,colorset[c][1],black,xpos=nxpos,fitLine)
+          
+          inc nxpos   
+              
+   
+    else :
+          
+          for x in 0.. <astr.len:
+            c = a[randomInt(a.len)]
+            if centered == false:
+                
+                print(astr[x],colorset[c][1],black,xpos = nxpos,fitLine)
+                
+            else:
+                # need to calc the center here and increment by x
+                nxpos = tw div 2 - ($astr).len div 2  + x - 1
+                print(astr[x],colorset[c][1],black,xpos=nxpos,fitLine)
+            
+            inc nxpos
+        
+
+
 proc boxChars*():seq[string] = 
   
     ## chars to draw a box
@@ -3617,9 +3645,13 @@ proc drawBox*(hy:int = 1, wx:int = 1 , hsec:int = 1 ,vsec:int = 1,frCol:string =
      ## 
      ## WORK IN PROGRESS FOR A BOX DRAWING PROC USING UNICODE BOX CHARS
      ## 
+     ## Note you must make sure that the terminal is large enough to display the
+     ## 
+     ##      box or it will look messed up 
+     ## 
      ## 
      ## .. code-block:: nim
-     ##    import cx
+     ##    import cx,unicode
      ##    cleanscreen()
      ##    decho(5)
      ##    drawBox(hy=10, wx= 60 , hsec = 5 ,vsec = 5,frCol = randcol(),brCol= black ,cornerCol = truetomato,xpos = 1,blink = false) 
@@ -3633,6 +3665,10 @@ proc drawBox*(hy:int = 1, wx:int = 1 , hsec:int = 1 ,vsec:int = 1,frCol:string =
      # http://unicode.org/charts/PDF/U2500.pdf 
      # almost ok we need to find a way to to make sure that grid size is fine
      # if we use dynamic sizes like width = tw-1 etc.
+     # 
+     # given some data should the data be printed into a drawn box
+     # or the box around the data ?
+     # 
 
      var h = hy
      var w = wx
@@ -3648,8 +3684,8 @@ proc drawBox*(hy:int = 1, wx:int = 1 , hsec:int = 1 ,vsec:int = 1,frCol:string =
      else:   
            printStyled($Rune(parsehexint("250C")),$Rune(parsehexint("250C")),cornerCol,{})
           
-     print($Rune(parsehexint("2500")).repeat(w-1),fgr = frcol)
-     
+     print(repeat($Rune(parseHexInt("2500")),w - 1) ,fgr = frcol)
+      
      if blink == true:  
            printLnStyled($Rune(parsehexint("2510")),$Rune(parsehexint("2510")),cornerCol,{styleBlink})
      else:   

@@ -191,6 +191,8 @@ sleepy(2)
 colorCJKDemo()
 decho(5)    
 
+rainbow2Demo()
+decho(5)
 
 bigPanelDemo()
 sleepy(2)
