@@ -26,6 +26,18 @@ Screenshots from cxTest
 
 ![Image](http://qqtop.github.io/nimcolors9.png?raw=true)
 
+
+
+```nimrod         
+
+import cx
+# show the colors
+showColors()
+dofinish()
+
+```
+
+
 ![Image](http://qqtop.github.io/nimcolors33.png?raw=true)
 
 ![Image](http://qqtop.github.io/nimcolors34.png?raw=true)
