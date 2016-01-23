@@ -14,6 +14,10 @@ Color utilities for the Linux terminal
 
 
 
+Installation : nimble install nimFinLib      (this installs nimfinlib and NimCx libraries)
+
+
+
 Documentation for cx.nim : http://qqtop.github.io/cx.html
 
 
@@ -24,11 +28,13 @@ Screenshots from cxTest
 
 ![Image](http://qqtop.github.io/nimcolors3.png?raw=true)
 
-![Image](http://qqtop.github.io/nimcolors4.png?raw=true)
+![Image](http://qqtop.github.io/nimcolors33.png?raw=true)
 
-![Image](http://qqtop.github.io/nimcolors5.png?raw=true)
+![Image](http://qqtop.github.io/nimcolors34.png?raw=true)
 
-![Image](http://qqtop.github.io/nimcolors6.png?raw=true)
+![Image](http://qqtop.github.io/nimcolors35.png?raw=true)
+
+![Image](http://qqtop.github.io/nimcolors36.png?raw=true)
 
 ![Image](http://qqtop.github.io/colorCJKDemo.png?raw=true)
 
