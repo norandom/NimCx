@@ -1376,6 +1376,13 @@ proc cleanScreen*() =
       write(stdout,"\e[H\e[J") 
       
       
+      
+proc centerX*() : int = tw div 2
+     ## centerX
+     ## 
+     ## returns an int with terminal center position 
+     ## 
+     ##       
 
 proc centerPos*(astring:string) =
      ## centerpos
@@ -1388,15 +1395,10 @@ proc centerPos*(astring:string) =
      ##    printLn(s,gray)
      ## 
      ## 
-     setCursorXPos(stdout,tw div 2 - astring.len div 2 - 1)
+     setCursorXPos(stdout,centerX() - astring.len div 2 - 1)
    
    
-proc centerX*() : int = tw div 2
-     ## centerX
-     ## 
-     ## returns an int with terminal center position 
-     ## 
-     ## 
+
   
 proc checkColor*(colname: string): bool =
      ## checkColor
@@ -1443,14 +1445,13 @@ converter colconv*(cx:string) : string =
 proc print*[T](astring:T,fgr:string = termwhite ,bgr:string = bblack ,xpos:int = 0,fitLine:bool = false ,centered:bool = false) =
     ## print
     ##
-    ## the workhorse print routine , which acts as an extended echo routine
-    ## 
-    ## allows positioning
+    ## fore and background colors can be set
+    ##
+    ## allows positioning on x-axis
     ##
     ## fitLine = true will try to write the text into the current line irrespective of xpos 
     ##
     ## centered = true will try to center and disregard xpos
-    ##
     ##
     ## for extended colorset background colors use printStyled with styleReverse 
     ## 
@@ -1461,39 +1462,42 @@ proc print*[T](astring:T,fgr:string = termwhite ,bgr:string = bblack ,xpos:int =
     if centered == false:
     
         if npos > 0:
-            setCursorxpos(npos)
-        
-       
+            setCursorXPos(npos)
+            
         if ($astring).len + xpos >= tw:
-            # force to write on same line within in terminal whatever the xpos says
+          
             if fitLine == true:
+                # force to write on same line within in terminal whatever the xpos says
                 npos = tw - ($astring).len
-                setCursorXPos(npos) 
-       
+                setCursorXPos(npos)      
     
-    else:  # centered == true
-          npos = tw div 2 - ($astring).len div 2 - 1
+    else:  
+          # centered == true
+          npos = centerX() - ($astring).len div 2 - 1
           setCursorXPos(npos)
-      
-       
+           
     case fgr 
-      of clrainbow: rainbow($astring,npos)
+      of clrainbow: rainbow(" " & $astring,npos)
       else:  
             write(stdout,fgr & colconv(bgr) & $astring)
                             
-    # reset to white/black
-    setForeGroundColor(fgWhite)
-    setBackGroundColor(bgBlack)
+    # reset to white/black only if any changes
+    if fgr != $fgWhite or bgr != $bgBlack:
+      setForeGroundColor(fgWhite)
+      setBackGroundColor(bgBlack)
 
 
 
 proc printLn*[T](astring:T,fgr:string = termwhite , bgr:string = bblack,xpos:int = 0,fitLine:bool = false,centered:bool = false) =
     ## printLn
     ## 
-    ## similar to echo but with foregroundcolor and backgroundcolor
-    ## 
-    ## selection.
-    ## 
+    ## similar to echo but with additional settings
+    ##  
+    ## foregroundcolor 
+    ## backgroundcolor
+    ## position
+    ## fitLine
+    ## centered
     ## 
     ## all colornames are supported for font color:
     ## 
@@ -1562,13 +1566,12 @@ proc rainbow*[T](s : T,xpos:int = 0,fitLine:bool = false,centered:bool = false) 
           
        else:
           # need to calc the center here and increment by x
-          nxpos = tw div 2 - ($astr).len div 2  + x - 1
+          nxpos = centerX() - ($astr).len div 2  + x - 1
           print(astr[x],colorNames[c][1],black,xpos=nxpos,fitLine)
        
        inc nxpos
 
    
-
 
 # output  horizontal lines
 proc hline*(n:int = tw,col:string = white) =
@@ -1819,7 +1822,7 @@ proc printBiCol*[T](s:T,sep:string = ":",colLeft:string = yellowgreen ,colRight:
                   print(z[0] & sep,fgr = colLeft,bgr = black,xpos = xpos)
                   print(z[1],fgr = colRight,bgr = black)  
             else:  # centered == true
-                  let npos = tw div 2 - (zz).len div 2 - 1
+                  let npos = centerX() - (zz).len div 2 - 1
                   print(z[0] & sep,fgr = colLeft,bgr = black,xpos = npos)
                   print(z[1],fgr = colRight,bgr = black)  
     
@@ -1873,7 +1876,7 @@ proc printLnBiCol*[T](s:T,sep:string = ":", colLeft:string = yellowgreen, colRig
                     printLn(z[1],fgr = colRight,bgr = black)  
                 
         else:  # centered == true
-              let npos = tw div 2 - (zz).len div 2 - 1 
+              let npos = centerX() - (zz).len div 2 - 1 
               print(z[0] & sep,fgr = colLeft,bgr = black,xpos = npos)
               if colRight == clrainbow:   # we currently do this as rainbow implementation has changed 
                     printLn(z[1],fgr = randcol(),bgr = black)  
@@ -2076,7 +2079,7 @@ proc showColors*() =
 proc doty*(d:int,fgr:string = white, bgr = black,xpos:int = 1) =
      ## doty
      ## 
-     ## prints number d of ⏺  style dots in given fore/background color
+     ## prints number d of widedot ⏺  style dots in given fore/background color
      ## 
      ## each dot is of char length 4 added a space in the back to avoid half drawn dots
      ## 
@@ -2087,7 +2090,7 @@ proc doty*(d:int,fgr:string = white, bgr = black,xpos:int = 1) =
      ##      printLnBiCol("Test for  :  doty\n",":",truetomato,lime)
      ##      dotyLn(22 ,lime)
      ##      dotyLn(18 ,salmon,blue)
-     ##      dotyLn(tw div 2,red)  # full widedotted line
+     ##      dotyLn(centerX(),red)  # full widedotted line
      ##      
      ## color clrainbow is not supported and will be in white
      ## 
@@ -2102,7 +2105,7 @@ proc doty*(d:int,fgr:string = white, bgr = black,xpos:int = 1) =
 proc dotyLn*(d:int,fgr:string = white, bgr = black,xpos:int = 1) =
      ## dotyLn
      ## 
-     ## prints number d of ⏺  style widedots given fore/background color and issues new line
+     ## prints number d of widedot ⏺  style dots in given fore/background color and issues new line
      ## 
      ## each dot is of char length 4
      ## 
@@ -3000,7 +3003,7 @@ proc showIpInfo*(ip:string) =
       let jz = getIpInfo(ip)
       decho(2)
       printLn("Ip-Info for " & ip,lightsteelblue)
-      dline(40,col = yellow)
+      dlineln(40,col = yellow)
       for x in jz.getfields():
           echo "{:<15} : {}".fmt($x.key,$x.val)
       printLnBiCol("{:<15} : {}".fmt("Source","ip-api.com"),":",yellowgreen,salmon)
@@ -3152,22 +3155,36 @@ proc getRandomFloat*():float =
      result = rng.random()
 
 
-proc createSeqFloat*(n:BiggestInt = 10) : seq[float] =
+proc createSeqFloat*(n:BiggestInt = 10,prec:int = 3) : seq[float] =
      ## createSeqFloat
      ##
-     ## convenience proc to create a seq of random floats with
+     ## convenience proc to create an unsorted seq of random floats with
      ##
      ## default length 10 ( always consider how much memory is in the system )
+     ## 
+     ## prec enables after comma precision up to 16 positions after comma
+     ## 
+     ## this is on a best attempt basis and may not work all the time
+     ## 
+     ## default after comma positions is prec = 3 max
      ##
      ## form @[0.34,0.056,...] or similar
      ##
      ## .. code-block:: nim
      ##    # create a seq with 50 random floats
      ##    echo createSeqFloat(50)
-
+     ##    
+     ##   
+     ## .. code-block:: nim
+     ##    # create a seq with 50 random floats formated 
+     ##    echo createSeqFloat(50,3)
+     ##    
+     var ffnz = prec
+     if ffnz > 16: ffnz = 16
      var z = newSeq[float]()
      for x in 0.. <n:
-          z.add(getRandomFloat())
+          var af = ff(getRandomFloat(),ffnz)
+          z.add(parseFloat(af))  
      result = z
 
 
@@ -3218,7 +3235,7 @@ template getCard* :auto =
     ## 
     ## .. code-block:: nim
     ##    import cx
-    ##    print(getCard(),randCol(),xpos = tw div 2)  # get card and print in random color at xpos
+    ##    print(getCard(),randCol(),xpos = centerX())  # get card and print in random color at xpos
     ##    doFinish()
     ## 
     cards[rxCards.randomChoice()] 
@@ -3571,10 +3588,7 @@ proc katakana*():seq[string] =
     result = kat
 
 
-
-    
-    
-    
+ 
     
 proc rainbow2*[T](s : T,xpos:int = 0,fitLine:bool = false,centered:bool = false, colorset:seq[(string, string)] = colorNames) = 
     ## rainbow2
@@ -3603,7 +3617,7 @@ proc rainbow2*[T](s : T,xpos:int = 0,fitLine:bool = false,centered:bool = false,
                 
           else:
               # need to calc the center here and increment by x
-              nxpos = tw div 2 - ($astr).len div 2  - 1
+              nxpos = centerX() - ($astr).len div 2  - 1
               print(astr,colorset[c][1],black,xpos=nxpos,fitLine)
           
           inc nxpos   
@@ -3619,7 +3633,7 @@ proc rainbow2*[T](s : T,xpos:int = 0,fitLine:bool = false,centered:bool = false,
                 
             else:
                 # need to calc the center here and increment by x
-                nxpos = tw div 2 - ($astr).len div 2  + x - 1
+                nxpos = centerX() - ($astr).len div 2  + x - 1
                 print(astr[x],colorset[c][1],black,xpos=nxpos,fitLine)
             
             inc nxpos
@@ -4020,6 +4034,8 @@ when isMainModule:
         curup(1)
         rainbow2(smm,centered = true,colorset=pastelSet)
         echo()
-        printLn(kitty,white,red,centered=true)
-        decho(2)
+  printLn(kitty,white,red,centered=true)
+  decho(2)
+  doInfo()
+  showIpInfo(getWanIp())
   doFinish()
