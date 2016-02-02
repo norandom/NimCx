@@ -125,12 +125,15 @@ for x in 0.. 10:
 
 flyNimDemo()
 
+decho(3)
+
 futureIsNimDemo(25)
 
 decho(3)
 ndLineDemo()
 decho(2)
 sleepy(3.5)
+
    
 movNimDemo()   
 
@@ -139,6 +142,11 @@ curSet()
 drawRectDemo()
 decho(5)  
 sleepy(3)
+
+widedotfieldDemo()
+sleepy(3)
+decho(3)
+
 
 decho(3)
 randomCardsClockDemo() 

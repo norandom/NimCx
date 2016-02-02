@@ -59,14 +59,14 @@ proc flyNimDemo*(astring:string = "Fly Nim",col:string = red,tx:float = 0.08) =
 
       var twc = tw div 2
       var asc = astring.len div 2
-      var sn = tw - astring.len
-      for x in 0.. twc-asc:
+      var sn  = tw - astring.len  
+      for x in 0.. twc - asc:
         hline(x,yellowgreen)
         if x < twc - asc :
               printStyled("✈\L","",brightyellow,{styleBlink})
                            
         else:
-              printStyled(astring,"",red,{styleBright})
+              print(astring,truetomato,centered = true)
               hlineln(sn - x,salmon)
         sleepy(tx)
         curup(1) 
@@ -268,10 +268,9 @@ proc wideDotFieldDemo*()=
   ## 
   ## draws random col widedots
   ## 
-  for x in 0.. 1000:
-      loopy(1.. tw div 2, doty(1,randcol()))
-      echo()       
-
+   
+  loopy(0.. 10,loopy(1.. tw div 2, dotyLn(1,randcol(),xpos = getRandomInt(0,tw - 1))))
+  printlnBiCol("coloredSnow","d",greenyellow,salmon)
 
 
 

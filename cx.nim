@@ -2076,7 +2076,7 @@ proc showColors*() =
   decho(2)   
   
 
-proc doty*(d:int,fgr:string = white, bgr = black,xpos:int = 1) =
+proc doty*(d:int,fgr:string = white, bgr:string = black,xpos:int = 1) =
      ## doty
      ## 
      ## prints number d of widedot ⏺  style dots in given fore/background color
@@ -2102,12 +2102,18 @@ proc doty*(d:int,fgr:string = white, bgr = black,xpos:int = 1) =
         print(astring = astr,fgr,bgr,xpos) 
      
      
-proc dotyLn*(d:int,fgr:string = white, bgr = black,xpos:int = 1) =
+proc dotyLn*(d:int,fgr:string = white, bgr:string = black,xpos:int = 1) =
      ## dotyLn
      ## 
      ## prints number d of widedot ⏺  style dots in given fore/background color and issues new line
      ## 
      ## each dot is of char length 4
+     
+     ## .. code-block:: nimble
+     ##      import cx
+     ##      loopy(0.. 100,loopy(1.. tw div 2, dotyLn(1,randcol(),xpos = random(tw - 1))))
+     ##      printlnBiCol("coloredSnow","d",greenyellow,salmon)
+     
      ## 
      ## color clrainbow is not supported and will be in white
      ## 
