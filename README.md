@@ -14,7 +14,7 @@ Color utilities for the Linux terminal
 
 
 
-Installation : nimble install nimFinLib      (this installs nimfinlib and NimCx libraries)
+Installation : nimble install nimFinLib    (this installs nimFinLib and cx libraries)
 
 
 

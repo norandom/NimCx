@@ -8,7 +8,7 @@ license       = "MIT"
 
 # Dependencies
 
-requires  "nim >= 0.12.1"
+requires  "nim >= 0.13.1"
 requires  "https://github.com/BlaXpirit/nim-random"
 requires  "https://bitbucket.org/lyro/strfmt"
 
