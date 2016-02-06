@@ -1282,18 +1282,18 @@ template msgmb*(code: stmt): stmt =
       setForeGroundColor(fgWhite)    
 
   
-template hdx*(code:stmt,frm:string = "+",width:int = tw.int):stmt =
+template hdx*(code:stmt,frm:string = "+",width:int = tw,xpos:int = 0):stmt =
    ## hdx
    ## 
    ## a simple sandwich frame made with + default or any string passed in 
    ## 
-   ## width can be adjusted
+   ## width and xpos can be adjusted
    ## 
-   echo()
    var lx = repeat(frm,width div frm.len)
-   printLn(lx)
+   printLn(lx,xpos = xpos)
+   cursetx(xpos + 2)
    code
-   printLn(lx)
+   printLn(lx,xpos = xpos)
    echo()
       
      
