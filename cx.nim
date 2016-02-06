@@ -130,6 +130,12 @@ proc bbright(bg:BackgroundColor): string =
     result = "\e[" & $gBG & 'm'
 
 
+type
+
+    Tsn7 = object
+      nx : seq[string]
+
+
 const 
   
       # Terminal consts for bash terminal cleanup
@@ -753,74 +759,84 @@ let nimsx2* = @[NIMX6,NIMX7,NIMX8,NIMX9,NIMX10]
 
 # slim numbers can be used with printSlimNumber
 
-const snumber0 = 
+const snumber0* = 
   @["┌─┐",
     "│ │",
     "└─┘"]
 
 
-const snumber1 = 
+const snumber1* = 
   @["  ╷",
     "  │",
     "  ╵"]
   
-const snumber2 = 
+const snumber2* = 
   @["╶─┐",
     "┌─┘",
     "└─╴"]
    
-const snumber3 =
+const snumber3* =
   @["╶─┐",
     "╶─┤",
     "╶─┘"]
   
-const snumber4 = 
+const snumber4* = 
   @["╷ ╷",
     "└─┤",
     "  ╵"]
   
-const snumber5 = 
+const snumber5* = 
   @["┌─╴",  
     "└─┐",
     "╶─┘"]
 
-const snumber6 = 
+const snumber6* = 
   @["┌─╴",
     "├─┐",
     "└─┘"]
   
-const snumber7 = 
+const snumber7* = 
   @["╶─┐",  
     "  │",
     "  ╵"]
   
-const snumber8 =
+const snumber8* =
   @["┌─┐",  
     "├─┤",
     "└─┘"]
   
-const snumber9 = 
+const snumber9* = 
   @["┌─┐",
     "└─┤",
     "╶─┘"] 
   
   
-const scolon =
-  @[" ╷",
-    " ╷",   
+const scolon* =
+  @["╷ ",
+    "╷ ",   
     "  "]
   
   
-const scomma = 
+const scomma* = 
    @["  ",
      "  ",
-     " ╷"]
+     "╷ "]
    
-const sdot = 
+const sdot* = 
    @["  ",
      "  ",
-     " ."]
+     ". "]
    
+
+const sblank* = 
+   @["  ",
+     "  ",
+     "  "]
+   
+
+var slimNumberSet = newSeq[string]()
+for x in 0.. 9: slimNumberSet.add($(x))
+var slimCharSet   = @[",",".",":"," "]
 
 const snumberlen = 2
 
@@ -1266,13 +1282,15 @@ template msgmb*(code: stmt): stmt =
       setForeGroundColor(fgWhite)    
 
   
-template hdx*(code:stmt,frm:string = "+"):stmt =
+template hdx*(code:stmt,frm:string = "+",width:int = tw.int):stmt =
    ## hdx
    ## 
-   ## a simple sandwich frame made with + default or any string passed in
+   ## a simple sandwich frame made with + default or any string passed in 
+   ## 
+   ## width can be adjusted
    ## 
    echo()
-   var lx = repeat(frm,tw.int div frm.len)
+   var lx = repeat(frm,width div frm.len)
    printLn(lx)
    code
    printLn(lx)
@@ -2710,11 +2728,10 @@ proc printNimSxR*(nimsx:seq[string],col:string = yellowgreen, xpos: int = 1) =
    
 
 
-
-
-
 proc printSlimNumber*(anumber:string,fgr:string = yellowgreen ,bgr:string = black,xpos:int = 1) =
     ## printSlimNumber
+    ## 
+    ## # will shortly be deprecated use:  printSlim
     ## 
     ## prints an string in big slim font
     ## 
@@ -2773,6 +2790,91 @@ proc printSlimNumber*(anumber:string,fgr:string = yellowgreen ,bgr:string = blac
             print(" " & printseq[y][x],fgr,bgr)
         writeLine(stdout,"")   
 
+
+      
+proc slimN(x:int):Tsn7 =        
+  # supporting slim number printing
+  var nnx:Tsn7
+  case x 
+    of 0: nnx.nx = snumber0  
+    of 1: nnx.nx = snumber1
+    of 2: nnx.nx = snumber2    
+    of 3: nnx.nx = snumber3    
+    of 4: nnx.nx = snumber4
+    of 5: nnx.nx = snumber5
+    of 6: nnx.nx = snumber6
+    of 7: nnx.nx = snumber7
+    of 8: nnx.nx = snumber8 
+    of 9: nnx.nx = snumber9
+    else: discard 
+  result = nnx
+
+
+proc slimC(x:string):Tsn7 = 
+  # supporting slim chars printing
+  var nnx:Tsn7
+  case x 
+    of ".": nnx.nx = sdot
+    of ",": nnx.nx = scomma
+    of ":": nnx.nx = scolon
+    of " ": nnx.nx = sblank
+    else : discard
+  result = nnx
+
+
+proc prsn(x:int,fgr:string = termwhite,bgr:string = termblack,xpos:int = 0) = 
+     # print routie for slim numbers
+     for x in slimN(x).nx: println(x,fgr = fgr,bgr = bgr,xpos = xpos)
+ 
+proc prsc(x:string,fgr:string = termwhite,bgr:string = termblack,xpos:int = 0) = 
+     # print routine for slim chars
+     for x in slimc(x).nx: println($x,fgr = fgr,bgr = bgr,xpos = xpos) 
+ 
+
+proc printSlim* (ss:string = "", frg:string = termwhite,bgr:string = termblack,xpos:int = 0,align:string = "left") =
+    ## printSlim
+    ## 
+    ## prints available slim numbers and slim chars
+    ## 
+    ## right alignment : the string will be written left of xpos position
+    ## left  alignment : the string will be written right of xpos position
+    ##
+    ## make sure enough space is available left or right of xpos 
+    ##
+    ## .. code-block:: nim
+    ##      printSlim($"82233.32",salmon,xpos = 25,align = "right")
+    ##      decho(3)
+    ##      printSlim($"33.87",salmon,xpos = 25,align = "right")
+    ##      ruler(25,lime)
+    ##      decho(3)
+    ##      printSlim($"82233.32",peru,xpos = 25)
+    ##      decho(3)
+    ##      printSlim($"33.87",peru,xpos = 25)
+    ##
+    
+    
+    
+    var npos = xpos
+    #if we want to right align we need to know the overall length, which needs a scan
+    var sswidth = 0
+    if tolower(align) == "right":
+      for x in ss:
+         if $x in slimCharSet:
+           sswidth = sswidth + 1
+         else:
+           sswidth = sswidth + 3      
+    
+    for x in ss:
+      if $x in slimcharset:
+        prsc($x ,frg,bgr, xpos = npos - sswidth)
+        npos = npos + 1
+        curup(3)
+      else:  
+        var mn:int = parseInt($x)
+        prsn(mn ,frg,bgr, xpos = npos - sswidth)
+        npos = npos + 3
+        curup(3)
+          
 
 
 # Framed headers with var. colorising options
@@ -3246,6 +3348,26 @@ template getCard* :auto =
     ## 
     cards[rxCards.randomChoice()] 
  
+
+
+proc ruler* (xpos:int=0,fgr:string = termwhite,bgr:string = termblack , all:bool = false) =
+     ## ruler
+     ## 
+     ## simple indicator of dot x positions to give a feedback during outlay design
+     ## 
+     ## 
+     
+     if all == false:
+       println(".",truetomato,bgr,xpos = xpos)
+       println($xpos,fgr,bgr,xpos = xpos)
+     else:
+       for x in xpos.. <tw - xpos:
+         if x mod 4 == 0:
+            print(".",truetomato,bgr,xpos = x)
+            curdn(1)
+            print(x,fgr,bgr,xpos = x)
+            curup(1)
+
  
 proc centerMark*(showpos :bool = false) =
      ## centerMark
