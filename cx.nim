@@ -74,6 +74,8 @@
 ##                 mileage may vary depending on the available
 ##                 
 ##                 unicode libraries and terminal support in your system
+##
+##                 terminal x-axis position start with 1
 ##   
 ##
 ##   Required    : see imports for modules currently expected to be available
@@ -1478,9 +1480,10 @@ proc print*[T](astring:T,fgr:string = termwhite ,bgr:string = bblack ,xpos:int =
     var npos = xpos
     
     if centered == false:
-    
-        if npos > 0:
+        
+        if npos > 0:  # the result of this is our screen position start with 1 
             setCursorXPos(npos)
+            
             
         if ($astring).len + xpos >= tw:
           
@@ -3356,17 +3359,53 @@ proc ruler* (xpos:int=0,fgr:string = termwhite,bgr:string = termblack , all:bool
      ## simple indicator of dot x positions to give a feedback during outlay design
      ## 
      ## 
+     ## ..code-block::nim
+     ##   # this will show a full terminal width ruler
+     ##   ruler(fgr=pastelblue,all = true)
+     ##   decho(3)
+     ##   # this will show a specified position only 
+     ##   ruler(tw div 2,fgr=pastelblue,all = false)
+     ##   decho(3)
+     ##   # this will show a full terminal width ruler starting at a certain position
+     ##   ruler(75,fgr=pastelblue,all = true)
+     
+     var fflag:bool = false
+     var npos = xpos
+     if xpos == 0: npos = 1
+         
      
      if all == false:
-       println(".",truetomato,bgr,xpos = xpos)
-       println($xpos,fgr,bgr,xpos = xpos)
+       println(".",lime,bgr,xpos = npos)
+       println($npos,fgr,bgr,xpos = npos)
      else:
-       for x in xpos.. <tw - xpos:
-         if x mod 4 == 0:
-            print(".",truetomato,bgr,xpos = x)
+       for x in npos.. <(tw):
+                  
+         if x == 1:
+            curup(1)
+            print(".",lime,bgr,xpos = 1)
+            curdn(1)
+            print(x,fgr,bgr,xpos = 1)
+            curup(1)
+            fflag = true
+                 
+         elif x mod 5 > 0 and fflag == false:
+            curup(1)
+            print(".",goldenrod,bgr,xpos = x)
+            curdn(1)
+           
+         elif x mod 5 == 0:
+            if fflag == false:
+              curup(1)
+            print(".",lime,bgr,xpos = x)
             curdn(1)
             print(x,fgr,bgr,xpos = x)
             curup(1)
+            fflag = true
+         else:
+            fflag = true
+            print(".",truetomato,bgr,xpos = x)
+            
+ 
 
  
 proc centerMark*(showpos :bool = false) =
