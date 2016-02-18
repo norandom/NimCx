@@ -3356,19 +3356,21 @@ proc ruler* (xpos:int=0,xposE:int=0,ypos:int = 0,fgr:string = termwhite,bgr:stri
      ## ruler
      ##
      ## simple terminal ruler indicating dot x positions to give a feedback 
+     ## 
      ## available for horizontal --> vert = false
      ##           for vertical   --> vert = true
      ##
+     ## see cxDemo and cxtest for more usage examples
      ##
-     ## ..code-block::nim
+     ## .. code-block::nim
      ##   # this will show a full terminal width ruler
-     ##   ruler(fgr=pastelblue,all = true)
+     ##   ruler(fgr=pastelblue)
      ##   decho(3)
      ##   # this will show a specified position only
-     ##   ruler(tw div 2,fgr=pastelblue,all = false)
+     ##   ruler(xpos =22,xposE = 55,fgr=pastelgreen)
      ##   decho(3)
      ##   # this will show a full terminal width ruler starting at a certain position
-     ##   ruler(75,fgr=pastelblue,all = true)
+     ##   ruler(xpos = 75,fgr=pastelblue)
    
      var fflag:bool = false
      var npos  = xpos
