@@ -11,40 +11,40 @@
 ##   ProjectStart: 2015-06-20
 ##
 ##   Compiler    : Nim 0.13.1
-##   
-##   OS          : Linux  
+##
+##   OS          : Linux
 ##
 ##   Description :
-##   
+##
 ##                 cx.nim is a collection of simple procs and templates
 ##
 ##                 for easy colored display in a linux terminal , date handling and more
-##                 
+##
 ##                 some procs may mirror functionality found in other moduls for convenience
-##                 
-##                 
-##   Usage       : import cx              
+##
+##
+##   Usage       : import cx
 ##
 ##   Project     : https://github.com/qqtop/NimCx
 ##
 ##   Docs        : http://qqtop.github.io/cx.html
 ##
 ##   Tested      : OpenSuse 13.2 , OpenSuse Leap42.1  kde editions
-##   
+##
 ##                 mint 17 , ubuntu 14.04 LTS
-##     
-##                 with var. terminal font : monospace size 9.0 - 15 depending on screen resolution           
-##         
-##                 xterm,bash,st terminals support truecolor ok 
-##                 
+##
+##                 with var. terminal font : monospace size 9.0 - 15 depending on screen resolution
+##
+##                 xterm,bash,st terminals support truecolor ok
+##
 ##                 some ubuntu based gnome-terminals may not be able to display all colors
-##                 
+##
 ##                 as they are not correctly linked for whatever reason , see ubuntu forum questions.
-##                 
+##
 ##                 run this awk script to see if your terminal supports truecolor
-##                 
+##
 ##                 script from : https://gist.github.com/XVilka/8346728
-##                 
+##
 ##                  awk 'BEGIN{
 ##                      s="/\\/\\/\\/\\/\\"; s=s s s s s s s s;
 ##                      for (colnum = 0; colnum<77; colnum++) {
@@ -58,35 +58,35 @@
 ##                      }
 ##                      printf "\n";
 ##                  }'
-##                 
-##                 
-##   Related     : 
-##   
+##
+##
+##   Related     :
+##
 ##                * demos : cxDemo.nim   (demo library)
-##   
+##
 ##                * tests : cxTest.nim   (run some rough demos from cxDemo)
-##                 
+##
 ##
 ##   Programming : qqTop
 ##
 ##   Note        : may be improved at any time
-##   
+##
 ##                 mileage may vary depending on the available
-##                 
+##
 ##                 unicode libraries and terminal support in your system
 ##
 ##                 terminal x-axis position start with 1
-##   
+##
 ##
 ##   Required    : see imports for modules currently expected to be available
-##   
+##
 ##                 these will be automatically installed with latest nimble if you do
-##                 
-##                 nimble install nimFinLib 
-##                 
+##
+##                 nimble install nimFinLib
+##
 ##                 a project which now uses cx.nim
-##  
-
+##
+##
 import os,osproc,macros,posix,terminal,math,stats,unicode,times,tables,json,sets
 import sequtils,parseutils,strutils,httpclient,rawsockets,browsers,intsets, algorithm
 # imports based on modules available via nimble
@@ -95,13 +95,13 @@ import random,strfmt
 when defined(macosx):
   {.hint    : "Switch to Linux !".}
   {.warning : "CX is only tested on Linux ! Your mileage may vary".}
-  
-when defined(windows):  
+
+when defined(windows):
   {.hint    : "Time to switch to Linux !".}
   {.fatal   : "Sorry CX does not support Windows at this stage !".}
-  
+
 when defined(posix):
-  {.hint    : "Aha, delicious Os flavour detected .... CX loves Linux !".}  
+  {.hint    : "Aha, delicious Os flavour detected .... CX loves Linux !".}
 
 
 # make terminal style constants available in the calling prog
@@ -111,12 +111,11 @@ export terminal.Style,terminal.getch
 const CXLIBVERSION* = "0.9.7"
 
 let start* = epochTime()  ##  check execution timing with one line see doFinish()
-  
 
 proc getfg(fg:ForegroundColor):string =
     var gFG = ord(fg)
     result = "\e[" & $gFG & 'm'
-    
+
 proc getbg(bg:BackgroundColor):string =
     var gBG = ord(bg)
     result = "\e[" & $gBG & 'm'
@@ -138,24 +137,24 @@ type
       nx : seq[string]
 
 
-const 
-  
+const
+
       # Terminal consts for bash terminal cleanup
       # mileage may very on your system
-      # 
+      #
       # usage : print clearbol
       #         printLn(cleareol,green,red,xpos = 20)
-      #  
+      #
       clearbol*      =   "\x1b[1K"         ## clear to begin of line
-      cleareol*      =   "\x1b[K"          ## clear to end of line  
+      cleareol*      =   "\x1b[K"          ## clear to end of line
       clearscreen*   =   "\x1b[2J\x1b[H"   ## clear screen
-      clearline*     =   "\x1b[2K\x1b[G"   ## clear line 
+      clearline*     =   "\x1b[2K\x1b[G"   ## clear line
       clearbos*      =   "\x1b[1J"         ## clear to begin of screen
       cleareos*      =   "\x1b[J"          ## clear to end of screen
-      resetcols*     =   "\x1b[0m"         ## reset colors     
-    
+      resetcols*     =   "\x1b[0m"         ## reset colors
+
 const
-  
+
       # Terminal consts for bash movements ( still testing )
       cup*      = "\x1b[A"      # ok
       cdown*    = "\x1b[B"      # ok
@@ -175,7 +174,7 @@ const
 
 const
       # Terminal ForegroundColor Normal
-      
+
       termred*              = getfg(fgRed)
       termgreen*            = getfg(fgGreen)
       termblue*             = getfg(fgBlue)
@@ -184,20 +183,20 @@ const
       termwhite*            = getfg(fgWhite)
       termblack*            = getfg(fgBlack)
       termmagenta*          = getfg(fgMagenta)
-      
+
       # Terminal ForegroundColor Bright
-       
+
       brightred*            = fbright(fgRed)
       brightgreen*          = fbright(fgGreen)
-      brightblue*           = fbright(fgBlue) 
+      brightblue*           = fbright(fgBlue)
       brightcyan*           = fbright(fgCyan)
       brightyellow*         = fbright(fgYellow)
       brightwhite*          = fbright(fgWhite)
       brightmagenta*        = fbright(fgMagenta)
       brightblack*          = fbright(fgBlack)
-       
-      clrainbow*            = "clrainbow" 
-       
+
+      clrainbow*            = "clrainbow"
+
       # Terminal BackgroundColor Normal
 
       bred*                 = getbg(bgRed)
@@ -207,172 +206,172 @@ const
       byellow*              = getbg(bgYellow)
       bwhite*               = getbg(bgWhite)
       bblack*               = getbg(bgBlack)
-      bmagenta*             = getbg(bgMagenta)  
-      
+      bmagenta*             = getbg(bgMagenta)
+
       # Terminal BackgroundColor Bright
-      
+
       bbrightred*           = bbright(bgRed)
       bbrightgreen*         = bbright(bgGreen)
-      bbrightblue*          = bbright(bgBlue) 
+      bbrightblue*          = bbright(bgBlue)
       bbrightcyan*          = bbright(bgCyan)
       bbrightyellow*        = bbright(bgYellow)
       bbrightwhite*         = bbright(bgWhite)
       bbrightmagenta*       = bbright(bgMagenta)
       bbrightblack*         = bbright(bgBlack)
-     
-      # Pastel color set 
-      
-      pastelgreen*          =  "\x1b[38;2;179;226;205m"    
-      pastelorange*         =  "\x1b[38;2;253;205;172m"  
+
+      # Pastel color set
+
+      pastelgreen*          =  "\x1b[38;2;179;226;205m"
+      pastelorange*         =  "\x1b[38;2;253;205;172m"
       pastelblue*           =  "\x1b[38;2;203;213;232m"
       pastelpink*           =  "\x1b[38;2;244;202;228m"
       pastelyellowgreen*    =  "\x1b[38;2;230;245;201m"
-      pastelyellow*         =  "\x1b[38;2;255;242;174m"    
+      pastelyellow*         =  "\x1b[38;2;255;242;174m"
       pastelbeige*          =  "\x1b[38;2;241;226;204m"
       pastelwhite*          =  "\x1b[38;2;204;204;204m"
-        
-        
-      # other colors of interest  
+
+
+      # other colors of interest
       truetomato*           =   "\x1b[38;2;255;100;0m"
-              
-        
+
+
       # colors lifted from colors.nim and massaged into rgb escape seqs
 
       aliceblue*            =  "\x1b[38;2;240;248;255m"
-      antiquewhite*         =  "\x1b[38;2;250;235;215m"                                                    
-      aqua*                 =  "\x1b[38;2;0;255;255m"                                                      
-      aquamarine*           =  "\x1b[38;2;127;255;212m"                                                    
-      azure*                =  "\x1b[38;2;240;255;255m"                                                    
-      beige*                =  "\x1b[38;2;245;245;220m"                                                    
-      bisque*               =  "\x1b[38;2;255;228;196m"                                                    
-      black*                =  "\x1b[38;2;0;0;0m"                                                          
-      blanchedalmond*       =  "\x1b[38;2;255;235;205m"                                                    
-      blue*                 =  "\x1b[38;2;0;0;255m"                                                        
-      blueviolet*           =  "\x1b[38;2;138;43;226m"                                                     
-      brown*                =  "\x1b[38;2;165;42;42m"                                                      
-      burlywood*            =  "\x1b[38;2;222;184;135m"                                                    
-      cadetblue*            =  "\x1b[38;2;95;158;160m"                                                     
-      chartreuse*           =  "\x1b[38;2;127;255;0m"                                                      
-      chocolate*            =  "\x1b[38;2;210;105;30m"                                                     
-      coral*                =  "\x1b[38;2;255;127;80m"                                                     
-      cornflowerblue*       =  "\x1b[38;2;100;149;237m"                                                    
-      cornsilk*             =  "\x1b[38;2;255;248;220m"                                                    
-      crimson*              =  "\x1b[38;2;220;20;60m"                                                      
-      cyan*                 =  "\x1b[38;2;0;255;255m"                                                      
-      darkblue*             =  "\x1b[38;2;0;0;139m"                                                        
-      darkcyan*             =  "\x1b[38;2;0;139;139m"                                                      
-      darkgoldenrod*        =  "\x1b[38;2;184;134;11m"                                                     
-      darkgray*             =  "\x1b[38;2;169;169;169m"                                                    
-      darkgreen*            =  "\x1b[38;2;0;100;0m"                                                        
-      darkkhaki*            =  "\x1b[38;2;189;183;107m"                                                    
-      darkmagenta*          =  "\x1b[38;2;139;0;139m"                                                      
-      darkolivegreen*       =  "\x1b[38;2;85;107;47m"                                                      
-      darkorange*           =  "\x1b[38;2;255;140;0m"                                                      
-      darkorchid*           =  "\x1b[38;2;153;50;204m"                                                     
-      darkred*              =  "\x1b[38;2;139;0;0m"                                                        
-      darksalmon*           =  "\x1b[38;2;233;150;122m"                                                    
-      darkseagreen*         =  "\x1b[38;2;143;188;143m"                                                    
-      darkslateblue*        =  "\x1b[38;2;72;61;139m"                                                      
-      darkslategray*        =  "\x1b[38;2;47;79;79m"                                                       
-      darkturquoise*        =  "\x1b[38;2;0;206;209m"                                                      
-      darkviolet*           =  "\x1b[38;2;148;0;211m"                                                      
-      deeppink*             =  "\x1b[38;2;255;20;147m"                                                     
-      deepskyblue*          =  "\x1b[38;2;0;191;255m"                                                      
-      dimgray*              =  "\x1b[38;2;105;105;105m"                                                    
-      dodgerblue*           =  "\x1b[38;2;30;144;255m"                                                     
-      firebrick*            =  "\x1b[38;2;178;34;34m"                                                      
-      floralwhite*          =  "\x1b[38;2;255;250;240m"                                                    
-      forestgreen*          =  "\x1b[38;2;34;139;34m"                                                      
-      fuchsia*              =  "\x1b[38;2;255;0;255m"                                                      
-      gainsboro*            =  "\x1b[38;2;220;220;220m"                                                    
-      ghostwhite*           =  "\x1b[38;2;248;248;255m"                                                    
-      gold*                 =  "\x1b[38;2;255;215;0m"                                                      
-      goldenrod*            =  "\x1b[38;2;218;165;32m"                                                     
-      gray*                 =  "\x1b[38;2;128;128;128m"                                                    
-      green*                =  "\x1b[38;2;0;128;0m"                                                        
-      greenyellow*          =  "\x1b[38;2;173;255;47m"                                                     
-      honeydew*             =  "\x1b[38;2;240;255;240m"                                                    
-      hotpink*              =  "\x1b[38;2;255;105;180m"                                                    
-      indianred*            =  "\x1b[38;2;205;92;92m"                                                      
-      indigo*               =  "\x1b[38;2;75;0;130m"                                                       
-      ivory*                =  "\x1b[38;2;255;255;240m"                                                    
-      khaki*                =  "\x1b[38;2;240;230;140m"                                                    
-      lavender*             =  "\x1b[38;2;230;230;250m"                                                    
-      lavenderblush*        =  "\x1b[38;2;255;240;245m"                                                    
-      lawngreen*            =  "\x1b[38;2;124;252;0m"                                                      
-      lemonchiffon*         =  "\x1b[38;2;255;250;205m"                                                    
-      lightblue*            =  "\x1b[38;2;173;216;230m"                                                    
-      lightcoral*           =  "\x1b[38;2;240;128;128m"                                                    
-      lightcyan*            =  "\x1b[38;2;224;255;255m"                                                    
-      lightgoldenrodyellow* =  "\x1b[38;2;250;250;210m"                                                   
-      lightgrey*            =  "\x1b[38;2;211;211;211m"                                                    
-      lightgreen*           =  "\x1b[38;2;144;238;144m"                                                    
-      lightpink*            =  "\x1b[38;2;255;182;193m"                                                    
-      lightsalmon*          =  "\x1b[38;2;255;160;122m"                                                    
-      lightseagreen*        =  "\x1b[38;2;32;178;170m"                                                     
-      lightskyblue*         =  "\x1b[38;2;135;206;250m"                                                    
-      lightslategray*       =  "\x1b[38;2;119;136;153m"                                                    
-      lightsteelblue*       =  "\x1b[38;2;176;196;222m"                                                    
-      lightyellow*          =  "\x1b[38;2;255;255;224m"                                                    
-      lime*                 =  "\x1b[38;2;0;255;0m"                                                        
-      limegreen*            =  "\x1b[38;2;50;205;50m"                                                      
-      linen*                =  "\x1b[38;2;250;240;230m"                                                    
-      magenta*              =  "\x1b[38;2;255;0;255m"                                                      
-      maroon*               =  "\x1b[38;2;128;0;0m"                                                        
-      mediumaquamarine*     =  "\x1b[38;2;102;205;170m"                                                    
-      mediumblue*           =  "\x1b[38;2;0;0;205m"                                                        
-      mediumorchid*         =  "\x1b[38;2;186;85;211m"                                                     
-      mediumpurple*         =  "\x1b[38;2;147;112;216m"                                                    
-      mediumseagreen*       =  "\x1b[38;2;60;179;113m"                                                     
-      mediumslateblue*      =  "\x1b[38;2;123;104;238m"                                                    
-      mediumspringgreen*    =  "\x1b[38;2;0;250;154m"                                                      
-      mediumturquoise*      =  "\x1b[38;2;72;209;204m"                                                     
-      mediumvioletred*      =  "\x1b[38;2;199;21;133m"                                                     
-      midnightblue*         =  "\x1b[38;2;25;25;112m"                                                      
-      mintcream*            =  "\x1b[38;2;245;255;250m"                                                    
-      mistyrose*            =  "\x1b[38;2;255;228;225m"                                                    
-      moccasin*             =  "\x1b[38;2;255;228;181m"                                                    
-      navajowhite*          =  "\x1b[38;2;255;222;173m"                                                    
-      navy*                 =  "\x1b[38;2;0;0;128m"                                                        
-      oldlace*              =  "\x1b[38;2;253;245;230m"                                                    
-      olive*                =  "\x1b[38;2;128;128;0m"                                                      
-      olivedrab*            =  "\x1b[38;2;107;142;35m"                                                     
-      orange*               =  "\x1b[38;2;255;165;0m"                                                      
-      orangered*            =  "\x1b[38;2;255;69;0m"                                                       
-      orchid*               =  "\x1b[38;2;218;112;214m"                                                    
-      palegoldenrod*        =  "\x1b[38;2;238;232;170m"                                                    
-      palegreen*            =  "\x1b[38;2;152;251;152m"                                                    
-      paleturquoise*        =  "\x1b[38;2;175;238;238m"                                                    
-      palevioletred*        =  "\x1b[38;2;216;112;147m"                                                    
-      papayawhip*           =  "\x1b[38;2;255;239;213m"                                                    
-      peachpuff*            =  "\x1b[38;2;255;218;185m"                                                    
-      peru*                 =  "\x1b[38;2;205;133;63m"                                                     
-      pink*                 =  "\x1b[38;2;255;192;203m"                                                    
-      plum*                 =  "\x1b[38;2;221;160;221m"                                                    
-      powderblue*           =  "\x1b[38;2;176;224;230m"                                                    
-      purple*               =  "\x1b[38;2;128;0;128m"                                                      
-      red*                  =  "\x1b[38;2;255;0;0m"                                                        
-      rosybrown*            =  "\x1b[38;2;188;143;143m"                                                    
-      royalblue*            =  "\x1b[38;2;65;105;225m"                                                     
-      saddlebrown*          =  "\x1b[38;2;139;69;19m"                                                      
-      salmon*               =  "\x1b[38;2;250;128;114m"                                                    
-      sandybrown*           =  "\x1b[38;2;244;164;96m"                                                     
-      seagreen*             =  "\x1b[38;2;46;139;87m"                                                      
-      seashell*             =  "\x1b[38;2;255;245;238m"                                                    
-      sienna*               =  "\x1b[38;2;160;82;45m"                                                      
-      silver*               =  "\x1b[38;2;192;192;192m"                                                    
-      skyblue*              =  "\x1b[38;2;135;206;235m"                                                    
-      slateblue*            =  "\x1b[38;2;106;90;205m"                                                     
-      slategray*            =  "\x1b[38;2;112;128;144m"                                                    
-      snow*                 =  "\x1b[38;2;255;250;250m"                                                    
-      springgreen*          =  "\x1b[38;2;0;255;127m"                                                      
-      steelblue*            =  "\x1b[38;2;70;130;180m"                                                     
-      tan*                  =  "\x1b[38;2;210;180;140m"                                                    
-      teal*                 =  "\x1b[38;2;0;128;128m"                                                      
-      thistle*              =  "\x1b[38;2;216;191;216m"                                                    
-      tomato*               =  "\x1b[38;2;255;99;71m"                                                      
-      turquoise*            =  "\x1b[38;2;64;224;208m"                                                     
-      violet*               =  "\x1b[38;2;238;130;238m"                                                    
+      antiquewhite*         =  "\x1b[38;2;250;235;215m"
+      aqua*                 =  "\x1b[38;2;0;255;255m"
+      aquamarine*           =  "\x1b[38;2;127;255;212m"
+      azure*                =  "\x1b[38;2;240;255;255m"
+      beige*                =  "\x1b[38;2;245;245;220m"
+      bisque*               =  "\x1b[38;2;255;228;196m"
+      black*                =  "\x1b[38;2;0;0;0m"
+      blanchedalmond*       =  "\x1b[38;2;255;235;205m"
+      blue*                 =  "\x1b[38;2;0;0;255m"
+      blueviolet*           =  "\x1b[38;2;138;43;226m"
+      brown*                =  "\x1b[38;2;165;42;42m"
+      burlywood*            =  "\x1b[38;2;222;184;135m"
+      cadetblue*            =  "\x1b[38;2;95;158;160m"
+      chartreuse*           =  "\x1b[38;2;127;255;0m"
+      chocolate*            =  "\x1b[38;2;210;105;30m"
+      coral*                =  "\x1b[38;2;255;127;80m"
+      cornflowerblue*       =  "\x1b[38;2;100;149;237m"
+      cornsilk*             =  "\x1b[38;2;255;248;220m"
+      crimson*              =  "\x1b[38;2;220;20;60m"
+      cyan*                 =  "\x1b[38;2;0;255;255m"
+      darkblue*             =  "\x1b[38;2;0;0;139m"
+      darkcyan*             =  "\x1b[38;2;0;139;139m"
+      darkgoldenrod*        =  "\x1b[38;2;184;134;11m"
+      darkgray*             =  "\x1b[38;2;169;169;169m"
+      darkgreen*            =  "\x1b[38;2;0;100;0m"
+      darkkhaki*            =  "\x1b[38;2;189;183;107m"
+      darkmagenta*          =  "\x1b[38;2;139;0;139m"
+      darkolivegreen*       =  "\x1b[38;2;85;107;47m"
+      darkorange*           =  "\x1b[38;2;255;140;0m"
+      darkorchid*           =  "\x1b[38;2;153;50;204m"
+      darkred*              =  "\x1b[38;2;139;0;0m"
+      darksalmon*           =  "\x1b[38;2;233;150;122m"
+      darkseagreen*         =  "\x1b[38;2;143;188;143m"
+      darkslateblue*        =  "\x1b[38;2;72;61;139m"
+      darkslategray*        =  "\x1b[38;2;47;79;79m"
+      darkturquoise*        =  "\x1b[38;2;0;206;209m"
+      darkviolet*           =  "\x1b[38;2;148;0;211m"
+      deeppink*             =  "\x1b[38;2;255;20;147m"
+      deepskyblue*          =  "\x1b[38;2;0;191;255m"
+      dimgray*              =  "\x1b[38;2;105;105;105m"
+      dodgerblue*           =  "\x1b[38;2;30;144;255m"
+      firebrick*            =  "\x1b[38;2;178;34;34m"
+      floralwhite*          =  "\x1b[38;2;255;250;240m"
+      forestgreen*          =  "\x1b[38;2;34;139;34m"
+      fuchsia*              =  "\x1b[38;2;255;0;255m"
+      gainsboro*            =  "\x1b[38;2;220;220;220m"
+      ghostwhite*           =  "\x1b[38;2;248;248;255m"
+      gold*                 =  "\x1b[38;2;255;215;0m"
+      goldenrod*            =  "\x1b[38;2;218;165;32m"
+      gray*                 =  "\x1b[38;2;128;128;128m"
+      green*                =  "\x1b[38;2;0;128;0m"
+      greenyellow*          =  "\x1b[38;2;173;255;47m"
+      honeydew*             =  "\x1b[38;2;240;255;240m"
+      hotpink*              =  "\x1b[38;2;255;105;180m"
+      indianred*            =  "\x1b[38;2;205;92;92m"
+      indigo*               =  "\x1b[38;2;75;0;130m"
+      ivory*                =  "\x1b[38;2;255;255;240m"
+      khaki*                =  "\x1b[38;2;240;230;140m"
+      lavender*             =  "\x1b[38;2;230;230;250m"
+      lavenderblush*        =  "\x1b[38;2;255;240;245m"
+      lawngreen*            =  "\x1b[38;2;124;252;0m"
+      lemonchiffon*         =  "\x1b[38;2;255;250;205m"
+      lightblue*            =  "\x1b[38;2;173;216;230m"
+      lightcoral*           =  "\x1b[38;2;240;128;128m"
+      lightcyan*            =  "\x1b[38;2;224;255;255m"
+      lightgoldenrodyellow* =  "\x1b[38;2;250;250;210m"
+      lightgrey*            =  "\x1b[38;2;211;211;211m"
+      lightgreen*           =  "\x1b[38;2;144;238;144m"
+      lightpink*            =  "\x1b[38;2;255;182;193m"
+      lightsalmon*          =  "\x1b[38;2;255;160;122m"
+      lightseagreen*        =  "\x1b[38;2;32;178;170m"
+      lightskyblue*         =  "\x1b[38;2;135;206;250m"
+      lightslategray*       =  "\x1b[38;2;119;136;153m"
+      lightsteelblue*       =  "\x1b[38;2;176;196;222m"
+      lightyellow*          =  "\x1b[38;2;255;255;224m"
+      lime*                 =  "\x1b[38;2;0;255;0m"
+      limegreen*            =  "\x1b[38;2;50;205;50m"
+      linen*                =  "\x1b[38;2;250;240;230m"
+      magenta*              =  "\x1b[38;2;255;0;255m"
+      maroon*               =  "\x1b[38;2;128;0;0m"
+      mediumaquamarine*     =  "\x1b[38;2;102;205;170m"
+      mediumblue*           =  "\x1b[38;2;0;0;205m"
+      mediumorchid*         =  "\x1b[38;2;186;85;211m"
+      mediumpurple*         =  "\x1b[38;2;147;112;216m"
+      mediumseagreen*       =  "\x1b[38;2;60;179;113m"
+      mediumslateblue*      =  "\x1b[38;2;123;104;238m"
+      mediumspringgreen*    =  "\x1b[38;2;0;250;154m"
+      mediumturquoise*      =  "\x1b[38;2;72;209;204m"
+      mediumvioletred*      =  "\x1b[38;2;199;21;133m"
+      midnightblue*         =  "\x1b[38;2;25;25;112m"
+      mintcream*            =  "\x1b[38;2;245;255;250m"
+      mistyrose*            =  "\x1b[38;2;255;228;225m"
+      moccasin*             =  "\x1b[38;2;255;228;181m"
+      navajowhite*          =  "\x1b[38;2;255;222;173m"
+      navy*                 =  "\x1b[38;2;0;0;128m"
+      oldlace*              =  "\x1b[38;2;253;245;230m"
+      olive*                =  "\x1b[38;2;128;128;0m"
+      olivedrab*            =  "\x1b[38;2;107;142;35m"
+      orange*               =  "\x1b[38;2;255;165;0m"
+      orangered*            =  "\x1b[38;2;255;69;0m"
+      orchid*               =  "\x1b[38;2;218;112;214m"
+      palegoldenrod*        =  "\x1b[38;2;238;232;170m"
+      palegreen*            =  "\x1b[38;2;152;251;152m"
+      paleturquoise*        =  "\x1b[38;2;175;238;238m"
+      palevioletred*        =  "\x1b[38;2;216;112;147m"
+      papayawhip*           =  "\x1b[38;2;255;239;213m"
+      peachpuff*            =  "\x1b[38;2;255;218;185m"
+      peru*                 =  "\x1b[38;2;205;133;63m"
+      pink*                 =  "\x1b[38;2;255;192;203m"
+      plum*                 =  "\x1b[38;2;221;160;221m"
+      powderblue*           =  "\x1b[38;2;176;224;230m"
+      purple*               =  "\x1b[38;2;128;0;128m"
+      red*                  =  "\x1b[38;2;255;0;0m"
+      rosybrown*            =  "\x1b[38;2;188;143;143m"
+      royalblue*            =  "\x1b[38;2;65;105;225m"
+      saddlebrown*          =  "\x1b[38;2;139;69;19m"
+      salmon*               =  "\x1b[38;2;250;128;114m"
+      sandybrown*           =  "\x1b[38;2;244;164;96m"
+      seagreen*             =  "\x1b[38;2;46;139;87m"
+      seashell*             =  "\x1b[38;2;255;245;238m"
+      sienna*               =  "\x1b[38;2;160;82;45m"
+      silver*               =  "\x1b[38;2;192;192;192m"
+      skyblue*              =  "\x1b[38;2;135;206;235m"
+      slateblue*            =  "\x1b[38;2;106;90;205m"
+      slategray*            =  "\x1b[38;2;112;128;144m"
+      snow*                 =  "\x1b[38;2;255;250;250m"
+      springgreen*          =  "\x1b[38;2;0;255;127m"
+      steelblue*            =  "\x1b[38;2;70;130;180m"
+      tan*                  =  "\x1b[38;2;210;180;140m"
+      teal*                 =  "\x1b[38;2;0;128;128m"
+      thistle*              =  "\x1b[38;2;216;191;216m"
+      tomato*               =  "\x1b[38;2;255;99;71m"
+      turquoise*            =  "\x1b[38;2;64;224;208m"
+      violet*               =  "\x1b[38;2;238;130;238m"
       wheat*                =  "\x1b[38;2;245;222;179m"
       white*                =  "\x1b[38;2;255;255;255m"    # same as brightwhite
       whitesmoke*           =  "\x1b[38;2;245;245;245m"
@@ -383,7 +382,7 @@ const
 
 let a1 = "  ██   "
 let a2 = " ██ █  "
-let a3 = "██   █ " 
+let a3 = "██   █ "
 let a4 = "██ █ █ "
 let a5 = "██   █ "
 
@@ -432,12 +431,12 @@ let g4 = "██   █ "
 let g5 = " ████  "
 
 
-  
+
 let h1 = "██   █ "
 let h2 = "██   █ "
 let h3 = "██████ "
 let h4 = "██   █ "
-let h5 = "██   █ "  
+let h5 = "██   █ "
 
 
 let i1 = "  ██   "
@@ -445,14 +444,14 @@ let i2 = "  ██   "
 let i3 = "  ██   "
 let i4 = "  ██   "
 let i5 = "  ██   "
-  
 
-  
+
+
 let j1 = "    ██ "
 let j2 = "    ██ "
 let j3 = "    ██ "
 let j4 = " █  ██ "
-let j5 = "  ██   "  
+let j5 = "  ██   "
 
 
 let k1 = "██   █ "
@@ -474,23 +473,23 @@ let m1 = "██  ██ "
 let m2 = "█ ██ █ "
 let m3 = "█  █ █ "
 let m4 = "█  █ █ "
-let m5 = "█    █ "  
+let m5 = "█    █ "
 
 
 let n1 = "██   █ "
 let n2 = "███  █ "
 let n3 = "██ █ █ "
 let n4 = "██  ██ "
-let n5 = "██   █ "  
+let n5 = "██   █ "
 
-          
+
 let o1 = " ████  "
 let o2 = "██   █ "
 let o3 = "██   █ "
 let o4 = "██   █ "
 let o5 = " ████  "
-  
-  
+
+
 let p1 = "██ ██  "
 let p2 = "██   █ "
 let p3 = "██ ██  "
@@ -503,23 +502,23 @@ let q2 = "██   █ "
 let q3 = "██   █ "
 let q4 = "██ █ █ "
 let q5 = " ██ █  "
-  
-         
+
+
 
 let r1 = "███ █  "
 let r2 = "██   █ "
 let r3 = "███ █  "
 let r4 = "██   █ "
 let r5 = "██   █ "
-  
-  
-  
+
+
+
 let s1 = "  █ ██ "
 let s2 = " █     "
 let s3 = "   █   "
 let s4 = "     █ "
 let s5 = " ██ █  "
-  
+
 
 let t1 = "██████ "
 let t2 = "  ██   "
@@ -531,7 +530,7 @@ let t5 = "  ██   "
 let u1 = "██   █ "
 let u2 = "██   █ "
 let u3 = "██   █ "
-let u4 = "██   █ " 
+let u4 = "██   █ "
 let u5 = "██████ "
 
 
@@ -539,7 +538,7 @@ let u5 = "██████ "
 let v1 = "██   █ "
 let v2 = "██   █ "
 let v3 = "██   █ "
-let v4 = " █  █  " 
+let v4 = " █  █  "
 let v5 = "  ██   "
 
 
@@ -548,20 +547,20 @@ let v5 = "  ██   "
 let w1 = "██   █ "
 let w2 = "██   █ "
 let w3 = "██ █ █ "
-let w4 = " █ █ █ " 
+let w4 = " █ █ █ "
 let w5 = "  █ █  "
 
-  
-let x1 = "██   █ "  
-let x2 = "  █ █  " 
+
+let x1 = "██   █ "
+let x2 = "  █ █  "
 let x3 = "   █   "
 let x4 = "  █ █  "
-let x5 = "██   █ "   
-  
-  
-  
-let y1 = "██   █ "  
-let y2 = "  █ █  " 
+let x5 = "██   █ "
+
+
+
+let y1 = "██   █ "
+let y2 = "  █ █  "
 let y3 = "   █   "
 let y4 = "   █   "
 let y5 = "   █   "
@@ -575,7 +574,7 @@ let z4 = " █     "
 let z5 = "██████ "
 
 
-  
+
 let hy1= "       "
 let hy2= "       "
 let hy3= " █████ "
@@ -593,13 +592,13 @@ let pl5= "       "
 let ul1 = "      "
 let ul2 = "      "
 let ul3 = "      "
-let ul4 = "      " 
+let ul4 = "      "
 let ul5 = "██████"
 
 let el1 = "      "
 let el2 = "██████"
 let el3 = "      "
-let el4 = "██████" 
+let el4 = "██████"
 let el5 = "      "
 
 
@@ -607,21 +606,21 @@ let el5 = "      "
 let clb1 = "      "
 let clb2 = "      "
 let clb3 = "      "
-let clb4 = "      " 
+let clb4 = "      "
 let clb5 = "      "
 
- 
-let abx* = @[a1,a2,a3,a4,a5]   
-let bbx* = @[b1,b2,b3,b4,b5]  
-let cbx* = @[c1,c2,c3,c4,c5]  
-let dbx* = @[d1,d2,d3,d4,d5]  
-let ebx* = @[e1,e2,e3,e4,e5]  
-let fbx* = @[f1,f2,f3,f4,f5]  
-let gbx* = @[g1,g2,g3,g4,g5]  
-let hbx* = @[h1,h2,h3,h4,h5]  
+
+let abx* = @[a1,a2,a3,a4,a5]
+let bbx* = @[b1,b2,b3,b4,b5]
+let cbx* = @[c1,c2,c3,c4,c5]
+let dbx* = @[d1,d2,d3,d4,d5]
+let ebx* = @[e1,e2,e3,e4,e5]
+let fbx* = @[f1,f2,f3,f4,f5]
+let gbx* = @[g1,g2,g3,g4,g5]
+let hbx* = @[h1,h2,h3,h4,h5]
 let ibx* = @[i1,i2,i3,i4,i5]
-let jbx* = @[j1,j2,j3,j4,j5]  
-let kbx* = @[k1,k2,k3,k4,k5]  
+let jbx* = @[j1,j2,j3,j4,j5]
+let kbx* = @[k1,k2,k3,k4,k5]
 let lbx* = @[l1,l2,l3,l4,l5]
 let mbx* = @[m1,m2,m3,m4,m5]
 let nbx* = @[n1,n2,n3,n4,n5]
@@ -656,71 +655,71 @@ const number0 =
   ,"██  ██"
   ,"██  ██"
   ,"██████"]
-  
+
 const number1 =
  @["    ██"
   ,"    ██"
   ,"    ██"
   ,"    ██"
   ,"    ██"]
- 
+
 const number2 =
  @["██████"
   ,"    ██"
   ,"██████"
   ,"██    "
   ,"██████"]
-  
+
 const number3 =
  @["██████"
   ,"    ██"
   ,"██████"
   ,"    ██"
   ,"██████"]
-  
+
 const number4 =
  @["██  ██"
   ,"██  ██"
   ,"██████"
   ,"    ██"
   ,"    ██"]
- 
+
 const number5 =
  @["██████"
   ,"██    "
   ,"██████"
   ,"    ██"
   ,"██████"]
-  
+
 const number6 =
  @["██████"
   ,"██    "
   ,"██████"
   ,"██  ██"
   ,"██████"]
-  
+
 const number7 =
  @["██████"
   ,"    ██"
   ,"    ██"
   ,"    ██"
   ,"    ██"]
-  
+
 const number8 =
  @["██████"
   ,"██  ██"
   ,"██████"
   ,"██  ██"
   ,"██████"]
-  
+
 const number9 =
  @["██████"
   ,"██  ██"
   ,"██████"
   ,"    ██"
   ,"██████"]
-  
- 
+
+
 const colon =
  @["      "
   ,"  ██  "
@@ -761,80 +760,80 @@ let nimsx2* = @[NIMX6,NIMX7,NIMX8,NIMX9,NIMX10]
 
 # slim numbers can be used with printSlimNumber
 
-const snumber0* = 
+const snumber0* =
   @["┌─┐",
     "│ │",
     "└─┘"]
 
 
-const snumber1* = 
+const snumber1* =
   @["  ╷",
     "  │",
     "  ╵"]
-  
-const snumber2* = 
+
+const snumber2* =
   @["╶─┐",
     "┌─┘",
     "└─╴"]
-   
+
 const snumber3* =
   @["╶─┐",
     "╶─┤",
     "╶─┘"]
-  
-const snumber4* = 
+
+const snumber4* =
   @["╷ ╷",
     "└─┤",
     "  ╵"]
-  
-const snumber5* = 
-  @["┌─╴",  
+
+const snumber5* =
+  @["┌─╴",
     "└─┐",
     "╶─┘"]
 
-const snumber6* = 
+const snumber6* =
   @["┌─╴",
     "├─┐",
     "└─┘"]
-  
-const snumber7* = 
-  @["╶─┐",  
+
+const snumber7* =
+  @["╶─┐",
     "  │",
     "  ╵"]
-  
+
 const snumber8* =
-  @["┌─┐",  
+  @["┌─┐",
     "├─┤",
     "└─┘"]
-  
-const snumber9* = 
+
+const snumber9* =
   @["┌─┐",
     "└─┤",
-    "╶─┘"] 
-  
-  
+    "╶─┘"]
+
+
 const scolon* =
   @["╷ ",
-    "╷ ",   
+    "╷ ",
     "  "]
-  
-  
-const scomma* = 
+
+
+const scomma* =
    @["  ",
      "  ",
      "╷ "]
-   
-const sdot* = 
+
+const sdot* =
    @["  ",
      "  ",
      ". "]
-   
 
-const sblank* = 
+
+const sblank* =
    @["  ",
      "  ",
      "  "]
-   
+
 
 var slimNumberSet = newSeq[string]()
 for x in 0.. 9: slimNumberSet.add($(x))
@@ -843,10 +842,10 @@ var slimCharSet   = @[",",".",":"," "]
 const snumberlen = 2
 
 
-# emojis  
+# emojis
 # mileage here may vary depending on whatever your system supports
 
-const 
+const
     # emoji len 3
     check*              =  "\xE2\x9C\x93"
     xmark*              =  "\xE2\x9C\x98"
@@ -864,7 +863,7 @@ const
     roof*               =  "\xEF\xA3\xBF"
     skull*              =  "\xE2\x98\xA0"
     smile*              =  "\xE2\x98\xBA"
-    # emoji len 4  
+    # emoji len 4
     smiley*             =  "😃"
     innocent*           =  "😇"
     lol*                =  "😂"
@@ -1038,26 +1037,26 @@ let colorNames* = @[
       ("pastelyellow",pastelyellow),
       ("pastelyellowgreen",pastelyellowgreen),
       ("truetomato",truetomato)]
-      
+
 
 let rxCol* = toSeq(colorNames.low.. colorNames.high) ## index into colorNames
 
 template randCol*: string = colorNames[rxCol.randomChoice()][1]
    ## randCol
-   ## 
+   ##
    ## get a randomcolor from colorNames
-   ## 
+   ##
    ## .. code-block:: nim
    ##    # print a string 6 times in a random color selected from colorNames
    ##    loopy(0..5,printLn("Hello Random Color",randCol()))
-   ##    
-   ##    
+   ##
+   ##
 
-# subsets of colorNames  
-# 
+# subsets of colorNames
+#
 # more colorsets may be added in the future  currently used in rainbow2
-# 
-# 
+#
+#
 let pastelSet* = @[
       ("pastelbeige",pastelbeige),
       ("pastelblue",pastelblue),
@@ -1072,21 +1071,21 @@ let rxPastelCol* = toSeq(pastelSet.low.. pastelSet.high) ## index into pastelSet
 
 
 let cards* = @[
- "🂡" ,"🂱" ,"🃁" ,"🃑", 
+ "🂡" ,"🂱" ,"🃁" ,"🃑",
  "🂢" ,"🂲" ,"🃂" ,"🃒",
- "🂣" ,"🂳" ,"🃃" ,"🃓", 
- "🂤" ,"🂴" ,"🃄" ,"🃔", 
- "🂥" ,"🂵" ,"🃅" ,"🃕", 
- "🂦" ,"🂶" ,"🃆" ,"🃖", 
- "🂧" ,"🂷" ,"🃇" ,"🃗", 
- "🂨" ,"🂸" ,"🃈" ,"🃘", 
- "🂩" ,"🂹" ,"🃉" ,"🃙", 
- "🂪" ,"🂺" ,"🃊" ,"🃚", 
- "🂫" ,"🂻" ,"🃋" ,"🃛", 
- "🂬" ,"🂼" ,"🃌" ,"🃜",    
- "🂭" ,"🂽" ,"🃍" ,"🃝", 
+ "🂣" ,"🂳" ,"🃃" ,"🃓",
+ "🂤" ,"🂴" ,"🃄" ,"🃔",
+ "🂥" ,"🂵" ,"🃅" ,"🃕",
+ "🂦" ,"🂶" ,"🃆" ,"🃖",
+ "🂧" ,"🂷" ,"🃇" ,"🃗",
+ "🂨" ,"🂸" ,"🃈" ,"🃘",
+ "🂩" ,"🂹" ,"🃉" ,"🃙",
+ "🂪" ,"🂺" ,"🃊" ,"🃚",
+ "🂫" ,"🂻" ,"🃋" ,"🃛",
+ "🂬" ,"🂼" ,"🃌" ,"🃜",
+ "🂭" ,"🂽" ,"🃍" ,"🃝",
  "🂮" ,"🂾" ,"🃎" ,"🃞",
- "🂠" ,"🂿" ,"🃏" ,"🃟"] 
+ "🂠" ,"🂿" ,"🃏" ,"🃟"]
 
 let rxCards* = toSeq(cards.low.. cards.high) ## index into cards
 
@@ -1103,7 +1102,7 @@ when defined(Linux):
         ## for a similar attempt see:
         ## https://github.com/c-blake/cligen/blob/master/termwidth.nim
         ##
-        
+
         type WinSize = object
           row, col, xpixel, ypixel: cushort
         const TIOCGWINSZ = 0x5413
@@ -1113,7 +1112,7 @@ when defined(Linux):
         ioctl(0, TIOCGWINSZ, addr size)
         result = toTwInt(size.col)
 
-   
+
     template tw* : int = getTerminalwidth() ## latest terminalwidth always available in tw
 
 
@@ -1122,7 +1121,7 @@ when defined(Linux):
         ##
         ## get linux terminal height in rows
         ##
-        
+
         type WinSize = object
           row, col, xpixel, ypixel: cushort
         const TIOCGWINSZ = 0x5413
@@ -1132,7 +1131,7 @@ when defined(Linux):
         ioctl(0, TIOCGWINSZ, addr size)
         result = toTwInt(size.row)
 
-   
+
     template th* : int = getTerminalheight() ## latest terminalheight always available in th
 
 
@@ -1158,9 +1157,9 @@ proc styledEchoProcessArg(color: BackgroundColor) = setBackgroundColor color
 # macros
 
 macro styledEchoPrint*(m: varargs[expr]): stmt =
-  ## lifted from terminal.nim and removed new line 
+  ## lifted from terminal.nim and removed new line
   ## used in printStyled
-  ## 
+  ##
   let m = callsite()
   result = newNimNode(nnkStmtList)
 
@@ -1176,14 +1175,14 @@ macro styledEchoPrint*(m: varargs[expr]): stmt =
 
 template randPastelCol*: string = pastelSet[rxPastelCol.randomChoice()][1]
    ## randPastelCol
-   ## 
+   ##
    ## get a randomcolor from pastelSet
-   ## 
+   ##
    ## .. code-block:: nim
    ##    # print a string 6 times in a random color selected from pastelSet
    ##    loopy(0..5,printLn("Hello Random Color",randPastelCol()))
-   ##    
-   ##    
+   ##
+   ##
 
 template msgg*(code: stmt): stmt =
       ## msgX templates
@@ -1192,13 +1191,13 @@ template msgg*(code: stmt): stmt =
       ## naming of the templates is like msg+color so msgy => yellow
       ## use like : msgg() do : echo "How nice, it's in green"
       ## these templates have by large been superceded by various print and echo procs
-      ## but are useful in some circumstances where a statement needs to be passed.   
-      ## 
-      ## 
+      ## but are useful in some circumstances where a statement needs to be passed.
+      ##
+      ##
       ## .. code-block:: nim
-      ##  msgy() do: echo "yellow" 
-      ##  
-      ##  
+      ##  msgy() do: echo "yellow"
+      ##
+      ##
 
       setForeGroundColor(fgGreen)
       code
@@ -1256,49 +1255,49 @@ template msgb*(code: stmt): stmt =
       setForeGroundColor(fgBlack,true)
       code
       setForeGroundColor(fgWhite)
-      
+
 template msgbb*(code: stmt): stmt =
-      # invisible on black background 
+      # invisible on black background
       setForeGroundColor(fgBlack)
       code
       setForeGroundColor(fgWhite)
-  
+
 template msgbl*(code: stmt): stmt =
       setForeGroundColor(fgBlue)
       code
-      setForeGroundColor(fgWhite)  
-  
+      setForeGroundColor(fgWhite)
+
 template msgblb*(code: stmt): stmt =
       setForeGroundColor(fgBlue,true)
       code
-      setForeGroundColor(fgWhite)    
-  
+      setForeGroundColor(fgWhite)
+
 template msgm*(code: stmt): stmt =
       setForeGroundColor(fgMagenta)
       code
-      setForeGroundColor(fgWhite)  
-  
+      setForeGroundColor(fgWhite)
+
 template msgmb*(code: stmt): stmt =
       setForeGroundColor(fgMagenta,true)
       code
-      setForeGroundColor(fgWhite)    
+      setForeGroundColor(fgWhite)
 
-  
+
 template hdx*(code:stmt,frm:string = "+",width:int = tw,xpos:int = 0):stmt =
    ## hdx
-   ## 
-   ## a simple sandwich frame made with + default or any string passed in 
-   ## 
+   ##
+   ## a simple sandwich frame made with + default or any string passed in
+   ##
    ## width and xpos can be adjusted
-   ## 
+   ##
    var lx = repeat(frm,width div frm.len)
    printLn(lx,xpos = xpos)
    cursetx(xpos + 2)
    code
    printLn(lx,xpos = xpos)
    echo()
-      
-     
+
+
 
 template withFile*(f: expr, filename: string, mode: FileMode, body: stmt): stmt {.immediate.} =
      ## withFile
@@ -1361,81 +1360,81 @@ template withFile*(f: expr, filename: string, mode: FileMode, body: stmt): stmt 
          quit()
 
 
-    
+
 proc showRune*(s:string) : string  =
      ## showRune
-     ## 
+     ##
      ## utility proc to show a single unicode char
-     ## 
+     ##
      ## note that not all unicode chars may be available on all systems
-     ## 
+     ##
      ## .. code-block : nim
      ##      print(showRune("FFEA"),lime)
      ##      print(showRune("FFEC"),red)
      ##
      ##
      result = $Rune(parsehexint(s))
-    
 
-proc unquote*(s:string):string = 
+
+proc unquote*(s:string):string =
     ## unquote
-    ## 
+    ##
     ## remove any double quotes from a string
-    ## 
+    ##
     result = replace(s,$'"',"")
-    
+
 
 
 proc cleanScreen*() =
       ## cleanScreen
-      ## 
+      ##
       ## clear screen with escape seqs
-      ## 
+      ##
       ## similar to terminal.eraseScreen() but cleans the terminal window completely
-      ## 
-      write(stdout,"\e[H\e[J") 
-      
-      
-      
+      ##
+      write(stdout,"\e[H\e[J")
+
+
+
 proc centerX*() : int = tw div 2
      ## centerX
-     ## 
-     ## returns an int with terminal center position 
-     ## 
-     ##       
+     ##
+     ## returns an int with terminal center position
+     ##
+     ##
 
 proc centerPos*(astring:string) =
      ## centerpos
-     ## 
+     ##
      ## tries to move cursor so that string is centered when printing
-     ## 
+     ##
      ## .. code-block:: nim
-     ##    var s = "Hello I am centered" 
-     ##    centerPos(s)   
+     ##    var s = "Hello I am centered"
+     ##    centerPos(s)
      ##    printLn(s,gray)
-     ## 
-     ## 
+     ##
+     ##
      setCursorXPos(stdout,centerX() - astring.len div 2 - 1)
-   
-   
 
-  
+
+
+
 proc checkColor*(colname: string): bool =
      ## checkColor
-     ## 
+     ##
      ## returns true if colname is a known color name in colorNames
-     ## 
-     ## 
+     ##
+     ##
      for x in  colorNames:
-       if x[0] == colname: 
+       if x[0] == colname:
           result = true
           break
        else:
           result = false
 
 
- 
-converter colconv*(cx:string) : string = 
+
+converter colconv*(cx:string) : string =
      # converter so we can use the same terminal color names for
      # fore- and background colors in print and printLn procs.
      var bg : string = ""
@@ -1449,12 +1448,12 @@ converter colconv*(cx:string) : string =
       of red          : bg = bred
       of blue         : bg = bblue
       of brightred    : bg = bbrightred
-      of brightgreen  : bg = bbrightgreen 
-      of brightblue   : bg = bbrightblue  
-      of brightcyan   : bg = bbrightcyan  
-      of brightyellow : bg = bbrightyellow 
-      of brightwhite  : bg = bbrightwhite 
-      of brightmagenta: bg = bbrightmagenta 
+      of brightgreen  : bg = bbrightgreen
+      of brightblue   : bg = bbrightblue
+      of brightcyan   : bg = bbrightcyan
+      of brightyellow : bg = bbrightyellow
+      of brightwhite  : bg = bbrightwhite
+      of brightmagenta: bg = bbrightmagenta
       of brightblack  : bg = bbrightblack
       of gray         : bg = gray
       else            : bg = bblack # default
@@ -1469,39 +1468,39 @@ proc print*[T](astring:T,fgr:string = termwhite ,bgr:string = bblack ,xpos:int =
     ##
     ## allows positioning on x-axis
     ##
-    ## fitLine = true will try to write the text into the current line irrespective of xpos 
+    ## fitLine = true will try to write the text into the current line irrespective of xpos
     ##
     ## centered = true will try to center and disregard xpos
     ##
-    ## for extended colorset background colors use printStyled with styleReverse 
-    ## 
-    ## 
-    
+    ## for extended colorset background colors use printStyled with styleReverse
+    ##
+    ##
+
     var npos = xpos
-    
+
     if centered == false:
-        
-        if npos > 0:  # the result of this is our screen position start with 1 
+
+        if npos > 0:  # the result of this is our screen position start with 1
             setCursorXPos(npos)
-            
-            
+
+
         if ($astring).len + xpos >= tw:
-          
+
             if fitLine == true:
                 # force to write on same line within in terminal whatever the xpos says
                 npos = tw - ($astring).len
-                setCursorXPos(npos)      
-    
-    else:  
+                setCursorXPos(npos)
+
+    else:
           # centered == true
           npos = centerX() - ($astring).len div 2 - 1
           setCursorXPos(npos)
-           
-    case fgr 
+
+    case fgr
       of clrainbow: rainbow(" " & $astring,npos)
-      else:  
+      else:
             write(stdout,fgr & colconv(bgr) & $astring)
-                            
+
     # reset to white/black only if any changes
     if fgr != $fgWhite or bgr != $bgBlack:
       setForeGroundColor(fgWhite)
@@ -1511,52 +1510,52 @@ proc print*[T](astring:T,fgr:string = termwhite ,bgr:string = bblack ,xpos:int =
 
 proc printLn*[T](astring:T,fgr:string = termwhite , bgr:string = bblack,xpos:int = 0,fitLine:bool = false,centered:bool = false) =
     ## printLn
-    ## 
+    ##
     ## similar to echo but with additional settings
-    ##  
-    ## foregroundcolor 
+    ##
+    ## foregroundcolor
     ## backgroundcolor
     ## position
     ## fitLine
     ## centered
-    ## 
+    ##
     ## all colornames are supported for font color:
-    ## 
+    ##
     ## color names supported for background color:
-    ## 
+    ##
     ## white,red,green,blue,yellow,cyan,magenta,black
-    ## 
+    ##
     ## brightwhite,brightred,brightgreen,brightblue,brightyellow,
-    ## 
+    ##
     ## brightcyan,brightmagenta,brightblack
-    ## 
+    ##
     ## .. code-block:: nim
     ##    printLn("Yes ,  we made it.",clrainbow,brightyellow) # background has no effect with font in  clrainbow
-    ##    printLn("Yes ,  we made it.",green,brightyellow) 
+    ##    printLn("Yes ,  we made it.",green,brightyellow)
     ##    # or use it as a replacement of echo
     ##    printLn(red & "What's up ? " & green & "Grub's up ! "
-    ##    printLn("No need to reset the original color") 
-    ## 
+    ##    printLn("No need to reset the original color")
+    ##
     ## As a side effect we also can do this now :
-    ## 
-    ## 
+    ##
+    ##
     ## .. code-block:: nim
-    ##    echo(yellowgreen,"aha nice",termwhite) 
+    ##    echo(yellowgreen,"aha nice",termwhite)
     ##    echo(rosybrown)
     ##    echo("grizzly bear")
     ##    echo(termwhite)  # reset to usual terminal white color
-    ## 
-    ## 
+    ##
+    ##
     ## that is we print the string in yellowgreen , but need to reset the color manually
-    ## 
-    ## 
-    ## also see cechoLn  
-    ## 
-    ## 
-       
+    ##
+    ##
+    ## also see cechoLn
+    ##
+    ##
+
     print($(astring) & "\L",fgr,bgr,xpos,fitLine,centered)
-      
-    
+
+
 
 proc rainbow*[T](s : T,xpos:int = 0,fitLine:bool = false,centered:bool = false) =
     ## rainbow
@@ -1564,103 +1563,103 @@ proc rainbow*[T](s : T,xpos:int = 0,fitLine:bool = false,centered:bool = false) 
     ## multicolored string
     ##
     ## may not work with certain Rune
-    ## 
+    ##
     ## .. code-block:: nim
-    ##  
-    ##    # equivalent output  
+    ##
+    ##    # equivalent output
     ##    rainbow("what's up ?",centered = true)
     ##    echo()
     ##    println("what's up ?",clrainbow,centered = true)
-    ## 
-    ## 
+    ##
+    ##
     ##
     var nxpos = xpos
     var astr = $s
     var c = 0
     var a = toSeq(1.. <colorNames.len)
-    
+
     for x in 0.. <astr.len:
        c = a[randomInt(a.len)]
        if centered == false:
-          
+
           print(astr[x],colorNames[c][1],black,xpos = nxpos,fitLine)
-          
+
        else:
           # need to calc the center here and increment by x
           nxpos = centerX() - ($astr).len div 2  + x - 1
           print(astr[x],colorNames[c][1],black,xpos=nxpos,fitLine)
-       
+
        inc nxpos
 
-   
+
 
 # output  horizontal lines
 proc hline*(n:int = tw,col:string = white) =
      ## hline
-     ## 
+     ##
      ## draw a full line in stated length and color no linefeed will be issued
-     ## 
+     ##
      ## defaults full terminal width and white
-     ## 
+     ##
      ## .. code-block:: nim
      ##    hline(30,green)
-     ##     
-     
+     ##
+
      print(repeat("_",n),col)
-          
+
 
 
 proc hlineLn*(n:int = tw,col:string = white) =
      ## hlineLn
-     ## 
+     ##
      ## draw a full line in stated length and color a linefeed will be issued
-     ## 
+     ##
      ## defaults full terminal width and white
-     ## 
+     ##
      ## .. code-block:: nim
      ##    hlineLn(30,green)
-     ##     
+     ##
      print(repeat("_",n),col)
      echo()
-     
-     
+
+
 
 
 proc dline*(n:int = tw,lt:string = "-",col:string = termwhite) =
      ## dline
-     ## 
+     ##
      ## draw a dashed line with given length in current terminal font color
      ## line char can be changed
-     ## 
+     ##
      ## .. code-block:: nim
      ##    dline(30)
-     ##    dline(30,"/+") 
+     ##    dline(30,"/+")
      ##    dline(30,col= yellow)
-     ## 
+     ##
      if lt.len <= n:
          #writeLine(stdout,repeat(lt,n div lt.len))
          print(repeat(lt,n div lt.len),col)
-     
+
 
 proc dlineLn*(n:int = tw,lt:string = "-",col:string = termwhite) =
      ## dlineLn
-     ## 
+     ##
      ## draw a dashed line with given length in current terminal font color
      ## line char can be changed
-     ## 
+     ##
      ## and issue a new line
-     ## 
+     ##
      ## .. code-block:: nim
      ##    dline(50,":",green)
      ##    dlineLn(30)
      ##    dlineLn(30,"/+/")
-     ##    dlineLn(60,col = salmon) 
+     ##    dlineLn(60,col = salmon)
      ##
      if lt.len <= n:
          print(repeat(lt,n div lt.len),col)
-     writeLine(stdout,"")   
- 
- 
+     writeLine(stdout,"")
+
+
 proc decho*(z:int = 1)  =
     ## decho
     ##
@@ -1677,51 +1676,51 @@ proc decho*(z:int = 1)  =
 
 template curUp*(x:int = 1) =
      ## curUp
-     ## 
+     ##
      ## mirrors terminal cursorUp
      cursorUp(stdout,x)
 
 
-template curDn*(x:int = 1) = 
+template curDn*(x:int = 1) =
      ## curDn
      ##
      ## mirrors terminal cursorDown
      cursorDown(stdout,x)
 
 
-template curBk*(x:int = 1) = 
+template curBk*(x:int = 1) =
      ## curBkn
      ##
      ## mirrors terminal cursorBackward
      cursorBackward(stdout,x)
 
 
-template curFw*(x:int = 1) = 
+template curFw*(x:int = 1) =
      ## curFw
      ##
      ## mirrors terminal cursorForward
      cursorForward(stdout,x)
 
 
-template curSetx*(x:int) = 
+template curSetx*(x:int) =
      ## curSetx
      ##
      ## mirrors terminal setCursorXPos
      setCursorXPos(stdout,x)
-     
-     
-template curSet*(x:int = 0,y:int = 0) = 
+
+
+template curSet*(x:int = 0,y:int = 0) =
      ## curSet
      ##
      ## mirrors terminal setCursorPos
-     ## 
-     ## 
-     setCursorPos(x,y)     
-     
+     ##
+     ##
+     setCursorPos(x,y)
+
 
 template clearup*(x:int = 80) =
      ## clearup
-     ## 
+     ##
      ## a convenience proc to clear monitor x rows
      ##
      erasescreen(stdout)
@@ -1730,13 +1729,13 @@ template clearup*(x:int = 80) =
 
 proc curMove*(up:int=0,dn:int=0,fw:int=0,bk:int=0) =
      ## curMove
-     ## 
+     ##
      ## conveniently move the cursor to where you need it
-     ## 
+     ##
      ## relative of current postion , which you app need to track itself
-     ## 
+     ##
      ## setting cursor off terminal will wrap output to next line
-     ## 
+     ##
      curup(up)
      curdn(dn)
      curfw(fw)
@@ -1744,10 +1743,10 @@ proc curMove*(up:int=0,dn:int=0,fw:int=0,bk:int=0) =
 
 proc sleepy*[T:float|int](secs:T) =
   ## sleepy
-  ## 
+  ##
   ## imitates sleep but in seconds
   ## suitable for shorter sleeps
-  ## 
+  ##
   var milsecs = (secs * 1000).int
   sleep(milsecs)
 
@@ -1755,129 +1754,129 @@ proc sleepy*[T:float|int](secs:T) =
 
 
 # Var. convenience procs for colorised data output
-# these procs have similar functionality 
-    
+# these procs have similar functionality
+
 
 proc printRainbow*[T](s : T,astyle:set[Style]) =
     ## printRainbow
-    ## 
+    ##
     ##
     ## print multicolored string with styles , for available styles see printStyled
     ##
-    ## may not work with certain Rune 
+    ## may not work with certain Rune
     ##
     ## .. code-block:: nim
     ##    printRainBow("WoW So Nice",{styleUnderScore})
-    ##    printRainBow("  --> No Style",{}) 
+    ##    printRainBow("  --> No Style",{})
     ##
-    
+
     var astr = $s
     var c = 0
     var a = toSeq(1.. <colorNames.len)
     for x in 0.. <astr.len:
        c = a[randomInt(a.len)]
        printStyled($astr[x],"",colorNames[c][1],astyle)
-    
-    
+
+
 proc printLnRainbow*[T](s : T,astyle:set[Style]) =
     ## printLnRainbow
-    ## 
+    ##
     ##
     ## print multicolored string with styles , for available styles see printStyled
-    ## 
+    ##
     ## and issues a new line
     ##
-    ## may not work with certain Rune 
+    ## may not work with certain Rune
     ##
     ## .. code-block:: nim
     ##    printLnRainBow("WoW So Nice",{styleUnderScore})
-    ##    printLnRainBow("Aha --> No Style",{}) 
+    ##    printLnRainBow("Aha --> No Style",{})
     ##
-    printRainBow($(s) & "\L",astyle)  
-    
-    
+    printRainBow($(s) & "\L",astyle)
+
+
 
 proc printBiCol*[T](s:T,sep:string = ":",colLeft:string = yellowgreen ,colRight:string = termwhite,xpos:int = 0,centered:bool = false) =
      ## printBiCol
      ##
      ## echos a line in 2 colors based on a seperators first occurance
-     ## 
+     ##
      ## default seperator = ":"
-     ## 
+     ##
      ## Note : clrainbow not useable for right side color
-     ## 
+     ##
      ## .. code-block:: nim
      ##    import cx,strutils,strfmt
-     ##    
-     ##    for x  in 0.. <3:     
-     ##       # here use default colors for left and right side of the seperator     
+     ##
+     ##    for x  in 0.. <3:
+     ##       # here use default colors for left and right side of the seperator
      ##       printBiCol("Test $1  : Ok this was $1 : what" % $x,":")
      ##
-     ##    for x  in 4.. <6:     
+     ##    for x  in 4.. <6:
      ##        # here we change the default colors
-     ##        printBiCol("Test $1  : Ok this was $1 : what" % $x,":",cyan,red) 
+     ##        printBiCol("Test $1  : Ok this was $1 : what" % $x,":",cyan,red)
      ##
      ##    # following requires strfmt module
-     ##    printBiCol("{} : {}     {}".fmt("Good Idea","Number",50),":",yellow,green)  
+     ##    printBiCol("{} : {}     {}".fmt("Good Idea","Number",50),":",yellow,green)
      ##
      ##
      var nosepflag:bool = false
      var zz = $s
      var z = zz.split(sep)
-   
+
      # in case sep occures multiple time we only consider the first one
      if z.len > 1:
        for x in 2.. <z.len:
           # this now should contain the right part to be colored differently
           z[1] = z[1] & sep & z[x]
-     
+
      else:
           # when the separator is not found
           nosepflag = true
           # no separator so we just execute print with left color
-          print(zz,fgr=colLeft,xpos=xpos,centered=centered) 
-     
+          print(zz,fgr=colLeft,xpos=xpos,centered=centered)
+
      if nosepflag == false:
-        
-            if centered == false:      
+
+            if centered == false:
                   print(z[0] & sep,fgr = colLeft,bgr = black,xpos = xpos)
-                  print(z[1],fgr = colRight,bgr = black)  
+                  print(z[1],fgr = colRight,bgr = black)
             else:  # centered == true
                   let npos = centerX() - (zz).len div 2 - 1
                   print(z[0] & sep,fgr = colLeft,bgr = black,xpos = npos)
-                  print(z[1],fgr = colRight,bgr = black)  
-    
-      
-      
-       
+                  print(z[1],fgr = colRight,bgr = black)
+
+
+
+
 
 proc printLnBiCol*[T](s:T,sep:string = ":", colLeft:string = yellowgreen, colRight:string = termwhite,xpos:int = 0,centered:bool = false) =
      ## printLnBiCol
      ##
      ## same as printBiCol but issues a new line
-     ## 
+     ##
      ## default seperator = ":"  if not found we execute println with available params
-     ## 
+     ##
      ## .. code-block:: nim
      ##    import cx,strutils,strfmt
-     ##       
-     ##    for x  in 0.. <3:     
-     ##       # here use default colors for left and right side of the seperator     
+     ##
+     ##    for x  in 0.. <3:
+     ##       # here use default colors for left and right side of the seperator
      ##       printLnBiCol("Test $1  : Ok this was $1 : what" % $x,":")
      ##
-     ##    for x  in 4.. <6:     
+     ##    for x  in 4.. <6:
      ##        # here we change the default colors
-     ##        printLnBiCol("Test $1  : Ok this was $1 : what" % $x,":",cyan,red) 
+     ##        printLnBiCol("Test $1  : Ok this was $1 : what" % $x,":",cyan,red)
      ##
      ##    # following requires strfmt module
-     ##    printLnBiCol("{} : {}     {}".fmt("Good Idea","Number",50),":",yellow,green)  
+     ##    printLnBiCol("{} : {}     {}".fmt("Good Idea","Number",50),":",yellow,green)
      ##
      ##
      var nosepflag:bool = false
      var zz = $s
      var z = zz.split(sep)
      # in case sep occures multiple time we only consider the first one
-     
+
      if z.len > 1:
        for x in 2.. <z.len:
            z[1] = z[1] & sep & z[x]
@@ -1886,26 +1885,26 @@ proc printLnBiCol*[T](s:T,sep:string = ":", colLeft:string = yellowgreen, colRig
           nosepflag = true
           # no separator so we just execute println with left color
           println(zz,fgr=colLeft,xpos=xpos,centered=centered)
-     
-     if nosepflag == false:
-       
-        if centered == false:      
-              print(z[0] & sep,fgr = colLeft,bgr = black,xpos = xpos)
-              if colRight == clrainbow:   # we currently do this as rainbow implementation has changed 
-                    printLn(z[1],fgr = randcol(),bgr = black)  
-              else:     
-                    printLn(z[1],fgr = colRight,bgr = black)  
-                
-        else:  # centered == true
-              let npos = centerX() - (zz).len div 2 - 1 
-              print(z[0] & sep,fgr = colLeft,bgr = black,xpos = npos)
-              if colRight == clrainbow:   # we currently do this as rainbow implementation has changed 
-                    printLn(z[1],fgr = randcol(),bgr = black)  
-              else:     
-                    printLn(z[1],fgr = colRight,bgr = black)  
 
-    
-      
+     if nosepflag == false:
+
+        if centered == false:
+              print(z[0] & sep,fgr = colLeft,bgr = black,xpos = xpos)
+              if colRight == clrainbow:   # we currently do this as rainbow implementation has changed
+                    printLn(z[1],fgr = randcol(),bgr = black)
+              else:
+                    printLn(z[1],fgr = colRight,bgr = black)
+
+        else:  # centered == true
+              let npos = centerX() - (zz).len div 2 - 1
+              print(z[0] & sep,fgr = colLeft,bgr = black,xpos = npos)
+              if colRight == clrainbow:   # we currently do this as rainbow implementation has changed
+                    printLn(z[1],fgr = randcol(),bgr = black)
+              else:
+                    printLn(z[1],fgr = colRight,bgr = black)
+
+
+
 
 proc printHl*(s:string,substr:string,col:string = termwhite) =
       ## printHl
@@ -1919,7 +1918,7 @@ proc printHl*(s:string,substr:string,col:string = termwhite) =
       ##
       ## this would highlight all T in green
       ##
-   
+
       var rx = s.split(substr)
       for x in rx.low.. rx.high:
           print(rx[x])
@@ -1939,77 +1938,77 @@ proc printLnHl*(s:string,substr:string,col:string = termwhite) =
       ##
       ## this would highlight all T in yellowgreen
       ##
-     
+
       printHl($(s) & "\L",substr,col)
-      
+
 
 
 proc printStyledSimple*[T](ss:T,fg:string,astyle:set[Style]) =
    ## printStyledsimple
-   ## 
+   ##
    ## an extended version of writestyled to enable colors
    ##
-   ## 
+   ##
    #  Note this also will be extended to accommodate xpos and centered soon
    #
    var astr = $ss
-   case fg 
+   case fg
       of clrainbow   : printRainbow($astr,astyle)
       else: styledEchoPrint(fg,astyle,$astr,termwhite)
-      
+
 
 proc printStyled*[T](ss:T,substr:string,col:string,astyle : set[Style] )  =
       ## printStyled
       ##
       ## extended version of writestyled and printHl to allow color and styles
       ##
-      ## to print and highlight all appearances of a substring 
+      ## to print and highlight all appearances of a substring
       ##
       ## styles may and in some cases not have the desired effect
-      ## 
+      ##
       ## available styles :
-      ## 
+      ##
       ## styleBright = 1,            # bright text
-      ## 
+      ##
       ## styleDim,                   # dim text
-      ## 
+      ##
       ## styleUnknown,               # unknown
-      ## 
+      ##
       ## styleUnderscore = 4,        # underscored text
-      ## 
+      ##
       ## styleBlink,                 # blinking/bold text
-      ## 
+      ##
       ## styleReverse = 7,           # reverses currentforground and backgroundcolor
-      ## 
+      ##
       ## styleHidden                 # hidden text
-      ## 
+      ##
       ##
       ##
       ## .. code-block:: nim
-      ## 
+      ##
       ##    # this highlights all T in green and underscore them
       ##    printStyled("HELLO THIS IS A TEST","T",green,{styleUnderScore})
-      ##    
+      ##
       ##    # this highlights all T in rainbow colors underscore and blink them
       ##    printStyled("HELLO THIS IS A TEST","T",clrainbow,{styleUnderScore,styleBlink})
       ##
       ##    # this highlights all T in rainbow colors , no style is applied
       ##    printStyled("HELLO THIS IS A TEST","T",clrainbow,{})
       ##
-      ##    
-      var s = $ss                  
+      ##
+      var s = $ss
       if substr.len > 0:
           var rx = s.split(substr)
           for x in rx.low.. rx.high:
               writestyled(rx[x],{})
               if x != rx.high:
-                case col 
+                case col
                   of clrainbow   : printRainbow(substr,astyle)
-                  else: styledEchoPrint(col,astyle,substr,termwhite) 
+                  else: styledEchoPrint(col,astyle,substr,termwhite)
       else:
           printStyledSimple(s,col,astyle)
 
-      
+
 
 proc printLnStyled*[T](ss:T,substr:string,col:string,astyle : set[Style] ) =
       ## printLnStyled
@@ -2022,150 +2021,150 @@ proc printLnStyled*[T](ss:T,substr:string,col:string,astyle : set[Style] ) =
       ##
       ##
       ## .. code-block:: nim
-      ## 
+      ##
       ##    # this highlights all T in green and underscore them
       ##    printLnStyled("HELLO THIS IS A TEST","T",green,{styleUnderScore})
-      ##    
+      ##
       ##    # this highlights all T in rainbow colors underscore and blink them
       ##    printLnStyled("HELLO THIS IS A TEST","T",clrainbow,{styleUnderScore,styleBlink})
       ##
       ##    # this highlights all T in rainbow colors , no style is applied
       ##    printLnStyled("HELLO THIS IS A TEST","T",clrainbow,{})
-      ##    
-      ##   
-      ##                    
+      ##
+      ##
+      ##
       printStyled($ss & "\L",substr,col,astyle)
-      
+
 
 
 proc cecho*(col:string,ggg: varargs[string, `$`] = @[""] )  =
       ## cecho
-      ## 
+      ##
       ## color echo w/o new line this also automically resets the color attribute
-      ## 
-      ## 
+      ##
+      ##
       ## .. code-block:: nim
       ##     import cx,strfmt
       ##     cechoLn(salmon,"{:<10} : {} ==> {} --> {}".fmt("this ", "zzz ",123 ," color is something else"))
       ##     echo("ok")  # color resetted
       ##     echo(salmon,"{:<10} : {} ==> {} --> {}".fmt("this ", "zzz ",123 ," color is something else"))
       ##     echo("ok")  # still salmon
-       
-      case col 
-       of clrainbow : 
+
+      case col
+       of clrainbow :
                 for x  in ggg:
                      rainbow(x)
        else:
-         write(stdout,col) 
+         write(stdout,col)
          write(stdout,ggg)
       write(stdout,termwhite)
-      
+
 
 proc cechoLn*(col:string,ggg: varargs[string, `$`] = @[""] )  =
       ## cechoLn
-      ##  
+      ##
       ## color echo with new line
-      ## 
+      ##
       ## so it is easy to color your output by just replacing
-      ## 
+      ##
       ## echo something  with   cechoLn yellowgreen,something
-      ## 
+      ##
       ## in your exisiting projects.
-      ## 
+      ##
       ## .. code-block:: nim
       ##     import cx,strutils
       ##     cechoLn(steelblue,"We made it in $1 hours !" % $5)
       ##
-      ## 
+      ##
       var z = ""
       for x in ggg:
           z = $(x)
-      z = z & "\L"   
+      z = z & "\L"
       cecho(col ,z)
-      
 
-  
+
+
 proc showColors*() =
   ## showColors
-  ## 
+  ##
   ## display all colorNames in color !
-  ## 
+  ##
   for x in colorNames:
      print("{:<23} {}  {}  {} --> {} ".fmt(x[0] , "▒".repeat(10), "⌘".repeat(10) ,"ABCD abcd 1234567890"," Nim Colors " ),x[1],black)  # note x[1] is the color itself.
      printLnStyled("{:<23}".fmt("  " & x[0]),"{:<23}".fmt("  " & x[0]),x[1],{styleReverse})
      sleepy(0.1)
-  decho(2)   
-  
+  decho(2)
+
 
 proc doty*(d:int,fgr:string = white, bgr:string = black,xpos:int = 1) =
      ## doty
-     ## 
+     ##
      ## prints number d of widedot ⏺  style dots in given fore/background color
-     ## 
+     ##
      ## each dot is of char length 4 added a space in the back to avoid half drawn dots
-     ## 
+     ##
      ## if it is available on your system otherwise a rectangle may be shown
-     ## 
+     ##
      ## .. code-block:: nimble
      ##      import cx
      ##      printLnBiCol("Test for  :  doty\n",":",truetomato,lime)
      ##      dotyLn(22 ,lime)
      ##      dotyLn(18 ,salmon,blue)
      ##      dotyLn(centerX(),red)  # full widedotted line
-     ##      
+     ##
      ## color clrainbow is not supported and will be in white
-     ## 
-    
+     ##
+
      var astr = $(wideDot.repeat(d))
      if fgr == clrainbow:
-        print(astring = astr,white,bgr,xpos) 
+        print(astring = astr,white,bgr,xpos)
      else:
-        print(astring = astr,fgr,bgr,xpos) 
-     
-     
+        print(astring = astr,fgr,bgr,xpos)
+
+
 proc dotyLn*(d:int,fgr:string = white, bgr:string = black,xpos:int = 1) =
      ## dotyLn
-     ## 
+     ##
      ## prints number d of widedot ⏺  style dots in given fore/background color and issues new line
-     ## 
+     ##
      ## each dot is of char length 4
-     
+
      ## .. code-block:: nimble
      ##      import cx
      ##      loopy(0.. 100,loopy(1.. tw div 2, dotyLn(1,randcol(),xpos = random(tw - 1))))
      ##      printlnBiCol("coloredSnow","d",greenyellow,salmon)
-     
-     ## 
+
+     ##
      ## color clrainbow is not supported and will be in white
-     ## 
-     ## 
+     ##
+     ##
      doty(d,fgr,bgr,xpos)
      writeLine(stdout,"")
-          
 
-      
-proc printDotPos*(xpos:int,dotCol:string,blink:bool) = 
+
+
+proc printDotPos*(xpos:int,dotCol:string,blink:bool) =
       ## printDotPos
       ##
-      ## prints a widedot at xpos in col dotCol and may blink ... 
+      ## prints a widedot at xpos in col dotCol and may blink ...
       ##
 
       curSetx(xpos)
-      if blink == true:  
+      if blink == true:
         printStyled(wideDot,wideDot,dotCol,{styleBlink})
-      else:   
+      else:
         printStyled(wideDot,wideDot,dotCol,{})
-        
 
 
-       
+
+
 proc drawRect*(h:int = 0 ,w:int = 3, frhLine:string = "_", frVLine:string = "|",frCol:string = darkgreen,dotCol = truetomato,xpos:int = 1,blink:bool = false) =
       ## drawRect
-      ## 
-      ## a simple proc to draw a rectangle with corners marked with widedots. 
+      ##
+      ## a simple proc to draw a rectangle with corners marked with widedots.
       ## widedots are of len 4.
-      ## 
-      ## 
+      ##
+      ##
       ## h  height
       ## w  width
       ## frhLine framechar horizontal
@@ -2174,8 +2173,8 @@ proc drawRect*(h:int = 0 ,w:int = 3, frhLine:string = "_", frVLine:string = "|",
       ## dotCol  color of corner dotCol
       ## xpos    topleft start position
       ## blink   true or false to blink the dots
-      ## 
-      ## 
+      ##
+      ##
       ## .. code-block:: nim
       ##    import cx
       ##    clearUp(18)
@@ -2187,11 +2186,11 @@ proc drawRect*(h:int = 0 ,w:int = 3, frhLine:string = "_", frVLine:string = "|",
       ##    drawRect(9,20,frhLine = "=",frvLine = wideDot , frCol = randCol(),xpos = 35,blink = true)
       ##    curup(10)
       ##    drawRect(6,14,frhLine = "~",frvLine = "$" , frCol = randCol(),xpos = 70,blink = true)
-      ##    decho(5)  
+      ##    decho(5)
       ##    doFinish()
-      ## 
-      ## 
-      
+      ##
+      ##
+
       # topline
       printDotPos(xpos,dotCol,blink)
       print(frhLine.repeat(w-1),frcol)
@@ -2205,7 +2204,7 @@ proc drawRect*(h:int = 0 ,w:int = 3, frhLine:string = "_", frVLine:string = "|",
          print(frVLine,frcol,xpos = xpos)
          if frhLine == widedot:
              print(frVLine,frcol,xpos = xpos + w * 2 - 1)
-         else:    
+         else:
               print(frVLine,frcol,xpos = xpos + w)
          writeLine(stdout,"")
       # bottom line
@@ -2215,9 +2214,9 @@ proc drawRect*(h:int = 0 ,w:int = 3, frhLine:string = "_", frVLine:string = "|",
             printDotPos(xpos + w * 2 - 1 ,dotCol,blink)
       else:
             printDotPos(xpos + w,dotCol,blink)
-            
+
       writeLine(stdout,"")
- 
+
 
 # Var. date and time handling procs mainly to provide convenience for
 # date format yyyy-MM-dd handling
@@ -2272,7 +2271,7 @@ proc day*(aDate:string) : string =
    ## day,month year extracts the relevant part from
    ##
    ## a date string of format yyyy-MM-dd
-   ## 
+   ##
    aDate.split("-")[2]
 
 proc month*(aDate:string) : string =
@@ -2288,7 +2287,7 @@ proc year*(aDate:string) : string = aDate.split("-")[0]
 proc intervalsecs*(startDate,endDate:string) : float =
       ## interval procs returns time elapsed between two dates in secs,hours etc.
       #  since all interval routines call intervalsecs error message display also here
-      #  
+      #
       if validdate(startDate) and validdate(endDate):
           var f     = "yyyy-MM-dd"
           var ssecs = toSeconds(timeinfototime(startDate.parse(f)))
@@ -2356,10 +2355,10 @@ proc dayOfWeekJulianA*(day, month, year: int): WeekDay =
   # may be part of times.nim later
   # This is for the Julian calendar
   # Day & month start from one.
-  # original code from coffeepot 
-  # but seems to be off for dates after 2100-03-01 which should be a monday 
-  # but it returned a tuesday .. 
-  # 
+  # original code from coffeepot
+  # but seems to be off for dates after 2100-03-01 which should be a monday
+  # but it returned a tuesday ..
+  #
   let
     a = (14 - month) div 12
     y = year - a
@@ -2371,21 +2370,21 @@ proc dayOfWeekJulianA*(day, month, year: int): WeekDay =
 
 
 proc dayOfWeekJulian*(datestr:string): string =
-   ## dayOfWeekJulian 
+   ## dayOfWeekJulian
    ##
    ## returns the day of the week of a date given in format yyyy-MM-dd as string
-   ## 
-   ## valid for dates up to 2099-12-31 
+   ##
+   ## valid for dates up to 2099-12-31
    ##
    ## actually starts to fail with 2100-03-01 which shud be a monday but this proc says tuesday
    ##
    ##
    if parseInt(year(datestr)) < 2200:
-     let dw = dayofweekjulianA(parseInt(day(datestr)),parseInt(month(datestr)),parseInt(year(datestr))) 
+     let dw = dayofweekjulianA(parseInt(day(datestr)),parseInt(month(datestr)),parseInt(year(datestr)))
      result = $dw
    else:
      result = "Not defined for years > 2099"
-  
+
 
 proc fx(nx:TimeInfo):string =
         result = nx.format("yyyy-MM-dd")
@@ -2403,7 +2402,7 @@ proc plusDays*(aDate:string,days:int):string =
    if validdate(aDate) == true:
       var rxs = ""
       let tifo = parse(aDate,"yyyy-MM-dd") # this returns a TimeInfo type
-      var myinterval = initInterval()   
+      var myinterval = initInterval()
       myinterval.days = days
       rxs = fx(tifo + myinterval)
       result = rxs
@@ -2425,7 +2424,7 @@ proc minusDays*(aDate:string,days:int):string =
    if validdate(aDate) == true:
       var rxs = ""
       let tifo = parse(aDate,"yyyy-MM-dd") # this returns a TimeInfo type
-      var myinterval = initInterval()   
+      var myinterval = initInterval()
       myinterval.days = days
       rxs = fx(tifo - myinterval)
       result = rxs
@@ -2435,63 +2434,63 @@ proc minusDays*(aDate:string,days:int):string =
 
 
 
-proc getFirstMondayYear*(ayear:string):string = 
+proc getFirstMondayYear*(ayear:string):string =
     ## getFirstMondayYear
-    ## 
+    ##
     ## returns date of first monday of any given year
     ## should be ok for the next years but after 2100-02-28 all bets are off
-    ## 
-    ## 
+    ##
+    ##
     ## .. code-block:: nim
     ##    echo  getFirstMondayYear("2015")
-    ##    
-    ##    
-  
+    ##
+    ##
+
     #var n:WeekDay
     for x in 1.. 8:
        var datestr= ayear & "-01-0" & $x
        if validdate(datestr) == true:
-         var z = dayofweekjulian(datestr) 
+         var z = dayofweekjulian(datestr)
          if z == "Monday":
              result = datestr
-        
 
 
-proc getFirstMondayYearMonth*(aym:string):string = 
+
+proc getFirstMondayYearMonth*(aym:string):string =
     ## getFirstMondayYearMonth
-    ## 
+    ##
     ## returns date of first monday in given year and month
-    ## 
+    ##
     ## .. code-block:: nim
     ##    echo  getFirstMondayYearMonth("2015-12")
     ##    echo  getFirstMondayYearMonth("2015-06")
     ##    echo  getFirstMondayYearMonth("2015-2")
-    ##    
+    ##
     ## in case of invalid dates nil will be returned
     ## should be ok for the next years but after 2100-02-28 all bets are off
-    
+
     #var n:WeekDay
     var amx = aym
     for x in 1.. 8:
        if aym.len < 7:
-          let yr = year(amx) 
+          let yr = year(amx)
           let mo = month(aym)  # this also fixes wrong months
-          amx = yr & "-" & mo 
+          amx = yr & "-" & mo
        var datestr = amx & "-0" & $x
        if validdate(datestr) == true:
-         var z = dayofweekjulian(datestr) 
+         var z = dayofweekjulian(datestr)
          if z == "Monday":
             result = datestr
-         
 
 
-proc getNextMonday*(adate:string):string = 
+
+proc getNextMonday*(adate:string):string =
     ## getNextMonday
-    ## 
+    ##
     ## .. code-block:: nim
     ##    echo  getNextMonday(getDateStr())
-    ## 
-    ## 
+    ##
+    ##
     ## .. code-block:: nim
     ##      import cx
     ##      # get next 10 mondays
@@ -2499,70 +2498,70 @@ proc getNextMonday*(adate:string):string =
     ##      for x in 1.. 10:
     ##          dw = getNextMonday(dw)
     ##          echo dw
-    ## 
-    ## 
+    ##
+    ##
     ## in case of invalid dates nil will be returned
-    ## 
+    ##
 
     #var n:WeekDay
     var ndatestr = ""
     if isNil(adate) == true :
         print("Error received a date with value : nil",red)
     else:
-        
-        if validdate(adate) == true:  
-            var z = dayofweekjulian(adate) 
-            
+
+        if validdate(adate) == true:
+            var z = dayofweekjulian(adate)
+
             if z == "Monday":
-              # so the datestr points to a monday we need to add a 
+              # so the datestr points to a monday we need to add a
               # day to get the next one calculated
                 ndatestr = plusDays(adate,1)
-                
+
             else:
-                ndatestr = adate 
-                        
+                ndatestr = adate
+
             for x in 0.. <7:
               if validdate(ndatestr) == true:
-                z = dayofweekjulian(ndatestr) 
-                
+                z = dayofweekjulian(ndatestr)
+
                 if z.strip() != "Monday":
-                    ndatestr = plusDays(ndatestr,1)  
+                    ndatestr = plusDays(ndatestr,1)
                 else:
-                    result = ndatestr  
+                    result = ndatestr
 
 
-# large font printing, numbers are implemented  
+# large font printing, numbers are implemented
 
 proc printBigNumber*(xnumber:string|int,fgr:string = yellowgreen ,bgr:string = black,xpos:int = 1,fun:bool = false) =
     ## printBigNumber
-    ## 
+    ##
     ## prints a string in big block font
-    ## 
+    ##
     ## available 1234567890:
     ##
     ##
     ## if fun parameter = true then foregrouncolor will be ignored and every block
-    ## 
+    ##
     ## element colored individually
-    ## 
-    ## 
+    ##
+    ##
     ## xnumber can be given as int or string
-    ## 
+    ##
     ## usufull for big counter etc , a clock can also be build easily but
     ## running in a tight while loop just uses up cpu cycles needlessly.
-    ## 
+    ##
     ## .. code-block:: nim
     ##    for x in 990.. 1105:
     ##         cleanScreen()
     ##         printBigNumber(x)
     ##         sleepy(3)
     ##
-    ##    cleanScreen()   
-    ##    
+    ##    cleanScreen()
+    ##
     ##    printBigNumber($23456345,steelblue)
     ##
     ## .. code-block:: nim
-    ##    import cx 
+    ##    import cx
     ##    for x in countdown(9,0):
     ##         cleanScreen()
     ##         if x == 5:
@@ -2570,18 +2569,18 @@ proc printBigNumber*(xnumber:string|int,fgr:string = yellowgreen ,bgr:string = b
     ##                 cleanScreen()
     ##                 printBigNumber($y,tomato)
     ##                 sleepy(0.5)
-    ##         cleanScreen()    
+    ##         cleanScreen()
     ##         printBigNumber($x)
     ##         sleepy(0.5)
     ##    doFinish()
-    
+
     var anumber = $xnumber
     var asn = newSeq[string]()
     var printseq = newSeq[seq[string]]()
     for x in anumber: asn.add($x)
     #echo asn
     for x in asn:
-      case  x 
+      case  x
         of "0": printseq.add(number0)
         of "1": printseq.add(number1)
         of "2": printseq.add(number2)
@@ -2595,9 +2594,9 @@ proc printBigNumber*(xnumber:string|int,fgr:string = yellowgreen ,bgr:string = b
         of ":": printseq.add(colon)
         of " ": printseq.add(clrb)
         else: discard
-          
+
     for x in 0.. numberlen:
-        curSetx(xpos) 
+        curSetx(xpos)
         for y in 0.. <printseq.len:
             if fun == false:
                print(" " & printseq[y][x],fgr,bgr)
@@ -2607,7 +2606,7 @@ proc printBigNumber*(xnumber:string|int,fgr:string = yellowgreen ,bgr:string = b
                 while funny == black:
                      funny = randcol()
                 print(" " & printseq[y][x],funny,bgr)
-        echo()  
+        echo()
     curup(5)
 
 
@@ -2615,55 +2614,55 @@ proc printBigNumber*(xnumber:string|int,fgr:string = yellowgreen ,bgr:string = b
 
 proc printBigLetters*(aword:string,fgr:string = yellowgreen ,bgr:string = black,xpos:int = 1,k:int = 7,fun:bool = false) =
   ## printBigLetters
-  ## 
+  ##
   ## prints big block letters in desired color at desired position
-  ## 
-  ## note position must be specified as global in format :   var xpos = 5 
-  ## 
+  ##
+  ## note position must be specified as global in format :   var xpos = 5
+  ##
   ## if fun parameter = true then foregrouncolor will be ignored and every block
-  ## 
+  ##
   ## element colored individually
   ##
   ## k parameter specifies character distance reasonable values are 7,8,9,10 . Default = 7
-  ## 
+  ##
   ## also note that depending on terminal width only a limited number of chars can be displayed
-  ## 
-  ## 
+  ##
+  ##
   ##
   ## .. code-block:: nim
   ##       printBigLetters("ABA###RR#3",xpos = 1)
   ##       printBigLetters("#",xpos = 1)   # the '#' char is used to denote a blank space or to overwrite
   ##
-  
+
   var xpos = xpos
   template abc(s:stmt,xpos:int) =
       # abc
-      # 
+      #
       # template to support printBigLetters
-      #  
-      
-      for x in 0.. 4: 
-        if fun == false: 
+      #
+
+      for x in 0.. 4:
+        if fun == false:
            printLn(s[x],fgr = fgr,bgr = bgr ,xpos = xpos)
         else:
            # we want to avoid black
            var funny = randcol()
            while funny == black:
                funny = randcol()
-           printLn(s[x],fgr = funny,bgr = bgr ,xpos = xpos)    
+           printLn(s[x],fgr = funny,bgr = bgr ,xpos = xpos)
       curup(5)
       xpos = xpos + k
- 
+
   for aw in aword:
       var ak = tolower($aw)
-      case ak 
+      case ak
       of "a" : abc(abx,xpos)
       of "b" : abc(bbx,xpos)
       of "c" : abc(cbx,xpos)
       of "d" : abc(dbx,xpos)
       of "e" : abc(ebx,xpos)
       of "f" : abc(fbx,xpos)
-      of "g" : abc(gbx,xpos) 
+      of "g" : abc(gbx,xpos)
       of "h" : abc(hbx,xpos)
       of "i" : abc(ibx,xpos)
       of "j" : abc(jbx,xpos)
@@ -2688,90 +2687,90 @@ proc printBigLetters*(aword:string,fgr:string = yellowgreen ,bgr:string = black,
       of "_" : abc(ulbx,xpos)
       of "=" : abc(elbx,xpos)
       of "#" : abc(clbx,xpos)
-      of "1","2","3","4","5","6","7","8","9","0",":": 
+      of "1","2","3","4","5","6","7","8","9","0",":":
                printBigNumber($aw,fgr = fgr , bgr = bgr,xpos = xpos,fun = fun)
                curup(5)
                xpos = xpos + k
-      of " " : xpos = xpos + 2        
+      of " " : xpos = xpos + 2
       else: discard
-      
 
 
 
-proc printNimSxR*(nimsx:seq[string],col:string = yellowgreen, xpos: int = 1) = 
+
+proc printNimSxR*(nimsx:seq[string],col:string = yellowgreen, xpos: int = 1) =
     ## printNimSxR
-    ## 
+    ##
     ## prints large Letters or a word which have been predefined
-    ## 
+    ##
     ## see values of nimsx1 and nimsx2 above
-    ## 
-    ## 
+    ##
+    ##
     ## .. code-block:: nim
     ##    printNimSxR(nimsx,xpos = 10)
-    ## 
+    ##
     ## allows x positioning
-    ## 
+    ##
     ## in your calling code arrange that most right one is printed first
-    ## 
-          
+    ##
+
     var sxpos = xpos
     var maxl = 0
-    
+
     for x in nimsx:
       if maxl < x.len:
           maxl = x.len
-    
-    var maxpos = cx.tw - maxl div 2 
-    
+
+    var maxpos = cx.tw - maxl div 2
+
     if xpos > maxpos:
           sxpos = maxpos
 
     for x in nimsx :
           printLn(" ".repeat(xpos) & x,randcol())
-   
+
 
 
 proc printSlimNumber*(anumber:string,fgr:string = yellowgreen ,bgr:string = black,xpos:int = 1) =
     ## printSlimNumber
-    ## 
+    ##
     ## # will shortly be deprecated use:  printSlim
-    ## 
+    ##
     ## prints an string in big slim font
-    ## 
+    ##
     ## available chars 123456780,.:
-    ## 
-    ## 
+    ##
+    ##
     ## usufull for big counter etc , a clock can also be build easily but
     ## running in a tight while loop just uses up cpu cycles needlessly.
-    ## 
+    ##
     ## .. code-block:: nim
     ##    for x in 990.. 1005:
     ##         cleanScreen()
     ##         printSlimNumber($x)
     ##         sleep(750)
-    ##    echo()   
+    ##    echo()
     ##
     ##    printSlimNumber($23456345,blue)
     ##    decho(2)
     ##    printSlimNumber("1234567:345,23.789",fgr=salmon,xpos=20)
-    ##    sleep(1500)  
+    ##    sleep(1500)
     ##    import times
     ##    cleanScreen()
     ##    decho(2)
     ##    printSlimNumber($getClockStr(),fgr=salmon,xpos=20)
     ##    decho(5)
-    ## 
+    ##
     ##    for x in rxCol:
-    ##       printSlimNumber($x,colorNames[x][1])    
+    ##       printSlimNumber($x,colorNames[x][1])
     ##       curup(3)
     ##       sleep(500)
-    ##    curdn(3)  
-    
+    ##    curdn(3)
+
     var asn = newSeq[string]()
     var printseq = newSeq[seq[string]]()
     for x in anumber: asn.add($x)
     for x in asn:
-      case  x 
+      case  x
         of "0": printseq.add(snumber0)
         of "1": printseq.add(snumber1)
         of "2": printseq.add(snumber2)
@@ -2786,37 +2785,37 @@ proc printSlimNumber*(anumber:string,fgr:string = yellowgreen ,bgr:string = blac
         of ",": printseq.add(scomma)
         of ".": printseq.add(sdot)
         else: discard
-          
+
     for x in 0.. snumberlen:
-        curSetx(xpos) 
+        curSetx(xpos)
         for y in 0.. <printseq.len:
             print(" " & printseq[y][x],fgr,bgr)
-        writeLine(stdout,"")   
+        writeLine(stdout,"")
 
 
-      
-proc slimN(x:int):Tsn7 =        
+
+proc slimN(x:int):Tsn7 =
   # supporting slim number printing
   var nnx:Tsn7
-  case x 
-    of 0: nnx.nx = snumber0  
+  case x
+    of 0: nnx.nx = snumber0
     of 1: nnx.nx = snumber1
-    of 2: nnx.nx = snumber2    
-    of 3: nnx.nx = snumber3    
+    of 2: nnx.nx = snumber2
+    of 3: nnx.nx = snumber3
     of 4: nnx.nx = snumber4
     of 5: nnx.nx = snumber5
     of 6: nnx.nx = snumber6
     of 7: nnx.nx = snumber7
-    of 8: nnx.nx = snumber8 
+    of 8: nnx.nx = snumber8
     of 9: nnx.nx = snumber9
-    else: discard 
+    else: discard
   result = nnx
 
 
-proc slimC(x:string):Tsn7 = 
+proc slimC(x:string):Tsn7 =
   # supporting slim chars printing
   var nnx:Tsn7
-  case x 
+  case x
     of ".": nnx.nx = sdot
     of ",": nnx.nx = scomma
     of ":": nnx.nx = scolon
@@ -2825,24 +2824,24 @@ proc slimC(x:string):Tsn7 =
   result = nnx
 
 
-proc prsn(x:int,fgr:string = termwhite,bgr:string = termblack,xpos:int = 0) = 
+proc prsn(x:int,fgr:string = termwhite,bgr:string = termblack,xpos:int = 0) =
      # print routie for slim numbers
      for x in slimN(x).nx: println(x,fgr = fgr,bgr = bgr,xpos = xpos)
- 
-proc prsc(x:string,fgr:string = termwhite,bgr:string = termblack,xpos:int = 0) = 
+
+proc prsc(x:string,fgr:string = termwhite,bgr:string = termblack,xpos:int = 0) =
      # print routine for slim chars
-     for x in slimc(x).nx: println($x,fgr = fgr,bgr = bgr,xpos = xpos) 
- 
+     for x in slimc(x).nx: println($x,fgr = fgr,bgr = bgr,xpos = xpos)
+
 
 proc printSlim* (ss:string = "", frg:string = termwhite,bgr:string = termblack,xpos:int = 0,align:string = "left") =
     ## printSlim
-    ## 
+    ##
     ## prints available slim numbers and slim chars
-    ## 
+    ##
     ## right alignment : the string will be written left of xpos position
     ## left  alignment : the string will be written right of xpos position
     ##
-    ## make sure enough space is available left or right of xpos 
+    ## make sure enough space is available left or right of xpos
     ##
     ## .. code-block:: nim
     ##      printSlim($"82233.32",salmon,xpos = 25,align = "right")
@@ -2854,9 +2853,9 @@ proc printSlim* (ss:string = "", frg:string = termwhite,bgr:string = termblack,x
     ##      decho(3)
     ##      printSlim($"33.87",peru,xpos = 25)
     ##
-    
-    
-    
+
+
+
     var npos = xpos
     #if we want to right align we need to know the overall length, which needs a scan
     var sswidth = 0
@@ -2865,19 +2864,19 @@ proc printSlim* (ss:string = "", frg:string = termwhite,bgr:string = termblack,x
          if $x in slimCharSet:
            sswidth = sswidth + 1
          else:
-           sswidth = sswidth + 3      
-    
+           sswidth = sswidth + 3
+
     for x in ss:
       if $x in slimcharset:
         prsc($x ,frg,bgr, xpos = npos - sswidth)
         npos = npos + 1
         curup(3)
-      else:  
+      else:
         var mn:int = parseInt($x)
         prsn(mn ,frg,bgr, xpos = npos - sswidth)
         npos = npos + 3
         curup(3)
-          
+
 
 
 # Framed headers with var. colorising options
@@ -2912,13 +2911,13 @@ proc superHeader*(bstring:string) =
           for x in 0.. <n:
               astring = astring & " "
           mddl = mddl + 1
-      
+
       # some framechars choose depending on what the system has installed
       #let framechar = "▒"
-      let framechar = "⌘"  
+      let framechar = "⌘"
       #let framechar = "⏺"
-      #let framechar = "~"  
-      let pdl = framechar.repeat(mddl)  
+      #let framechar = "~"
+      let pdl = framechar.repeat(mddl)
       # now show it with the framing in yellow and text in white
       # really want a terminal color checker to avoid invisible lines
       echo ()
@@ -2972,7 +2971,7 @@ proc superHeader*(bstring:string,strcol:string,frmcol:string) =
             mddl = mddl + 1
 
         let framechar = "⌘"
-        #let framechar = "~"  
+        #let framechar = "~"
         let pdl = framechar.repeat(mddl)
         # now show it with the framing in yellow and text in white
         # really want to have a terminal color checker to avoid invisible lines
@@ -2985,10 +2984,10 @@ proc superHeader*(bstring:string,strcol:string,frmcol:string) =
 
         proc framemarker(am:string) =
             print(am,frmcol)
-            
+
         proc headermessage(astring:string)  =
             print(astring,strcol)
-            
+
 
         # draw everything
         frameline(pdl)
@@ -3024,7 +3023,7 @@ proc superHeaderA*(bb:string = "",strcol:string = white,frmcol:string = green,an
       ##    clearup(3)
       ##    superheader("Ok That's it for Now !",salmon,yellowgreen)
       ##    doFinish()
-      
+
       for am in 0..<animcount:
           for x in 0.. <1:
             cleanScreen()
@@ -3041,7 +3040,7 @@ proc superHeaderA*(bb:string = "",strcol:string = white,frmcol:string = green,an
             else:
                 cleanScreen()
             sleep(500)
-            
+
       echo()
 
 
@@ -3069,27 +3068,27 @@ proc getWanIp*():string =
        except:
          discard
    result = z
-   
-   
-proc showWanIp*() = 
+
+
+proc showWanIp*() =
      ## showWanIp
-     ## 
+     ##
      ## show your current wan ip
-     ## 
+     ##
      printBiCol("Current Wan Ip  : " & getwanip(),":",yellowgreen,gray)
- 
+
 
 proc getIpInfo*(ip:string):JsonNode =
      ## getIpInfo
      ##
      ## use ip-api.com free service limited to abt 250 requests/min
-     ## 
+     ##
      ## exceeding this you will need to unlock your wan ip manually at their site
-     ## 
+     ##
      ## the JsonNode is returned for further processing if needed
-     ## 
+     ##
      ## and can be queried like so
-     ## 
+     ##
      ## .. code-block:: nim
      ##   var jz = getIpInfo("208.80.152.201")
      ##   echo getfields(jz)
@@ -3098,19 +3097,19 @@ proc getIpInfo*(ip:string):JsonNode =
      ##
      if ip != "":
         result = parseJson(getContent("http://ip-api.com/json/" & ip))
-        
+
 
 proc showIpInfo*(ip:string) =
       ## showIpInfo
       ##
       ## Displays details for a given IP
-      ## 
+      ##
       ## Example:
-      ## 
+      ##
       ## .. code-block:: nim
       ##    showIpInfo("208.80.152.201")
       ##    showIpInfo(getHosts("bbc.com")[0])
-      ## 
+      ##
       let jz = getIpInfo(ip)
       decho(2)
       printLn("Ip-Info for " & ip,lightsteelblue)
@@ -3123,27 +3122,27 @@ proc showIpInfo*(ip:string) =
 
 proc getHosts*(dm:string):seq[string] =
     ## getHosts
-    ## 
-    ## returns IP addresses inside a seq[string] for a domain name and 
-    ## 
+    ##
+    ## returns IP addresses inside a seq[string] for a domain name and
+    ##
     ## may resolve multiple IP pointing to same domain
-    ## 
+    ##
     ## .. code-block:: Nim
     ##    import cx
     ##    var z = getHosts("bbc.co.uk")
     ##    for x in z:
     ##      echo x
     ##    doFinish()
-    ## 
-    ## 
+    ##
+    ##
     var rx = newSeq[string]()
     try:
       for i in getHostByName(dm).addrList:
         if i.len > 0:
           var s = ""
-          var cc = 0  
+          var cc = 0
           for c in i:
-              if s != "": 
+              if s != "":
                   if cc == 3:
                     s.add(",")
                     cc = 0
@@ -3154,10 +3153,10 @@ proc getHosts*(dm:string):seq[string] =
           var ss =s.split(",")
           for x in 0.. <ss.len:
               rx.add(ss[x])
-              
+
         else:
           rx = @[]
-    except:     
+    except:
            rx = @[]
     var rxs = rx.toSet # removes doubles
     rx = @[]
@@ -3166,19 +3165,19 @@ proc getHosts*(dm:string):seq[string] =
     result = rx
 
 
-proc showHosts*(dm:string) = 
-    ## showHosts 
-    ## 
-    ## displays IP addresses for a domain name and 
-    ## 
+proc showHosts*(dm:string) =
+    ## showHosts
+    ##
+    ## displays IP addresses for a domain name and
+    ##
     ## may resolve multiple IP pointing to same domain
-    ## 
+    ##
     ## .. code-block:: Nim
     ##    import cx
-    ##    showHosts("bbc.co.uk")  
+    ##    showHosts("bbc.co.uk")
     ##    doFinish()
-    ## 
-    ## 
+    ##
+    ##
     cechoLn(yellowgreen,"Hosts Data for " & dm)
     var z = getHosts(dm)
     if z.len < 1:
@@ -3207,9 +3206,9 @@ proc getRandomInt*(mi:int = 0,ma:int = int.high):int {.inline.}=
     ##    loopy(0.. 1000000,ps.push(getRandomInt(0,10000)))
     ##    showStats(ps)
     ##    doFinish()
-    ##    
-    ##    
-    
+    ##
+    ##
+
     # we do this to avoid overflow error if a int exceeding int.high is specified
     if ma > int.high:
        result = rng.randomInt(mi,int.high)
@@ -3232,8 +3231,8 @@ proc createSeqInt*(n:int = 10,mi:int = 0,ma:int = int.high) : seq[int] {.inline.
     ##    echo createSeqInt(50,100,2000)
 
     result = newSeq[int]()
-    case  mi <= ma 
-      of true : 
+    case  mi <= ma
+      of true :
                 for x in 0.. <n: result.add(getRandomInt(mi,ma))
       of false: print("Error : Wrong parameters for min , max ",red)
 
@@ -3242,27 +3241,27 @@ proc createSeqInt*(n:int = 10,mi:int = 0,ma:int = int.high) : seq[int] {.inline.
 proc sum*[T](aseq: seq[T]): T = foldl(aseq, a + b)
      ## sum
      ## code per idea from http://rnduja.github.io/2015/10/21/scientific-nim/
-     ## 
-     ## 
+     ##
+     ##
      ## returns sum of float or int seqs
-     ## 
-     ## 
+     ##
+     ##
 
 
 proc ff*(zz:float,n:int64 = 5):string =
      ## ff
-     ## 
+     ##
      ## formats a float to string with n decimals
-     ##  
+     ##
      result = $formatFloat(zz,ffDecimal,n)
-      
+
 
 proc getRandomFloat*():float =
      ## getRandomFloat
      ##
      ## convenience proc so we do not need to import random in calling prog
-     ## 
-     ## 
+     ##
+     ##
      result = rng.random()
 
 
@@ -3272,11 +3271,11 @@ proc createSeqFloat*(n:BiggestInt = 10,prec:int = 3) : seq[float] =
      ## convenience proc to create an unsorted seq of random floats with
      ##
      ## default length 10 ( always consider how much memory is in the system )
-     ## 
+     ##
      ## prec enables after comma precision up to 16 positions after comma
-     ## 
+     ##
      ## this is on a best attempt basis and may not work all the time
-     ## 
+     ##
      ## default after comma positions is prec = 3 max
      ##
      ## form @[0.34,0.056,...] or similar
@@ -3284,18 +3283,18 @@ proc createSeqFloat*(n:BiggestInt = 10,prec:int = 3) : seq[float] =
      ## .. code-block:: nim
      ##    # create a seq with 50 random floats
      ##    echo createSeqFloat(50)
-     ##    
-     ##   
+     ##
+     ##
      ## .. code-block:: nim
-     ##    # create a seq with 50 random floats formated 
+     ##    # create a seq with 50 random floats formated
      ##    echo createSeqFloat(50,3)
-     ##    
+     ##
      var ffnz = prec
      if ffnz > 16: ffnz = 16
      var z = newSeq[float]()
      for x in 0.. <n:
           var af = ff(getRandomFloat(),ffnz)
-          z.add(parseFloat(af))  
+          z.add(parseFloat(af))
      result = z
 
 
@@ -3303,15 +3302,15 @@ proc createSeqFloat*(n:BiggestInt = 10,prec:int = 3) : seq[float] =
 
 proc getRandomPointInCircle*(radius:float) : seq[float] =
     ## getRandomPointInCircle
-    ## 
+    ##
     ## based on answers found in
-    ## 
+    ##
     ## http://stackoverflow.com/questions/5837572/generate-a-random-point-within-a-circle-uniformly
-    ## 
-    ## 
-    ## 
+    ##
+    ##
+    ##
     ## .. code-block:: nim
-    ##    import cx,math,strfmt  
+    ##    import cx,math,strfmt
     ##    # get randompoints in a circle
     ##    var crad:float = 1
     ##    for x in 0.. 100:
@@ -3319,106 +3318,122 @@ proc getRandomPointInCircle*(radius:float) : seq[float] =
     ##       assert k[0] <= crad and k[1] <= crad
     ##       printLnBiCol("{:<25}  :  {}".fmt($k[0],$k[1]),":")
     ##    doFinish()
-    ##    
-    ##     
-    
+    ##
+    ##
+
     let t = 2 * math.Pi * getRandomFloat()
     let u = getRandomFloat() + getRandomFloat()
     var r = 0.00
     if u > 1 :
-      r = 2-u 
+      r = 2-u
     else:
-      r = u 
+      r = u
     var z = newSeq[float]()
     z.add(radius * r * math.cos(t))
     z.add(radius * r * math.sin(t))
     return z
-        
-      
-      
-# Misc. routines 
 
 
-template getCard* :auto = 
+
+# Misc. routines
+
+
+template getCard* :auto =
     ## getCard
-    ## 
+    ##
     ## gets a random card from the Cards seq
-    ## 
+    ##
     ## .. code-block:: nim
     ##    import cx
     ##    print(getCard(),randCol(),xpos = centerX())  # get card and print in random color at xpos
     ##    doFinish()
-    ## 
-    cards[rxCards.randomChoice()] 
- 
+    ##
+    cards[rxCards.randomChoice()]
 
 
-proc ruler* (xpos:int=0,fgr:string = termwhite,bgr:string = termblack , all:bool = false) =
+
+proc ruler* (xpos:int=0,xposE:int=0,ypos:int = 0,fgr:string = termwhite,bgr:string = termblack , vert:bool = false) =
      ## ruler
-     ## 
-     ## simple indicator of dot x positions to give a feedback during outlay design
-     ## 
-     ## 
+     ##
+     ## simple terminal ruler indicating dot x positions to give a feedback 
+     ## available for horizontal --> vert = false
+     ##           for vertical   --> vert = true
+     ##
+     ##
      ## ..code-block::nim
      ##   # this will show a full terminal width ruler
      ##   ruler(fgr=pastelblue,all = true)
      ##   decho(3)
-     ##   # this will show a specified position only 
+     ##   # this will show a specified position only
      ##   ruler(tw div 2,fgr=pastelblue,all = false)
      ##   decho(3)
      ##   # this will show a full terminal width ruler starting at a certain position
      ##   ruler(75,fgr=pastelblue,all = true)
-     
+   
      var fflag:bool = false
-     var npos = xpos
-     if xpos == 0: npos = 1
-         
+     var npos  = xpos
+     var nposE = xposE
+     if xpos ==  0: npos  = 1
+     if xposE == 0: nposE = tw - 1
+    
+     if vert == false :  # horizontalruler
      
-     if all == false:
-       println(".",lime,bgr,xpos = npos)
-       println($npos,fgr,bgr,xpos = npos)
-     else:
-       for x in npos.. <(tw):
-                  
-         if x == 1:
-            curup(1)
-            print(".",lime,bgr,xpos = 1)
-            curdn(1)
-            print(x,fgr,bgr,xpos = 1)
-            curup(1)
-            fflag = true
-                 
-         elif x mod 5 > 0 and fflag == false:
-            curup(1)
-            print(".",goldenrod,bgr,xpos = x)
-            curdn(1)
-           
-         elif x mod 5 == 0:
-            if fflag == false:
-              curup(1)
-            print(".",lime,bgr,xpos = x)
-            curdn(1)
-            print(x,fgr,bgr,xpos = x)
-            curup(1)
-            fflag = true
-         else:
-            fflag = true
-            print(".",truetomato,bgr,xpos = x)
-            
- 
+          for x in npos.. nposE:
 
- 
+            if x == 1:
+                curup(1)
+                print(".",lime,bgr,xpos = 1)
+                curdn(1)
+                print(x,fgr,bgr,xpos = 1)
+                curup(1)
+                fflag = true
+
+            elif x mod 5 > 0 and fflag == false:
+                curup(1)
+                print(".",goldenrod,bgr,xpos = x)
+                curdn(1)
+
+            elif x mod 5 == 0:
+                if fflag == false:
+                  curup(1)
+                print(".",lime,bgr,xpos = x)
+                curdn(1)
+                print(x,fgr,bgr,xpos = x)
+                curup(1)
+                fflag = true
+                
+            else:
+                fflag = true
+                print(".",truetomato,bgr,xpos = x)
+     
+     
+     else : # vertical ruler           
+            
+            if  ypos >= th : curset()
+            else: curup(ypos + 2)               
+                             
+            for x in 0.. ypos:                      
+                  if x == 0: println(".",lime,bgr,xpos = xpos + 3)                                    
+                  elif x mod 2 == 0:
+                         print(x,fgr,bgr,xpos = xpos)
+                         println(".",fgr,bgr,xpos = xpos + 3)                      
+                  else: println(".",truetomato,bgr,xpos = xpos + 3) 
+  
+  
+
+
+
 proc centerMark*(showpos :bool = false) =
      ## centerMark
-     ## 
+     ##
      ## draws a red dot in the middle of the screen xpos only
-     ## and also can show pos 
-     ## 
+     ## and also can show pos
+     ##
      centerPos(".")
      print(".",truetomato)
-     if showpos == true:  print "x" & $(tw/2) 
-  
-    
+     if showpos == true:  print "x" & $(tw/2)
+
+
 proc tupleToStr*(xs: tuple): string =
      ## tupleToStr
      ##
@@ -3437,22 +3452,22 @@ proc tupleToStr*(xs: tuple): string =
            result.add(", ")
        result.add($x)
      result.add(")")
-     
-              
+
+
 template loopy*[T](ite:T,st:stmt) =
      ## loopy
-     ## 
+     ##
      ## the lazy programmer's quick simple for-loop template
      ##
-     ## .. code-block:: nim            
+     ## .. code-block:: nim
      ##       loopy(0.. 10,printLn("The house is in the back.",randcol()))
-     ##     
+     ##
      for x in ite: st
 
 
 
 proc shift*[T](x: var seq[T], zz: Natural = 0): T =
-   
+
      ## shift takes a seq and returns the first , and deletes it from the seq
      ##
      ## build in pop does the same from the other side
@@ -3470,11 +3485,11 @@ proc shift*[T](x: var seq[T], zz: Natural = 0): T =
 
 proc showStats*(x:Runningstat) =
      ## showStats
-     ## 
+     ##
      ## quickly display runningStat data
-     ##  
-     ## .. code-block:: nim 
-     ##  
+     ##
+     ## .. code-block:: nim
+     ##
      ##    import cx,math
      ##    var rs:Runningstat
      ##    var z =  createSeqFloat(500000)
@@ -3482,7 +3497,7 @@ proc showStats*(x:Runningstat) =
      ##        rs.push(x)
      ##    showStats(rs)
      ##    doFinish()
-     ## 
+     ##
      var sep = ":"
      printLnBiCol("Sum     : " & ff(x.sum),sep,yellowgreen,white)
      printLnBiCol("Var     : " & ff(x.variance),sep,yellowgreen,white)
@@ -3490,19 +3505,19 @@ proc showStats*(x:Runningstat) =
      printLnBiCol("Std     : " & ff(x.standardDeviation),sep,yellowgreen,white)
      printLnBiCol("Min     : " & ff(x.min),sep,yellowgreen,white)
      printLnBiCol("Max     : " & ff(x.max),sep,yellowgreen,white)
-     
 
 
-proc newDir*(dirname:string) = 
+
+proc newDir*(dirname:string) =
      ## newDir
-     ## 
-     ## creates a new directory and provides some feedback 
-    
+     ##
+     ## creates a new directory and provides some feedback
+
      if not existsDir(dirname):
           try:
             createDir(dirname)
             printLn("Directory " & dirname & " created ok",green)
-          except OSError:   
+          except OSError:
             printLn(dirname & " creation failed. Check permissions.",red)
      else:
         printLn("Directory " & dirname & " already exists !",red)
@@ -3511,19 +3526,19 @@ proc newDir*(dirname:string) =
 
 proc remDir*(dirname:string) =
      ## remDir
-     ## 
+     ##
      ## deletes an existing directory , all subdirectories and files  and provides some feedback
-     ## 
-     ## root and home directory removal is disallowed 
-     ## 
-  
+     ##
+     ## root and home directory removal is disallowed
+     ##
+
      if dirname == "/home" or dirname == "/" :
         printLn("Directory " & dirname & " removal not allowed !",brightred)
-     
+
      else:
-    
+
         if existsDir(dirname):
-          
+
           try:
               removeDir(dirname)
               printLn("Directory " & dirname & " deleted ok",yellowgreen)
@@ -3531,6 +3546,22 @@ proc remDir*(dirname:string) =
               printLn("Directory " & dirname & " deletion failed",red)
         else:
               printLn("Directory " & dirname & " does not exists !",red)
+
+
+
+proc dayOfYear*(tt : Time) : range[0..365] = getLocalTime(tt).yearday
+## dayOfYear
+## 
+## returns the day of the year for a given Time
+## 
+## .. code-block:: nim
+##     var afile = "cx.nim"      
+##     var mday = getLastModificationTime(afile).dayofyear
+##     var today = getTime().dayofyear
+##     printlnBiCol("Last Modified on day  : " & $mday)
+##     printLnBiCol("Day of Current year   : " & $today)       
+##     
+##     
 
 
 
@@ -3573,7 +3604,7 @@ proc newWord*(minwl:int=3,maxwl:int = 10 ):string =
     ##
     ## default max word length maxwl = 10
     ##
-    
+
     if minwl <= maxwl:
         var nw = ""
         # words with length range 3 to maxwl
@@ -3614,18 +3645,18 @@ proc newWord2*(minwl:int=3,maxwl:int = 10 ):string =
           if char(x) in IdentChars:
               nw = nw & $char(x)
         result = normalize(nw)   # return in lower case , cleaned up
-    
-    else: 
+
+    else:
          cechoLn(red,"Error : minimum word length larger than maximum word length")
          result = ""
- 
+
 
 proc newWord3*(minwl:int=3,maxwl:int = 10 ,nflag:bool = true):string =
     ## newWord3
     ##
-    ## creates a new lower case random word with chars from AllChars set if nflag = true 
+    ## creates a new lower case random word with chars from AllChars set if nflag = true
     ##
-    ## creates a new anycase word with chars from AllChars set if nflag = false 
+    ## creates a new anycase word with chars from AllChars set if nflag = false
     ##
     ## default min word length minwl = 3
     ##
@@ -3642,20 +3673,20 @@ proc newWord3*(minwl:int=3,maxwl:int = 10 ,nflag:bool = true):string =
           var x = chc.randomChoice()
           if char(x) in AllChars:
               nw = nw & $char(x)
-        if nflag == true:      
+        if nflag == true:
            result = normalize(nw)   # return in lower case , cleaned up
         else :
            result = nw
-        
+
     else:
          cechoLn(red,"Error : minimum word length larger than maximum word length")
          result = ""
-           
+
 
 proc newHiragana*(minwl:int=3,maxwl:int = 10 ):string =
     ## newHiragana
     ##
-    ## creates a random hiragana word without meaning from the hiragana unicode set 
+    ## creates a random hiragana word without meaning from the hiragana unicode set
     ##
     ## default min word length minwl = 3
     ##
@@ -3671,19 +3702,19 @@ proc newHiragana*(minwl:int=3,maxwl:int = 10 ):string =
         while nw.len < nwl:
            var x = chc.randomChoice()
            nw = nw & $Rune(x)
-        
+
         result = nw
-        
+
     else:
          cechoLn(red,"Error : minimum word length larger than maximum word length")
          result = ""
-           
-        
+
+
 
 proc newKatakana*(minwl:int=3,maxwl:int = 10 ):string =
     ## newKatakana
     ##
-    ## creates a random katakana word without meaning from the katakana unicode set 
+    ## creates a random katakana word without meaning from the katakana unicode set
     ##
     ## default min word length minwl = 3
     ##
@@ -3699,13 +3730,13 @@ proc newKatakana*(minwl:int=3,maxwl:int = 10 ):string =
         while nw.len < nwl:
            var x = chc.randomChoice()
            nw = nw & $Rune(x)
-        
+
         result = nw
-        
+
     else:
          cechoLn(red,"Error : minimum word length larger than maximum word length")
          result = ""
-           
+
 
 
 proc iching*():seq[string] =
@@ -3729,9 +3760,9 @@ proc ada*():seq[string] =
     for j in parsehexint("2300") .. parsehexint("23FF"):
         adx.add($Rune(j))
     result = adx
-    
-    
-    
+
+
+
 proc hiragana*():seq[string] =
     ## hiragana
     ##
@@ -3755,60 +3786,60 @@ proc katakana*():seq[string] =
     result = kat
 
 
- 
-    
-proc rainbow2*[T](s : T,xpos:int = 0,fitLine:bool = false,centered:bool = false, colorset:seq[(string, string)] = colorNames) = 
+
+
+proc rainbow2*[T](s : T,xpos:int = 0,fitLine:bool = false,centered:bool = false, colorset:seq[(string, string)] = colorNames) =
     ## rainbow2
     ##
     ## multicolored string  based on colorsets  see pastelSet
     ##
     ## may not work with certain Rune
-    ## 
+    ##
     ## .. code-block:: nim
     ##    rainbow2("what's up ?\n",centered = true,colorset = pastelSet)
-    ##    
-    ##    
-    ##    
+    ##
+    ##
+    ##
     var nxpos = xpos
     var astr = $s
     var c = 0
     var a = toSeq(1.. <colorset.len)
 
-   
+
     if astr in emojis or astr in hiragana() or astr in katakana() or astr in iching():
-          
+
           c = a[randomInt(a.len)]
           if centered == false:
              print(astr,colorset[c][1],black,xpos = nxpos,fitLine)
-            
-                
+
+
           else:
               # need to calc the center here and increment by x
               nxpos = centerX() - ($astr).len div 2  - 1
               print(astr,colorset[c][1],black,xpos=nxpos,fitLine)
-          
-          inc nxpos   
-              
-   
+
+          inc nxpos
+
+
     else :
-          
+
           for x in 0.. <astr.len:
             c = a[randomInt(a.len)]
             if centered == false:
-                
+
                 print(astr[x],colorset[c][1],black,xpos = nxpos,fitLine)
-                
+
             else:
                 # need to calc the center here and increment by x
                 nxpos = centerX() - ($astr).len div 2  + x - 1
                 print(astr[x],colorset[c][1],black,xpos=nxpos,fitLine)
-            
+
             inc nxpos
-        
 
 
-proc boxChars*():seq[string] = 
-  
+
+proc boxChars*():seq[string] =
+
     ## chars to draw a box
     ##
     ## returns a seq containing unicode box drawing chars
@@ -3820,130 +3851,130 @@ proc boxChars*():seq[string] =
     result = boxy
 
 
-    
+
 proc drawBox*(hy:int = 1, wx:int = 1 , hsec:int = 1 ,vsec:int = 1,frCol:string = yellowgreen,brCol:string = black ,cornerCol:string = truetomato,xpos:int = 1,blink:bool = false) =
      ## drawBox
-     ## 
+     ##
      ## WORK IN PROGRESS FOR A BOX DRAWING PROC USING UNICODE BOX CHARS
-     ## 
+     ##
      ## Note you must make sure that the terminal is large enough to display the
-     ## 
-     ##      box or it will look messed up 
-     ## 
-     ## 
+     ##
+     ##      box or it will look messed up
+     ##
+     ##
      ## .. code-block:: nim
      ##    import cx,unicode
      ##    cleanscreen()
      ##    decho(5)
-     ##    drawBox(hy=10, wx= 60 , hsec = 5 ,vsec = 5,frCol = randcol(),brCol= black ,cornerCol = truetomato,xpos = 1,blink = false) 
+     ##    drawBox(hy=10, wx= 60 , hsec = 5 ,vsec = 5,frCol = randcol(),brCol= black ,cornerCol = truetomato,xpos = 1,blink = false)
      ##    curmove(up=2,bk=11)
      ##    print(widedot & "NIM " & widedot,yellowgreen)
      ##    decho(5)
      ##    showTerminalSize()
      ##    doFinish()
-     ##    
-     ##    
-     # http://unicode.org/charts/PDF/U2500.pdf 
+     ##
+     ##
+     # http://unicode.org/charts/PDF/U2500.pdf
      # almost ok we need to find a way to to make sure that grid size is fine
      # if we use dynamic sizes like width = tw-1 etc.
-     # 
+     #
      # given some data should the data be printed into a drawn box
      # or the box around the data ?
-     # 
+     #
 
      var h = hy
      var w = wx
      if h > th:
-       h = th 
+       h = th
      if w > tw:
-       w = tw 
-       
-     curSetx(xpos) 
+       w = tw
+
+     curSetx(xpos)
      # top
-     if blink == true:  
+     if blink == true:
            printStyled($Rune(parsehexint("250C")),$Rune(parsehexint("250C")),cornerCol,{styleBlink})
-     else:   
+     else:
            printStyled($Rune(parsehexint("250C")),$Rune(parsehexint("250C")),cornerCol,{})
-          
+
      print(repeat($Rune(parseHexInt("2500")),w - 1) ,fgr = frcol)
-      
-     if blink == true:  
+
+     if blink == true:
            printLnStyled($Rune(parsehexint("2510")),$Rune(parsehexint("2510")),cornerCol,{styleBlink})
-     else:   
+     else:
            printLnStyled($Rune(parsehexint("2510")),$Rune(parsehexint("2510")),cornerCol,{})
-       
+
 
      #sides
      for x in 0.. h - 2 :
            print($Rune(parsehexint("2502")),fgr = frcol,xpos=xpos)
            printLn($Rune(parsehexint("2502")),fgr = frcol,xpos=xpos + w )
-                   
-          
+
+
      # bottom left corner and bottom right
      print($Rune(parsehexint("2514")),fgr = cornercol,xpos=xpos)
      print(repeat($Rune(parsehexint("2500")),w-1),fgr = frcol)
      printLn($Rune(parsehexint("2518")),fgr=cornercol)
-     
+
      # try to build some dividers
-     var vsecwidth = w 
+     var vsecwidth = w
      if vsec > 1:
-       vsecwidth = w div vsec 
+       vsecwidth = w div vsec
        curup(h + 1)
        for x in 1.. <vsec:
-           print($Rune(parsehexint("252C")),fgr = truetomato,xpos=xpos + vsecwidth * x)  
+           print($Rune(parsehexint("252C")),fgr = truetomato,xpos=xpos + vsecwidth * x)
            curdn(1)
            for y in 0.. h - 2 :
-               printLn($Rune(parsehexint("2502")),fgr = frcol,xpos=xpos + vsecwidth * x)  
-           print($Rune(parsehexint("2534")),fgr = truetomato,xpos=xpos + vsecwidth * x)  
+               printLn($Rune(parsehexint("2502")),fgr = frcol,xpos=xpos + vsecwidth * x)
+           print($Rune(parsehexint("2534")),fgr = truetomato,xpos=xpos + vsecwidth * x)
            curup(h)
 
-     var hsecheight = h 
+     var hsecheight = h
      var hpos = xpos
      var npos = hpos
      if hsec > 1:
-       hsecheight = h div hsec 
+       hsecheight = h div hsec
        cursetx(hpos)
        curdn(hsecheight)
-       
+
        for x in 1.. <hsec:
            print($Rune(parsehexint("251C")),fgr = truetomato,xpos=hpos)
            #print a full line right thru the vlines
            print(repeat($Rune(parsehexint("2500")),w - 1),fgr = frcol)
            # now we add the cross points
            for x in 1.. <vsec:
-               npos = npos + vsecwidth 
+               npos = npos + vsecwidth
                cursetx(npos)
                print($Rune(parsehexint("253C")),fgr = truetomato)
            # print the right edge
-           npos = npos + vsecwidth + 1   
+           npos = npos + vsecwidth + 1
            print($Rune(parsehexint("2524")),fgr = truetomato,xpos=npos - 1)
            curdn(hsecheight)
            npos = hpos
-           
+
 
 
 
 proc randpos*():int =
     ## randpos
-    ## 
+    ##
     ## sets cursor to a random position in the visible terminal window
-    ## 
-    ## returns x position 
-    ## 
-    ## .. code-block:: nim 
-    ## 
-    ##    while 1 == 1:  
-    ##       for z in 1.. 50:  
-    ##          print($z,randcol(),xpos = randpos())  
+    ##
+    ## returns x position
+    ##
+    ## .. code-block:: nim
+    ##
+    ##    while 1 == 1:
+    ##       for z in 1.. 50:
+    ##          print($z,randcol(),xpos = randpos())
     ##       sleepy(0.0015)
-    ## 
+    ##
     curset()
     let x = getRandomInt(0, tw - 1)
     let y = getRandomInt(0, th - 1)
     curdn(y)
     #print($x & "/" & $y,xpos = x)
     result = x
-  
+
 
 
 
@@ -3952,13 +3983,13 @@ proc randpos*():int =
 
 proc fastsplit*(s: string, sep: char): seq[string] =
   ## fastsplit
-  ## 
+  ##
   ##  code by jehan lifted from Nim Forum
-  ##  
-  ## maybe best results compile prog with : nim cc -d:release --gc:markandsweep 
-  ## 
+  ##
+  ## maybe best results compile prog with : nim cc -d:release --gc:markandsweep
+  ##
   ## seperator must be a char type
-  ## 
+  ##
   var count = 1
   for ch in s:
     if ch == sep:
@@ -3977,27 +4008,27 @@ proc fastsplit*(s: string, sep: char): seq[string] =
 
 proc splitty*(txt:string,sep:string):seq[string] =
    ## splitty
-   ## 
+   ##
    ## same as build in split function but this retains the
-   ## 
+   ##
    ## separator on the left side of the split
-   ## 
+   ##
    ## z = splitty("Nice weather in : Djibouti",":")
    ##
    ## will yield:
-   ## 
+   ##
    ## Nice weather in :
    ## Djibouti
-   ## 
+   ##
    ## rather than:
-   ## 
+   ##
    ## Nice weather in
    ## Djibouti
    ##
    ## with the original split()
-   ## 
-   ## 
-   var rx = newSeq[string]()   
+   ##
+   ##
+   var rx = newSeq[string]()
    let z = txt.split(sep)
    for xx in 0.. <z.len:
      if z[xx] != txt and z[xx] != nil:
@@ -4005,19 +4036,19 @@ proc splitty*(txt:string,sep:string):seq[string] =
              rx.add(z[xx] & sep)
         else:
              rx.add(z[xx])
-   result = rx          
+   result = rx
 
 
 proc showTerminalSize*() =
       ## showTerminalSize
-      ## 
+      ##
       ## displays current terminal dimensions
-      ## 
+      ##
       ## width is always available via tw
-      ## 
+      ##
       ## height is always available via th
-      ## 
-      ## 
+      ##
+      ##
       cechoLn(yellowgreen,"Terminal : " & lime & " W " & white & $tw & red & " x" & lime & " H " & white & $th)
 
 
@@ -4030,7 +4061,7 @@ proc qqTop*() =
   ## qqTop
   ##
   ## prints qqTop in custom color
-  ## 
+  ##
   print("qq",cyan)
   print("T",brightgreen)
   print("o",brightred)
@@ -4039,10 +4070,10 @@ proc qqTop*() =
 
 proc doInfo*() =
   ## doInfo
-  ## 
+  ##
   ## A more than you want to know information proc
-  ## 
-  ## 
+  ##
+  ##
   let filename= extractFileName(getAppFilename())
   #var accTime = getLastAccessTime(filename)
   let modTime = getLastModificationTime(filename)
@@ -4080,7 +4111,7 @@ proc doInfo*() =
   printLnBiCol("Creation                      : " & $(fi.creationTime),sep,green,brightblack)
 
   when defined windows:
-        printLnBiCol("System                        : Windows ..... Really ??",sep,red,brightblack) 
+        printLnBiCol("System                        : Windows ..... Really ??",sep,red,brightblack)
   elif defined linux:
         printLnBiCol("System                        : Running on Linux" ,sep,brightcyan,green)
   else:
@@ -4094,21 +4125,21 @@ proc doInfo*() =
   else:
         printLnBiCol("Code specifics                : generic" ,sep,green,brightblack)
 
-  printLnBiCol("Nim Version                   : " & $NimMajor & "." & $NimMinor & "." & $NimPatch,sep,green,brightblack) 
+  printLnBiCol("Nim Version                   : " & $NimMajor & "." & $NimMinor & "." & $NimPatch,sep,green,brightblack)
   printLnBiCol("Processor count               : " & $countProcessors(),sep,green,brightblack)
   printBiCol("OS                            : "& hostOS,sep,green,brightblack)
   printBiCol(" | CPU: "& hostCPU,sep,green,brightblack)
   printLnBiCol(" | cpuEndian: "& $cpuEndian,sep,green,brightblack)
   let pd = getpid()
   printLnBiCol("Current pid                   : " & $pd,sep,green,brightblack)
-  
 
 
-proc infoLine*() = 
+
+proc infoLine*() =
     ## infoLine
-    ## 
+    ##
     ## prints some info for current application
-    ## 
+    ##
     hlineLn()
     print("{:<14}".fmt("Application :"),yellowgreen)
     print(extractFileName(getAppFilename()),brightblack)
@@ -4119,21 +4150,21 @@ proc infoLine*() =
     print(CXLIBVERSION,brightblack)
     print(" | ",brightblack)
     qqTop()
-   
-    
-    
+
+
+
 proc doFinish*() =
     ## doFinish
     ##
     ## a end of program routine which displays some information
     ##
     ## can be changed to anything desired
-    ## 
+    ##
     ## and should be the last line of the application
     ##
     decho(2)
     infoLine()
-    printLn(" - " & year(getDateStr()),brightblack) 
+    printLn(" - " & year(getDateStr()),brightblack)
     print("{:<14}".fmt("Elapsed     : "),yellowgreen)
     printLn("{:<.3f} {}".fmt(epochtime() - cx.start,"secs"),goldenrod)
     echo()
@@ -4150,12 +4181,12 @@ proc handler*() {.noconv.} =
     ## just by using this module your project will have an automatic
     ##
     ## exit handler via ctrl-c
-    ## 
+    ##
     ## this handler may not work if code compiled into a .dll or .so file
     ##
     ## or under some circumstances like being called during readLineFromStdin
-    ## 
-    ## 
+    ##
+    ##
     eraseScreen()
     echo()
     hlineLn()
@@ -4186,7 +4217,6 @@ setControlCHook(handler)
 # so no need for this line in the calling prog
 system.addQuitProc(resetAttributes)
 # end of cx.nim
-
 
 
 when isMainModule:

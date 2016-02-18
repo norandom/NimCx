@@ -368,3 +368,48 @@ proc rainbow2Demo*() =
       centerMark()
 
 
+  
+proc rulerDemo*(xpos:int = 0,ypos:int = 10) =
+    # best used like so:
+    # 
+    #  var kpos = 15
+    #  for x in 0.. 2: 
+    #      rulerDemo(ypos= kpos)
+    #      inc kpos
+  
+   
+    var avcol1 = randcol()
+    var ahcol1 = randcol()
+    for nxpos in countup(0,tw-3): 
+      cleanscreen() 
+      ruler(fgr=ahcol1) # top
+      decho(3)
+      ruler(xpos = xpos  ,ypos = ypos,fgr = avcol1,vert = true)   # left
+      ruler(xpos = nxpos ,xposE = tw - 6 ,ypos = ypos,fgr = avcol1,vert = true) # mov to right
+      ruler(xpos = tw - 3  ,ypos = ypos,fgr = magenta,vert = true)   # left
+      #anything drawn should be here
+      curup(6)
+      
+      printSlim($nxpos,salmon,xpos = 10)
+      curdn(6)
+      echo()
+      ruler(fgr = greenyellow,bgr=brightblack) #bottom
+      echo()
+      sleepy(0.02)
+
+    var avcol2 = randcol()
+    for nxpos in countdown(tw-3,0): 
+      cleanscreen() 
+      ruler() # top
+      decho(3)
+      ruler(xpos = xpos  ,ypos = ypos,fgr = lime,vert = true)   # left
+      ruler(xpos = nxpos ,xposE = tw - 6 ,ypos = ypos,fgr = avcol2,vert = true) # mov to left
+      ruler(xpos = tw - 3  ,ypos = ypos,fgr = avcol2,vert = true)   # left
+      #anything drawn should be here
+      curup(6)
+      printSlim($nxpos,greenyellow,xpos = 100)
+      curdn(6)
+      echo()
+      ruler() #bottom
+      echo()
+      sleepy(0.02)

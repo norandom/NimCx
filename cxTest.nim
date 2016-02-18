@@ -205,8 +205,15 @@ decho(5)
 bigPanelDemo()
 sleepy(2)
 
+#rulerDemo
+cleanScreen()
+var kpos = 15
+for x in 0.. 2: 
+     rulerDemo(ypos= kpos)
+     inc kpos
+  
 
-decho(2)
+decho(5)
 var twc = tw div 2
 showTerminalSize()
 printLnBiCol("Terminal Center : " & $twc,":")
