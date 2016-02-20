@@ -3338,6 +3338,41 @@ proc getRandomPointInCircle*(radius:float) : seq[float] =
 # Misc. routines
 
 
+proc sortMe*[T](xs:var seq[T],order = Ascending): seq[T] = 
+     ## sortMe 
+     ## 
+     ## sorts seqs of int,float,string and returns a sorted seq
+     ## 
+     ## with order Ascending or Descending
+     ## 
+     ## .. code-block:: nim
+     ##    var z = createSeqFloat()
+     ##    println(sortMe(z),salmon)   
+     ##    println(sortMe(z,Descending),peru)
+     ## 
+     ## 
+     xs.sort(proc(x,y:T):int = cmp(x,y),order = order)
+     result = xs
+
+
+proc reverseMe*[T](xs: openarray[T]): seq[T] =
+  ## reverseMe
+  ## 
+  ## reverse a sequence
+  ## 
+  ## .. code-block:: nim
+  ##  
+  ##    var z = @["nice","bad","abc","zztop","reverser"]
+  ##    printLn(z,lime)
+  ##    println(z.reverseMe,red)
+  ##    
+ 
+  result = newSeq[T](xs.len)
+  for i, x in xs:
+    result[^i-1] = x # or: result[xs.high-i] = x
+      
+
+
 template getCard* :auto =
     ## getCard
     ##
@@ -3360,7 +3395,7 @@ proc ruler* (xpos:int=0,xposE:int=0,ypos:int = 0,fgr:string = termwhite,bgr:stri
      ## available for horizontal --> vert = false
      ##           for vertical   --> vert = true
      ##
-     ## see cxDemo and cxtest for more usage examples
+     ## see cxDemo and cxTest for more usage examples
      ##
      ## .. code-block::nim
      ##   # this will show a full terminal width ruler
