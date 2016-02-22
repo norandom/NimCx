@@ -3586,15 +3586,39 @@ proc remDir*(dirname:string) =
 
 
 
-proc dayOfYear*(tt : Time) : range[0..365] = getLocalTime(tt).yearday
+proc dayOfYear*() : range[0..365] = getLocalTime(getTime()).yearday + 1
 ## dayOfYear
 ## 
 ## returns the day of the year for a given Time
 ## 
+## note Nim yearday starts with Jan 1 being 0 however many application
+## 
+## actually need to start on day 1 being actually 1 , which is provided here.
+## 
 ## .. code-block:: nim
 ##     var afile = "cx.nim"      
 ##     var mday = getLastModificationTime(afile).dayofyear
-##     var today = getTime().dayofyear
+##     var today = dayofyear
+##     printlnBiCol("Last Modified on day  : " & $mday)
+##     printLnBiCol("Day of Current year   : " & $today)       
+##     
+##     
+
+
+
+proc dayOfYear*(tt:Time) : range[0..365] = getLocalTime(tt).yearday + 1
+## dayOfYear
+## 
+## returns the day of the year for a given Time
+## 
+## note Nim yearday starts with Jan 1 being 0 however many application
+## 
+## actually need to start on day 1 being actually 1 , which is provided here.
+## 
+## .. code-block:: nim
+##     var afile = "cx.nim"      
+##     var mday  = getLastModificationTime(afile).dayofyear
+##     var today = dayofyear
 ##     printlnBiCol("Last Modified on day  : " & $mday)
 ##     printLnBiCol("Day of Current year   : " & $today)       
 ##     
