@@ -3090,9 +3090,9 @@ proc getIpInfo*(ip:string):JsonNode =
      ## and can be queried like so
      ##
      ## .. code-block:: nim
-     ##   var jz = getIpInfo("208.80.152.201")
-     ##   echo getfields(jz)
-     ##   echo jz["city"].getstr
+     ##   var jj = getIpInfo("208.80.152.201")
+     ##   echo mpairs(jz)
+     ##   echo jj["city"].getstr
      ##
      ##
      if ip != "":
@@ -3110,11 +3110,11 @@ proc showIpInfo*(ip:string) =
       ##    showIpInfo("208.80.152.201")
       ##    showIpInfo(getHosts("bbc.com")[0])
       ##
-      let jz = getIpInfo(ip)
+      var jj:JsonNode = getIpInfo(ip)
       decho(2)
       printLn("Ip-Info for " & ip,lightsteelblue)
       dlineln(40,col = yellow)
-      for x in jz.getfields():
+      for x in jj.mpairs() :
           echo "{:<15} : {}".fmt($x.key,$x.val)
       printLnBiCol("{:<15} : {}".fmt("Source","ip-api.com"),":",yellowgreen,salmon)
 

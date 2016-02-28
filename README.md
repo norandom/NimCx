@@ -13,7 +13,7 @@ Color utilities for the Linux terminal
 | cx.nim         | cxDemo.nim       | cxTest.nim       |
 
 
-
+Requires     : Latest nim dev version
 Installation : nimble install nimFinLib    (this installs nimFinLib and cx libraries)
 
 
