@@ -6,7 +6,7 @@
 ## best run in a large console window
 
 
-import cx,cxDemo,strfmt,strutils,sequtils,times,random,unicode
+import cx,cxDemo,strutils,sequtils,times,random,unicode
 
 superHeader("Testing print and echo procs from cx.nim and run demos")
 
@@ -49,9 +49,9 @@ printLnBiCol(s,"c")  # default colors
 decho(2)
 
 # all in one color
-printLn("{} {} {} {}".fmt(s,n,f,l),greenyellow)      
+printLn(fmtx(["","","","","","",""],s,spaces(1),n,spaces(1),f,spaces(1),l),greenyellow)      
 # all in one color with new background 
-printLn("{} {} {} {}".fmt(s,n,f,l),brightyellow,brightblue)
+printLn(fmtx(["","","","","","",""],s,spaces(1),n,spaces(1),f,spaces(1),l),brightyellow,brightblue)
 
 printLn(s,clrainbow,brightyellow)  
 printLn(s,lime)

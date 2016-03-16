@@ -172,7 +172,8 @@ proc happyEmojis*() =
   cechoLn(lime & emojis[7] & yellowgreen & " Happy Emojis " & lime & emojis[7])
   echo()
   for x in 0.. <emojis.len:
-      printLnBiCol("{:<4} : {}".fmt($x,emojis[x]),":",white,randcol())
+      var ejs = fmtx(["<4","",""],$x," : ",emojis[x])
+      printLnBiCol(ejs,":",white,randcol())
   decho(2)
 
 

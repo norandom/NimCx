@@ -76,7 +76,12 @@
 ##                 unicode libraries and terminal support in your system
 ##
 ##                 terminal x-axis position start with 1
-##
+##                 
+##                 proc fmtx a formatting utility has been added
+##                 
+##                 to remove dependency on strfmt , which breaks sometimes
+##                 
+##                 after compiler updates . 
 ##
 ##   Required    : see imports for modules currently expected to be available
 ##
@@ -90,7 +95,7 @@
 import os,osproc,macros,posix,terminal,math,stats,unicode,times,tables,json,sets
 import sequtils,parseutils,strutils,httpclient,rawsockets,browsers,intsets, algorithm
 # imports based on modules available via nimble
-import random,strfmt
+import random
 
 when defined(macosx):
   {.hint    : "Switch to Linux !".}
@@ -1136,7 +1141,7 @@ when defined(Linux):
 
 
 # forward declarations
-
+proc ff*(zz:float,n:int64 = 5):string
 converter colconv*(cx:string) : string
 proc rainbow*[T](s : T,xpos:int = 0,fitLine:bool = false ,centered:bool = false)  ## forward declaration
 proc print*[T](astring:T,fgr:string = termwhite , bgr:string = bblack,xpos:int = 0,fitLine:bool = false,centered:bool = false)
@@ -1298,7 +1303,114 @@ template hdx*(code:stmt,frm:string = "+",width:int = tw,xpos:int = 0):stmt =
    echo()
 
 
+ 
+proc fmtengine[T](a:string,astring:T):string =
+     ## fmtengine   used internally
+     ## 
+     ## formatter to right or left align within given param
+     ## 
+     ## also can take care of floating point precision
+     ## 
+     ## called by fmtx to process alignment requests
+     ## 
+     var okstring = $astring
+     var op  = ""
+     var dg  = "0" 
+     var pad = okstring.len
+     var dotflag = false
+     var textflag = false
+     var df = ""
+            
+     if a.startswith("<") or a.startswith(">"):
+           textflag = false
+     elif isdigit($a[0]):
+           textflag = false
+     else: textflag = true       
+            
+     for x in a:
+       
+        if isDigit(x) and dotflag == false: 
+             dg = dg & $x
+             
+        elif isDigit(x) and dotflag == true:
+             df = df & $x
+             
+        elif $x == "<" or $x == ">" :
+                op = op & x
+        else:
+            # we got a char to print so add it to the okstring
+            if textflag == true and dotflag == false:
+               okstring = okstring & $x
+        
+        if $x == ".": 
+              # a float wants to be formatted 
+              dotflag = true
+          
+     pad = parseInt(dg)
+          
+     if dotflag == true and textflag == false:
+               okstring = ff(parseFloat(okstring),parseInt(df)) 
+                       
+     var alx = spaces(max(0,pad - okstring.len))          
+                          
+     case op 
+       of "<"  :   okstring = okstring & alx
+       of ">"  :   okstring = alx & okstring
+       else: discard 
+     
+     result = okstring 
+  
+  
 
+proc fmtx*[T](fmts:openarray[string],fstrings:varargs[T, `$`]):string =
+     ## fmtx2
+     ## 
+     ## format utility similar to strfmt 
+     ## 
+     ## right or left align within given param
+     ## 
+     ##  returns a string
+     ## 
+     ##  Some observations:
+     ##  
+     ##  If text starts with a digit it must be on the right side...
+     ##  
+     ##  Function calls must be executed on the right side
+     ##  
+     ##  Space adjustment can be done with any "" on left or right side
+     ##  
+     ##  an assert error is thrown if format block left and data block right are imbalanced
+     ##  
+     ##  the "" acts as suitable placeholder
+     ##  
+     ##  If one of the operator chars are needed as a first char in some text put it on the right side
+     ##  
+     ##  Operator chars : <  >  .
+     ## 
+     ## <12 means align left and pad so that max length = 12
+     ## >12 means align right so that the most right char is in position 12
+     ## 
+     ## Examples :
+     ## 
+     ## .. code-block:: nim
+     ##    echo fmtx(["","","<8.3",""," High : ","<8","","","","","","","",""],lime,"OPen : ",unquote("1234.5986"),yellow,"",3456.67,red,showRune("FFEC"),white," Change:",unquote("-1.34 - 0.45%"),"  Range : ",lime,@[123,456,789])
+     ##    echo fmtx(["","<18",":",">15","","",">8.2"],salmon,"nice something",steelblue,123,spaces(5),yellow,456.12345676)
+     ##    ruler()
+     ##    echo fmtx([">22"],"nice something")
+     ##    printlnBiCol(fmtx(["",">15.3f"],"Result : ",123.456789))  # formats the float to a string with precision 3 the f is not necessary
+     ##    echo fmtx([">22.3"],234.43324234)  # this formats float and aligns last char tp pos 22
+     ##    echo fmtx(["22.3"],234.43324234)   # this formats float but ignores position as no align operator given
+     ##
+
+     var okresult = ""
+     # if formatstrings count not same as varag count we bail out  
+     doassert(fmts.len == fstrings.len) 
+     # now iterate and generate the desired output
+     for cc in 0.. <fmts.len: 
+         okresult = okresult & fmtengine(fmts[cc],fstrings[cc])
+     result = okresult
+     
+ 
 template withFile*(f: expr, filename: string, mode: FileMode, body: stmt): stmt {.immediate.} =
      ## withFile
      ##
@@ -2082,17 +2194,16 @@ proc cechoLn*(col:string,ggg: varargs[string, `$`] = @[""] )  =
       z = z & "\L"
       cecho(col ,z)
 
-
-
+ 
 proc showColors*() =
   ## showColors
   ##
   ## display all colorNames in color !
   ##
   for x in colorNames:
-     print("{:<23} {}  {}  {} --> {} ".fmt(x[0] , "▒".repeat(10), "⌘".repeat(10) ,"ABCD abcd 1234567890"," Nim Colors " ),x[1],black)  # note x[1] is the color itself.
-     printLnStyled("{:<23}".fmt("  " & x[0]),"{:<23}".fmt("  " & x[0]),x[1],{styleReverse})
-     sleepy(0.1)
+     print(fmtx(["<22"],x[0]) & spaces(2) & "▒".repeat(10) & spaces(2) & "⌘".repeat(10) & spaces(2) & "ABCD abcd 1234567890 --> " & " Nim Colors  " , x[1],black) 
+     printLnStyled(fmtx(["<23"],"  " & x[0]) , fmtx(["<23"],"  " & x[0]),x[1],{styleReverse})
+     sleepy(0.075)
   decho(2)
 
 
@@ -3099,6 +3210,7 @@ proc getIpInfo*(ip:string):JsonNode =
         result = parseJson(getContent("http://ip-api.com/json/" & ip))
 
 
+
 proc showIpInfo*(ip:string) =
       ## showIpInfo
       ##
@@ -3115,8 +3227,9 @@ proc showIpInfo*(ip:string) =
       printLn("Ip-Info for " & ip,lightsteelblue)
       dlineln(40,col = yellow)
       for x in jj.mpairs() :
-          echo "{:<15} : {}".fmt($x.key,$x.val)
-      printLnBiCol("{:<15} : {}".fmt("Source","ip-api.com"),":",yellowgreen,salmon)
+          echo fmtx(["<15","",""],$x.key ," : " ,unquote($x.val))
+      printLnBiCol(fmtx(["<15","",""],"Source"," : ","ip-api.com"),":",yellowgreen,salmon)
+
 
 
 
@@ -3316,7 +3429,7 @@ proc getRandomPointInCircle*(radius:float) : seq[float] =
     ##    for x in 0.. 100:
     ##       var k = getRandomPointInCircle(crad)
     ##       assert k[0] <= crad and k[1] <= crad
-    ##       printLnBiCol("{:<25}  :  {}".fmt($k[0],$k[1]),":")
+    ##       printLnBiCol(fmtx([">25","<6",">25"],$k[0]," :",$k[1])))
     ##    doFinish()
     ##
     ##
@@ -3406,7 +3519,7 @@ proc ruler* (xpos:int=0,xposE:int=0,ypos:int = 0,fgr:string = termwhite,bgr:stri
      ##   decho(3)
      ##   # this will show a full terminal width ruler starting at a certain position
      ##   ruler(xpos = 75,fgr=pastelblue)
-   
+     echo()
      var fflag:bool = false
      var npos  = xpos
      var nposE = xposE
@@ -3454,9 +3567,8 @@ proc ruler* (xpos:int=0,xposE:int=0,ypos:int = 0,fgr:string = termwhite,bgr:stri
                   elif x mod 2 == 0:
                          print(x,fgr,bgr,xpos = xpos)
                          println(".",fgr,bgr,xpos = xpos + 3)                      
-                  else: println(".",truetomato,bgr,xpos = xpos + 3) 
-  
-  
+                  else: println(".",truetomato,bgr,xpos = xpos + 3)   
+     decho(3)
 
 
 
@@ -4202,7 +4314,7 @@ proc infoLine*() =
     ## prints some info for current application
     ##
     hlineLn()
-    print("{:<14}".fmt("Application :"),yellowgreen)
+    print(fmtx(["<14"],"Application :"),yellowgreen)
     print(extractFileName(getAppFilename()),brightblack)
     print(" | ",brightblack)
     print("Nim : ",lime)
@@ -4211,7 +4323,6 @@ proc infoLine*() =
     print(CXLIBVERSION,brightblack)
     print(" | ",brightblack)
     qqTop()
-
 
 
 proc doFinish*() =
@@ -4226,11 +4337,10 @@ proc doFinish*() =
     decho(2)
     infoLine()
     printLn(" - " & year(getDateStr()),brightblack)
-    print("{:<14}".fmt("Elapsed     : "),yellowgreen)
-    printLn("{:<.3f} {}".fmt(epochtime() - cx.start,"secs"),goldenrod)
+    print(fmtx(["<14"],"Elapsed     : "),yellowgreen)
+    printLn(fmtx(["<",">5"],ff(epochtime() - cx.start,3),"secs"),goldenrod)
     echo()
     quit 0
-
 
 proc handler*() {.noconv.} =
     ## handler
@@ -4252,13 +4362,13 @@ proc handler*() {.noconv.} =
     echo()
     hlineLn()
     cechoLn(yellowgreen,"Thank you for using     : ",getAppFilename())
-    printLn("{}{:<11}{:>9}".fmt("Last compilation on     : " , CompileDate , CompileTime),cyan)
+    printLn(fmtx(["<","<11",">9"],"Last compilation on     : " , CompileDate , CompileTime),cyan)
     hlineLn()
     printBiCol("Nim Version   : " & NimVersion)
     print(" | ",brightblack)
     printLnBiCol("cx Version     : " & CXLIBVERSION)
-    print("{:<14}".fmt("Elapsed       : "),yellow)
-    printLn("{:<.3f} {}".fmt(epochtime() - cx.start,"secs"),brightblack)
+    print(fmtx(["<14"],"Elapsed       : "),yellow)
+    printLn(fmtx(["<",">5"],epochtime() - cx.start,"secs"),brightblack)
     echo()
     rainbow(" Have a Nice Day !")  ## change or add custom messages as required
     decho(2)
