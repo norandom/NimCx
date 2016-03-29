@@ -1363,11 +1363,11 @@ proc fmtengine[T](a:string,astring:T):string =
   
 
 proc fmtx*[T](fmts:openarray[string],fstrings:varargs[T, `$`]):string =
-     ## fmtx2
+     ## fmtx
      ## 
-     ## format utility similar to strfmt 
+     ## simple format utility similar to strfmt to accommodate our needs
      ## 
-     ## right or left align within given param
+     ## implemented :  right or left align within given param and float precision
      ## 
      ##  returns a string
      ## 
@@ -1387,8 +1387,9 @@ proc fmtx*[T](fmts:openarray[string],fstrings:varargs[T, `$`]):string =
      ##  
      ##  Operator chars : <  >  .
      ## 
-     ## <12 means align left and pad so that max length = 12
-     ## >12 means align right so that the most right char is in position 12
+     ## <12  means align left and pad so that max length = 12 and any followin char will be in position 13
+     ## >12  means align right so that the most right char is in position 12
+     ## >8.2 means align a float right so that most right char is position 8 with precision 2
      ## 
      ## Examples :
      ## 
