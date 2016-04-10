@@ -76,12 +76,12 @@
 ##                 unicode libraries and terminal support in your system
 ##
 ##                 terminal x-axis position start with 1
-##                 
+##
 ##                 proc fmtx a formatting utility has been added
-##                 
+##
 ##                 to remove dependency on strfmt , which breaks sometimes
-##                 
-##                 after compiler updates . 
+##
+##                 after compiler updates .
 ##
 ##   Required    : see imports for modules currently expected to be available
 ##
@@ -1044,7 +1044,9 @@ let colorNames* = @[
       ("truetomato",truetomato)]
 
 
+
 let rxCol* = toSeq(colorNames.low.. colorNames.high) ## index into colorNames
+
 
 template randCol*: string = colorNames[rxCol.randomChoice()][1]
    ## randCol
@@ -1303,96 +1305,96 @@ template hdx*(code:stmt,frm:string = "+",width:int = tw,xpos:int = 0):stmt =
    echo()
 
 
- 
+
 proc fmtengine[T](a:string,astring:T):string =
      ## fmtengine   used internally
-     ## 
+     ##
      ## formatter to right or left align within given param
-     ## 
+     ##
      ## also can take care of floating point precision
-     ## 
+     ##
      ## called by fmtx to process alignment requests
-     ## 
+     ##
      var okstring = $astring
      var op  = ""
-     var dg  = "0" 
+     var dg  = "0"
      var pad = okstring.len
      var dotflag = false
      var textflag = false
      var df = ""
-            
+
      if a.startswith("<") or a.startswith(">"):
            textflag = false
      elif isdigit($a[0]):
            textflag = false
-     else: textflag = true       
-            
+     else: textflag = true
+
      for x in a:
-       
-        if isDigit(x) and dotflag == false: 
+
+        if isDigit(x) and dotflag == false:
              dg = dg & $x
-             
+
         elif isDigit(x) and dotflag == true:
              df = df & $x
-             
+
         elif $x == "<" or $x == ">" :
                 op = op & x
         else:
             # we got a char to print so add it to the okstring
             if textflag == true and dotflag == false:
                okstring = okstring & $x
-        
-        if $x == ".": 
-              # a float wants to be formatted 
+
+        if $x == ".":
+              # a float wants to be formatted
               dotflag = true
-          
+
      pad = parseInt(dg)
-          
+
      if dotflag == true and textflag == false:
-               okstring = ff(parseFloat(okstring),parseInt(df)) 
-                       
-     var alx = spaces(max(0,pad - okstring.len))          
-                          
-     case op 
+               okstring = ff(parseFloat(okstring),parseInt(df))
+
+     var alx = spaces(max(0,pad - okstring.len))
+
+     case op
        of "<"  :   okstring = okstring & alx
        of ">"  :   okstring = alx & okstring
-       else: discard 
-     
-     result = okstring 
-  
-  
+       else: discard
+
+     result = okstring
+
+
 
 proc fmtx*[T](fmts:openarray[string],fstrings:varargs[T, `$`]):string =
      ## fmtx
-     ## 
+     ##
      ## simple format utility similar to strfmt to accommodate our needs
-     ## 
+     ##
      ## implemented :  right or left align within given param and float precision
-     ## 
+     ##
      ##  returns a string
-     ## 
+     ##
      ##  Some observations:
-     ##  
+     ##
      ##  If text starts with a digit it must be on the right side...
-     ##  
+     ##
      ##  Function calls must be executed on the right side
-     ##  
+     ##
      ##  Space adjustment can be done with any "" on left or right side
-     ##  
+     ##
      ##  an assert error is thrown if format block left and data block right are imbalanced
-     ##  
+     ##
      ##  the "" acts as suitable placeholder
-     ##  
+     ##
      ##  If one of the operator chars are needed as a first char in some text put it on the right side
-     ##  
+     ##
      ##  Operator chars : <  >  .
-     ## 
+     ##
      ## <12  means align left and pad so that max length = 12 and any followin char will be in position 13
      ## >12  means align right so that the most right char is in position 12
      ## >8.2 means align a float right so that most right char is position 8 with precision 2
-     ## 
+     ##
      ## Examples :
-     ## 
+     ##
      ## .. code-block:: nim
      ##    echo fmtx(["","","<8.3",""," High : ","<8","","","","","","","",""],lime,"OPen : ",unquote("1234.5986"),yellow,"",3456.67,red,showRune("FFEC"),white," Change:",unquote("-1.34 - 0.45%"),"  Range : ",lime,@[123,456,789])
      ##    echo fmtx(["","<18",":",">15","","",">8.2"],salmon,"nice something",steelblue,123,spaces(5),yellow,456.12345676)
@@ -1404,14 +1406,14 @@ proc fmtx*[T](fmts:openarray[string],fstrings:varargs[T, `$`]):string =
      ##
 
      var okresult = ""
-     # if formatstrings count not same as varag count we bail out  
-     doassert(fmts.len == fstrings.len) 
+     # if formatstrings count not same as varag count we bail out
+     doassert(fmts.len == fstrings.len)
      # now iterate and generate the desired output
-     for cc in 0.. <fmts.len: 
+     for cc in 0.. <fmts.len:
          okresult = okresult & fmtengine(fmts[cc],fstrings[cc])
      result = okresult
-     
- 
+
+
 template withFile*(f: expr, filename: string, mode: FileMode, body: stmt): stmt {.immediate.} =
      ## withFile
      ##
@@ -2195,14 +2197,14 @@ proc cechoLn*(col:string,ggg: varargs[string, `$`] = @[""] )  =
       z = z & "\L"
       cecho(col ,z)
 
- 
+
 proc showColors*() =
   ## showColors
   ##
   ## display all colorNames in color !
   ##
   for x in colorNames:
-     print(fmtx(["<22"],x[0]) & spaces(2) & "▒".repeat(10) & spaces(2) & "⌘".repeat(10) & spaces(2) & "ABCD abcd 1234567890 --> " & " Nim Colors  " , x[1],black) 
+     print(fmtx(["<22"],x[0]) & spaces(2) & "▒".repeat(10) & spaces(2) & "⌘".repeat(10) & spaces(2) & "ABCD abcd 1234567890 --> " & " Nim Colors  " , x[1],black)
      printLnStyled(fmtx(["<23"],"  " & x[0]) , fmtx(["<23"],"  " & x[0]),x[1],{styleReverse})
      sleepy(0.075)
   decho(2)
@@ -3452,39 +3454,39 @@ proc getRandomPointInCircle*(radius:float) : seq[float] =
 # Misc. routines
 
 
-proc sortMe*[T](xs:var seq[T],order = Ascending): seq[T] = 
-     ## sortMe 
-     ## 
+proc sortMe*[T](xs:var seq[T],order = Ascending): seq[T] =
+     ## sortMe
+     ##
      ## sorts seqs of int,float,string and returns a sorted seq
-     ## 
+     ##
      ## with order Ascending or Descending
-     ## 
+     ##
      ## .. code-block:: nim
      ##    var z = createSeqFloat()
-     ##    println(sortMe(z),salmon)   
+     ##    println(sortMe(z),salmon)
      ##    println(sortMe(z,Descending),peru)
-     ## 
-     ## 
+     ##
+     ##
      xs.sort(proc(x,y:T):int = cmp(x,y),order = order)
      result = xs
 
 
 proc reverseMe*[T](xs: openarray[T]): seq[T] =
   ## reverseMe
-  ## 
+  ##
   ## reverse a sequence
-  ## 
+  ##
   ## .. code-block:: nim
-  ##  
+  ##
   ##    var z = @["nice","bad","abc","zztop","reverser"]
   ##    printLn(z,lime)
   ##    println(z.reverseMe,red)
-  ##    
- 
+  ##
+
   result = newSeq[T](xs.len)
   for i, x in xs:
     result[^i-1] = x # or: result[xs.high-i] = x
-      
+
 
 
 template getCard* :auto =
@@ -3504,8 +3506,8 @@ template getCard* :auto =
 proc ruler* (xpos:int=0,xposE:int=0,ypos:int = 0,fgr:string = termwhite,bgr:string = termblack , vert:bool = false) =
      ## ruler
      ##
-     ## simple terminal ruler indicating dot x positions to give a feedback 
-     ## 
+     ## simple terminal ruler indicating dot x positions to give a feedback
+     ##
      ## available for horizontal --> vert = false
      ##           for vertical   --> vert = true
      ##
@@ -3526,9 +3528,9 @@ proc ruler* (xpos:int=0,xposE:int=0,ypos:int = 0,fgr:string = termwhite,bgr:stri
      var nposE = xposE
      if xpos ==  0: npos  = 1
      if xposE == 0: nposE = tw - 1
-    
+
      if vert == false :  # horizontalruler
-     
+
           for x in npos.. nposE:
 
             if x == 1:
@@ -3552,23 +3554,23 @@ proc ruler* (xpos:int=0,xposE:int=0,ypos:int = 0,fgr:string = termwhite,bgr:stri
                 print(x,fgr,bgr,xpos = x)
                 curup(1)
                 fflag = true
-                
+
             else:
                 fflag = true
                 print(".",truetomato,bgr,xpos = x)
-     
-     
-     else : # vertical ruler           
-            
+
+
+     else : # vertical ruler
+
             if  ypos >= th : curset()
-            else: curup(ypos + 2)               
-                             
-            for x in 0.. ypos:                      
-                  if x == 0: println(".",lime,bgr,xpos = xpos + 3)                                    
+            else: curup(ypos + 2)
+
+            for x in 0.. ypos:
+                  if x == 0: println(".",lime,bgr,xpos = xpos + 3)
                   elif x mod 2 == 0:
                          print(x,fgr,bgr,xpos = xpos)
-                         println(".",fgr,bgr,xpos = xpos + 3)                      
-                  else: println(".",truetomato,bgr,xpos = xpos + 3)   
+                         println(".",fgr,bgr,xpos = xpos + 3)
+                  else: println(".",truetomato,bgr,xpos = xpos + 3)
      decho(3)
 
 
@@ -3701,43 +3703,68 @@ proc remDir*(dirname:string) =
 
 proc dayOfYear*() : range[0..365] = getLocalTime(getTime()).yearday + 1
 ## dayOfYear
-## 
+##
 ## returns the day of the year for a given Time
-## 
+##
 ## note Nim yearday starts with Jan 1 being 0 however many application
-## 
+##
 ## actually need to start on day 1 being actually 1 , which is provided here.
-## 
+##
 ## .. code-block:: nim
-##     var afile = "cx.nim"      
+##     var afile = "cx.nim"
 ##     var mday = getLastModificationTime(afile).dayofyear
 ##     var today = dayofyear
 ##     printlnBiCol("Last Modified on day  : " & $mday)
-##     printLnBiCol("Day of Current year   : " & $today)       
-##     
-##     
+##     printLnBiCol("Day of Current year   : " & $today)
+##
+##
 
 
 
 proc dayOfYear*(tt:Time) : range[0..365] = getLocalTime(tt).yearday + 1
 ## dayOfYear
-## 
+##
 ## returns the day of the year for a given Time
-## 
+##
 ## note Nim yearday starts with Jan 1 being 0 however many application
-## 
+##
 ## actually need to start on day 1 being actually 1 , which is provided here.
-## 
+##
 ## .. code-block:: nim
-##     var afile = "cx.nim"      
+##     var afile = "cx.nim"
 ##     var mday  = getLastModificationTime(afile).dayofyear
 ##     var today = dayofyear
 ##     printlnBiCol("Last Modified on day  : " & $mday)
-##     printLnBiCol("Day of Current year   : " & $today)       
-##     
-##     
+##     printLnBiCol("Day of Current year   : " & $today)
+##
+##
 
+ 
+  
+proc checkClip*():string = 
+     ## checkClip
+     ## 
+     ## returns the newest entry from the Clipboard
+     ## needs linux utility xclip installed
+     ## 
+     ## .. code-block:: nim
+     ##     printLnBiCol("Last Clipboard Entry : " & checkClip())
+     ##
+     
+     
 
+     let z = execCmd("xclip -quiet -silent -o > /dev/null")  # need /dev/null or it writes to terminal
+     let (outp, errC) = execCmdEx("xclip -quiet -o")
+     var rx = ""
+     if errC == 0:
+       let r = split($outp," ")
+       for x in 0.. <r.len:
+           rx = rx & " " & r[x]
+     else:
+       rx = "xclip returned errorcode : " & $ $errC & ". Clipboard not accessed correctly"
+
+     result = rx
+       
 
 # Unicode random word creators
 
