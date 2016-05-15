@@ -2210,6 +2210,16 @@ proc showColors*() =
   decho(2)
 
 
+
+macro dotColors*(): untyped =
+  ## dotColors
+  ## 
+  ## another way to show all colors
+  ##  
+  result = parseStmt"""for x in colornames : println(widedot & x[0],x[1])"""
+
+
+
 proc doty*(d:int,fgr:string = white, bgr:string = black,xpos:int = 1) =
      ## doty
      ##
@@ -3741,7 +3751,7 @@ proc dayOfYear*(tt:Time) : range[0..365] = getLocalTime(tt).yearday + 1
 
  
   
-proc checkClip*():string = 
+proc checkClip*():string  = 
      ## checkClip
      ## 
      ## returns the newest entry from the Clipboard
