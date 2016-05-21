@@ -3463,6 +3463,42 @@ proc getRandomPointInCircle*(radius:float) : seq[float] =
 
 # Misc. routines
 
+template benchmark*(benchmarkName: string, code: stmt) =
+  ## benchmark
+  ## 
+  ## a quick benchmark template showing cpu and epoch times
+  ## 
+  ## .. code-block:: nim
+  ##    benchmark("whatever"):
+  ##      let z = 0.. 1000
+  ##      loopy(z,printLn("Kami makan tiga kali setiap hari.",randcol()))
+  ##
+  ##
+  ## .. code-block:: nim
+  ##    proc doit() =
+  ##      var s = createSeqFloat(10,1000)
+  ##      var c = 0
+  ##      for x in sortMe(s):
+  ##          inc c 
+  ##          printLnBiCol(fmtx([">4","<6","<f2.4"],$c," :",$x))
+  ##
+  ##    benchmark("doit"):
+  ##      for x in 0.. 100:
+  ##          doit()
+ 
+  let t0 = epochTime()
+  let t1 = cpuTime()
+  code
+  let elapsed  = epochTime() - t0
+  let elapsed1 = cpuTime()   - t1
+  let elapsedStr  = ff(elapsed,4)  
+  let elapsedStr1 = ff(elapsed1,4) 
+  echo()
+  println(lime & "CPU   Time [" & peru & benchmarkName & lime & "] : " & white & elapsedStr1 & " secs")
+  println(lime & "EPOCH Time [" & peru & benchmarkName & lime & "] : " & white & elapsedStr & " secs")
+
+
+
 
 proc sortMe*[T](xs:var seq[T],order = Ascending): seq[T] =
      ## sortMe
