@@ -2429,8 +2429,8 @@ proc intervalsecs*(startDate,endDate:string) : float =
       #
       if validdate(startDate) and validdate(endDate):
           var f     = "yyyy-MM-dd"
-          var ssecs = toSeconds(timeinfototime(startDate.parse(f)))
-          var esecs = toSeconds(timeinfototime(endDate.parse(f)))
+          var ssecs = toSeconds(toTime(startDate.parse(f)))
+          var esecs = toSeconds(toTime(endDate.parse(f)))
           var isecs = esecs - ssecs
           result = isecs
       else:
@@ -2468,7 +2468,7 @@ proc intervalyears*(startDate,endDate:string) : float =
 
 proc compareDates*(startDate,endDate:string) : int =
      # dates must be in form yyyy-MM-dd
-     # we want this to answer
+     # we want this to answehttps://github.com/nim-lang/Nr
      # s == e   ==> 0
      # s >= e   ==> 1
      # s <= e   ==> 2
@@ -2501,8 +2501,8 @@ proc dayOfWeekJulianA*(day, month, year: int): WeekDay =
   let
     a = (14 - month) div 12
     y = year - a
-    m = month + (12*a) - 2
-  var d  = (5 + day + y + (y div 4) + (31*m) div 12) mod 7
+    m = month + (12 * a) - 2
+  var d  = (5 + day + y + (y div 4) + (31 * m) div 12) mod 7
   # The value of d is 0 for a Sunday, 1 for a Monday, 2 for a Tuesday, etc. so we must correct
   # for the WeekDay type.
   result = d.WeekDay
