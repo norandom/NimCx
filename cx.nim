@@ -6,11 +6,11 @@
 ##
 ##   License     : MIT opensource
 ##
-##   Version     : 0.9.7
+##   Version     : 0.9.8
 ##
 ##   ProjectStart: 2015-06-20
 ##
-##   Compiler    : Nim 0.13.1
+##   Compiler    : Nim >= 0.13.1
 ##
 ##   OS          : Linux
 ##
@@ -18,7 +18,9 @@
 ##
 ##                 cx.nim is a collection of simple procs and templates
 ##
-##                 for easy colored display in a linux terminal , date handling and more
+##                 for easy colored display in a linux terminal , 
+##                 
+##                 date handling and much more.
 ##
 ##                 some procs may mirror functionality found in other moduls for convenience
 ##
@@ -29,10 +31,8 @@
 ##
 ##   Docs        : http://qqtop.github.io/cx.html
 ##
-##   Tested      : OpenSuse 13.2 , OpenSuse Leap42.1  kde editions
-##
-##                 mint 17 , ubuntu 14.04 LTS
-##
+##   Tested      : OpenSuse 13.2 , OpenSuse Leap42.1 , Ubuntu 16.04 LTS 
+####
 ##                 with var. terminal font : monospace size 9.0 - 15 depending on screen resolution
 ##
 ##                 xterm,bash,st terminals support truecolor ok
@@ -62,9 +62,9 @@
 ##
 ##   Related     :
 ##
-##                * demos : cxDemo.nim   (demo library)
+##                * demo library: cxDemo.nim
 ##
-##                * tests : cxTest.nim   (run some rough demos from cxDemo)
+##                * tests       : cxTest.nim   (run some rough demos from cxDemo)
 ##
 ##
 ##   Programming : qqTop
@@ -83,39 +83,42 @@
 ##
 ##                 after compiler updates .
 ##
-##   Required    : see imports for modules currently expected to be available
+##   Required    : random installed via nimble
 ##
-##                 these will be automatically installed with latest nimble if you do
+##   Installation: nimble install nimFinLib ( a project which now uses cx.nim)
 ##
-##                 nimble install nimFinLib
+##                 will install this library .                
 ##
-##                 a project which now uses cx.nim
+##   Optional    : xclip              
+##                 unicode font libraries 
+##
+##   Plans       : move some of the non core procs to a new module cxutils.nim
 ##
 ##
+##
+
 import os,osproc,macros,posix,terminal,math,stats,unicode,times,tables,json,sets
 import sequtils,parseutils,strutils,httpclient,rawsockets,browsers,intsets, algorithm
 # imports based on modules available via nimble
-import random
+import "random-0.5.2/random"
 
 when defined(macosx):
-  {.hint    : "Switch to Linux !".}
   {.warning : "CX is only tested on Linux ! Your mileage may vary".}
 
 when defined(windows):
   {.hint    : "Time to switch to Linux !".}
-  {.fatal   : "Sorry CX does not support Windows at this stage !".}
+  {.fatal   : "CX does not support Windows at this stage and never will !".}
 
 when defined(posix):
-  {.hint    : "Aha, delicious Os flavour detected .... CX loves Linux !".}
+  {.hint    : "Delicious Os flavour detected .... CX loves Linux !".}
 
 
 # make terminal style constants available in the calling prog
 export terminal.Style,terminal.getch
 
+const CXLIBVERSION* = "0.9.8"
 
-const CXLIBVERSION* = "0.9.7"
-
-let start* = epochTime()  ##  check execution timing with one line see doFinish()
+let start* = epochTime()  ##  simple execution timing with one line see doFinish()
 
 proc getfg(fg:ForegroundColor):string =
     var gFG = ord(fg)
@@ -135,9 +138,8 @@ proc bbright(bg:BackgroundColor): string =
     inc(gBG, 60)
     result = "\e[" & $gBG & 'm'
 
-
+# type used in slim number printing
 type
-
     Tsn7 = object
       nx : seq[string]
 
@@ -384,6 +386,16 @@ const
       yellowgreen*          =  "\x1b[38;2;154;205;50m"
 
 
+ 
+const
+  # used by spellInteger
+  tens =  ["", "", "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety"]
+  small = ["zero", "one", "two", "three", "four", "five", "six", "seven",
+           "eight", "nine", "ten", "eleven", "twelve", "thirteen", "fourteen",
+           "fifteen", "sixteen", "seventeen", "eighteen", "nineteen"]
+  huge =  ["", "", "million", "billion", "trillion", "quadrillion",
+           "quintillion", "sextillion", "septillion", "octillion", "nonillion","decillion"]
+ 
 
 let a1 = "  ██   "
 let a2 = " ██ █  "
@@ -1149,7 +1161,10 @@ proc rainbow*[T](s : T,xpos:int = 0,fitLine:bool = false ,centered:bool = false)
 proc print*[T](astring:T,fgr:string = termwhite , bgr:string = bblack,xpos:int = 0,fitLine:bool = false,centered:bool = false)
 proc printBiCol*[T](s:T,sep:string = ":",colLeft:string = yellowgreen ,colRight:string = termwhite,xpos:int = 0,centered:bool = false) ## forward declaration
 proc printLnBiCol*[T](s:T,sep:string = ":",colLeft:string = yellowgreen ,colRight:string = termwhite,xpos:int = 0,centered:bool = false) ## forward declaration
-proc printStyledsimple*[T](ss:T,fg:string,astyle:set[Style]) ## forward declaration
+proc printStyledSimple*[T](ss:T,fg:string,astyle:set[Style])
+## 
+## code adapted from rosettacode and slightly updated to make it actually compile
+## yle:set[Style]) ## forward declaration
 proc printStyled*[T](ss:T,substr:string,col:string,astyle : set[Style]) ## forward declaration
 proc hline*(n:int = tw,col:string = white) ## forward declaration
 proc hlineLn*(n:int = tw,col:string = white) ## forward declaration
@@ -1160,6 +1175,8 @@ proc styledEchoProcessArg(style: Style) = setStyle({style})
 proc styledEchoProcessArg(style: set[Style]) = setStyle style
 proc styledEchoProcessArg(color: ForegroundColor) = setForegroundColor color
 proc styledEchoProcessArg(color: BackgroundColor) = setBackgroundColor color
+
+proc spellInteger*(n: int64): string
 
 # macros
 
@@ -1309,7 +1326,7 @@ template hdx*(code:stmt,frm:string = "+",width:int = tw,xpos:int = 0):stmt =
 proc fmtengine[T](a:string,astring:T):string =
      ## fmtengine   used internally
      ##
-     ## formatter to right or left align within given param
+     ## simple string formatter to right or left align within given param
      ##
      ## also can take care of floating point precision
      ##
@@ -1488,7 +1505,7 @@ proc showRune*(s:string) : string  =
      ##      print(showRune("FFEC"),red)
      ##
      ##
-     result = $Rune(parsehexint(s))
+     result = $Rune(parseHexInt(s))
 
 
 proc unquote*(s:string):string =
@@ -2949,7 +2966,7 @@ proc slimC(x:string):Tsn7 =
 
 
 proc prsn(x:int,fgr:string = termwhite,bgr:string = termblack,xpos:int = 0) =
-     # print routie for slim numbers
+     # print routine for slim numbers
      for x in slimN(x).nx: println(x,fgr = fgr,bgr = bgr,xpos = xpos)
 
 proc prsc(x:string,fgr:string = termwhite,bgr:string = termblack,xpos:int = 0) =
@@ -2977,8 +2994,6 @@ proc printSlim* (ss:string = "", frg:string = termwhite,bgr:string = termblack,x
     ##      decho(3)
     ##      printSlim($"33.87",peru,xpos = 25)
     ##
-
-
 
     var npos = xpos
     #if we want to right align we need to know the overall length, which needs a scan
@@ -3680,6 +3695,95 @@ proc shift*[T](x: var seq[T], zz: Natural = 0): T =
      x.delete(zz)
 
 
+proc nonzero(c: string, n: int, connect=""): string =
+  # used by spellInteger
+  if n == 0: "" else: connect & c & spellInteger(n)
+ 
+proc lastAnd[T](num:T): string =
+  # used by spellInteger
+  var num = num
+  if "," in num:
+    let pos =  num.rfind(",")
+    var (pre, last) =
+      if pos >= 0: (num[0 .. pos-1], num[pos+1 .. num.high])
+      else: ("", num)
+    if " and " notin last:
+      last = " and" & last
+    num = [pre, ",", last].join()
+  return num
+ 
+proc big(e:int, n:int): string =
+  # used by spellInteger
+  if e == 0:
+    spellInteger(n)
+  elif e == 1:
+    spellInteger(n) & " thousand"
+  else:
+    spellInteger(n) & " " & huge[e]
+ 
+iterator base1000Rev(n:int64): int =
+  # used by spellInteger 
+  var n = n
+  while n != 0:
+    let r = n mod 1000
+    n = n div 1000
+    yield r
+ 
+proc spellInteger*(n: int64): string =
+  ## spellInteger
+  ## 
+  ## code adapted from rosettacode and slightly updated to make it actually compile
+  ## 
+
+  if n < 0:
+    "minus " & spellInteger(-n)
+  elif n < 20:
+    small[int(n)]
+  elif n < 100:
+    let a = n div 10
+    let b = n mod 10
+    tens[int(a)] & nonzero(" ", b)
+  elif n < 1000:
+    let a = n div 100
+    let b = n mod 100
+    small[int(a)] & " hundred" & nonzero(" ", b, "")
+  else:
+    var sq = newSeq[string]()
+    var e = 0
+    for x in base1000Rev(n):
+      if x > 0:
+        sq.add big(e, x)
+      inc e
+    reverse sq
+    lastAnd(sq.join(" "))
+ 
+
+ 
+proc spellFloat*(n:float64,sep:string = ".",sepname:string = " dot "):string = 
+  ## spellFloat
+  ## 
+  ## writes out a float number in english 
+  ## sep and sepname can be adjusted as needed
+  ## default sep = "."
+  ## default sepname = " dot "
+  ## 
+  ## .. code-block:: nim
+  ##  println spellFloat(0.00)
+  ##  println spellFloat(234)
+  ##  println spellFloat(-2311.345)
+  ## 
+  var ok = ""
+  if n == 0.00:
+      ok = spellInteger(0)
+  else:
+      #split it into two integer parts
+      var nss = split($n,".")
+      if nss[0].len == 0:  nss[0] = $0
+      if nss[1].len == 0:  nss[1] = $0
+      ok = spellInteger(parseInt(nss[0])) & sepname &  spellInteger(parseInt(nss[1]))
+       
+  result = ok   
+    
 
 proc showStats*(x:Runningstat) =
      ## showStats
@@ -3698,12 +3802,51 @@ proc showStats*(x:Runningstat) =
      ##
      var sep = ":"
      printLnBiCol("Sum     : " & ff(x.sum),sep,yellowgreen,white)
-     printLnBiCol("Var     : " & ff(x.variance),sep,yellowgreen,white)
      printLnBiCol("Mean    : " & ff(x.mean),sep,yellowgreen,white)
+     printLnBiCol("Var     : " & ff(x.variance),sep,yellowgreen,white)
+     printLnBiCol("Var  S  : " & ff(x.varianceS),sep,yellowgreen,white)
+     printLnBiCol("Kurt    : " & ff(x.kurtosis),sep,yellowgreen,white)
+     printLnBiCol("Kurt S  : " & ff(x.kurtosisS),sep,yellowgreen,white)
+     printLnBiCol("Skew    : " & ff(x.skewness),sep,yellowgreen,white)
+     printLnBiCol("Skew S  : " & ff(x.skewnessS),sep,yellowgreen,white)
      printLnBiCol("Std     : " & ff(x.standardDeviation),sep,yellowgreen,white)
+     printLnBiCol("Std  S  : " & ff(x.standardDeviationS),sep,yellowgreen,white)
      printLnBiCol("Min     : " & ff(x.min),sep,yellowgreen,white)
      printLnBiCol("Max     : " & ff(x.max),sep,yellowgreen,white)
 
+
+proc showRegression*(x, y: openArray[float | int]) =
+     ## showRegression
+     ##
+     ## quickly display RunningRegress data based on input of two openarray data series
+     ## 
+     ## .. code-block:: nim
+     ##    import cx
+     ##    var a = @[1,2,3,4,5] 
+     ##    var b = @[1,2,3,4,7] 
+     ##    showRegression(a,b)
+     ##
+     ##
+     var sep = ":"
+     var rr :RunningRegress
+     rr.push(x,y)
+     printLnBiCol("Intercept     : " & ff(rr.intercept()),sep,yellowgreen,white)
+     printLnBiCol("Slope         : " & ff(rr.slope()),sep,yellowgreen,white)
+     printLnBiCol("Correlation   : " & ff(rr.correlation()),sep,yellowgreen,white)
+    
+
+proc showRegression*(rr: RunningRegress) =
+     ## showRegression
+     ##
+     ## Displays RunningRegress data from an already formed RunningRegress
+     ## 
+  
+     var sep = ":"
+          
+     printLnBiCol("Intercept     : " & ff(rr.intercept()),sep,yellowgreen,white)
+     printLnBiCol("Slope         : " & ff(rr.slope()),sep,yellowgreen,white)
+     printLnBiCol("Correlation   : " & ff(rr.correlation()),sep,yellowgreen,white)
+    
 
 
 proc newDir*(dirname:string) =
@@ -3796,18 +3939,15 @@ proc checkClip*():string  =
      ## .. code-block:: nim
      ##     printLnBiCol("Last Clipboard Entry : " & checkClip())
      ##
-     
-     
-
-     let z = execCmd("xclip -quiet -silent -o > /dev/null")  # need /dev/null or it writes to terminal
-     let (outp, errC) = execCmdEx("xclip -quiet -o")
+          
+     let (outp, errC) = execCmdEx("xclip -quiet -silent -o")
      var rx = ""
      if errC == 0:
-       let r = split($outp," ")
-       for x in 0.. <r.len:
-           rx = rx & " " & r[x]
+         let r = split($outp," ")
+         for x in 0.. <r.len:
+             rx = rx & " " & r[x]
      else:
-       rx = "xclip returned errorcode : " & $ $errC & ". Clipboard not accessed correctly"
+         rx = "xclip returned errorcode : " & $ $errC & ". Clipboard not accessed correctly"
 
      result = rx
        
@@ -4034,7 +4174,6 @@ proc katakana*():seq[string] =
 
 
 
-
 proc rainbow2*[T](s : T,xpos:int = 0,fitLine:bool = false,centered:bool = false, colorset:seq[(string, string)] = colorNames) =
     ## rainbow2
     ##
@@ -4123,7 +4262,7 @@ proc drawBox*(hy:int = 1, wx:int = 1 , hsec:int = 1 ,vsec:int = 1,frCol:string =
      ##
      # http://unicode.org/charts/PDF/U2500.pdf
      # almost ok we need to find a way to to make sure that grid size is fine
-     # if we use dynamic sizes like width = tw-1 etc.
+     # if we use dynamic sizes like width = tw - 1 etc.
      #
      # given some data should the data be printed into a drawn box
      # or the box around the data ?
@@ -4465,18 +4604,19 @@ system.addQuitProc(resetAttributes)
 
 
 when isMainModule:
-  let smm = "import cx into your project and your terminal comes alive with color , if it supports color that is."
+  let smm = " import cx and your terminal comes alive with color .."
   for x in 0.. 10:
         cleanScreen()
         decho(5)
-        printBigLetters("NIM-CX",xpos = 35,fun=true)
+        printBigLetters("NIM-CX",xpos = 1,fun=true)
         decho(8)
-        printLnBiCol(smm,sep = "and ",colLeft = yellowgreen,colRight = clrainbow,centered = true)
+        printLnBiCol(smm,sep = "and ",colLeft = yellowgreen,colRight = clrainbow,centered = false)
         sleepy(0.2)
         curup(1)
-        rainbow2(smm,centered = true,colorset=pastelSet)
+        rainbow2(smm,centered = false,colorset=pastelSet)
         echo()
-  printLn(kitty,white,red,centered=true)
+  clearup()      
+  printLn(kitty,lime,black,centered=true)
   decho(2)
   doInfo()
   showIpInfo(getWanIp())
