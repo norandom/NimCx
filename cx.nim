@@ -1161,13 +1161,11 @@ proc rainbow*[T](s : T,xpos:int = 0,fitLine:bool = false ,centered:bool = false)
 proc print*[T](astring:T,fgr:string = termwhite , bgr:string = bblack,xpos:int = 0,fitLine:bool = false,centered:bool = false)
 proc printBiCol*[T](s:T,sep:string = ":",colLeft:string = yellowgreen ,colRight:string = termwhite,xpos:int = 0,centered:bool = false) ## forward declaration
 proc printLnBiCol*[T](s:T,sep:string = ":",colLeft:string = yellowgreen ,colRight:string = termwhite,xpos:int = 0,centered:bool = false) ## forward declaration
-proc printStyledSimple*[T](ss:T,fg:string,astyle:set[Style])
-## 
-## code adapted from rosettacode and slightly updated to make it actually compile
-## yle:set[Style]) ## forward declaration
+proc printStyledSimple*[T](ss:T,fg:string,astyle:set[Style]) ## forward declaration
 proc printStyled*[T](ss:T,substr:string,col:string,astyle : set[Style]) ## forward declaration
 proc hline*(n:int = tw,col:string = white) ## forward declaration
 proc hlineLn*(n:int = tw,col:string = white) ## forward declaration
+proc spellInteger*(n: int64): string ## forward declaration
 
 # procs lifted from terminal.nim as they are currently not exported from there
 proc styledEchoProcessArg(s: string) = write stdout, s
@@ -1176,7 +1174,7 @@ proc styledEchoProcessArg(style: set[Style]) = setStyle style
 proc styledEchoProcessArg(color: ForegroundColor) = setForegroundColor color
 proc styledEchoProcessArg(color: BackgroundColor) = setBackgroundColor color
 
-proc spellInteger*(n: int64): string
+
 
 # macros
 
