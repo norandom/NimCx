@@ -93,6 +93,8 @@
 ##                 unicode font libraries 
 ##
 ##   Plans       : move some of the non core procs to a new module cxutils.nim
+##   
+##                 
 ##
 ##
 ##
@@ -100,7 +102,7 @@
 import os,osproc,macros,posix,terminal,math,stats,unicode,times,tables,json,sets
 import sequtils,parseutils,strutils,httpclient,rawsockets,browsers,intsets, algorithm
 # imports based on modules available via nimble
-import "random-0.5.2/random"
+import "random-0.5.3/random"
 
 when defined(macosx):
   {.warning : "CX is only tested on Linux ! Your mileage may vary".}
@@ -140,8 +142,8 @@ proc bbright(bg:BackgroundColor): string =
 
 # type used in slim number printing
 type
-    Tsn7 = object
-      nx : seq[string]
+    T7 = object
+      zx : seq[string]
 
 
 const
@@ -620,11 +622,11 @@ let el5 = "      "
 
 
 
-let clb1 = "      "
-let clb2 = "      "
-let clb3 = "      "
-let clb4 = "      "
-let clb5 = "      "
+let clb1 = spaces(6)
+let clb2 = spaces(6)
+let clb3 = spaces(6)
+let clb4 = spaces(6)
+let clb5 = spaces(6)
 
 
 let abx* = @[a1,a2,a3,a4,a5]
@@ -1166,6 +1168,7 @@ proc printStyled*[T](ss:T,substr:string,col:string,astyle : set[Style]) ## forwa
 proc hline*(n:int = tw,col:string = white) ## forward declaration
 proc hlineLn*(n:int = tw,col:string = white) ## forward declaration
 proc spellInteger*(n: int64): string ## forward declaration
+proc splitty*(txt:string,sep:string):seq[string] ## forward declaration
 
 # procs lifted from terminal.nim as they are currently not exported from there
 proc styledEchoProcessArg(s: string) = write stdout, s
@@ -1404,7 +1407,7 @@ proc fmtx*[T](fmts:openarray[string],fstrings:varargs[T, `$`]):string =
      ##
      ##  Operator chars : <  >  .
      ##
-     ## <12  means align left and pad so that max length = 12 and any followin char will be in position 13
+     ## <12  means align left and pad so that max length = 12 and any following char will be in position 13
      ## >12  means align right so that the most right char is in position 12
      ## >8.2 means align a float right so that most right char is position 8 with precision 2
      ##
@@ -1421,7 +1424,7 @@ proc fmtx*[T](fmts:openarray[string],fstrings:varargs[T, `$`]):string =
      ##
 
      var okresult = ""
-     # if formatstrings count not same as varag count we bail out
+     # if formatstrings count not same as vararg count we bail out
      doassert(fmts.len == fstrings.len)
      # now iterate and generate the desired output
      for cc in 0.. <fmts.len:
@@ -1952,13 +1955,13 @@ proc printBiCol*[T](s:T,sep:string = ":",colLeft:string = yellowgreen ,colRight:
      ##
      var nosepflag:bool = false
      var zz = $s
-     var z = zz.split(sep)
+     var z = zz.splitty(sep)  # using splitty we retain the sep on the left side
 
      # in case sep occures multiple time we only consider the first one
      if z.len > 1:
        for x in 2.. <z.len:
           # this now should contain the right part to be colored differently
-          z[1] = z[1] & sep & z[x]
+          z[1] = z[1] & z[x]
 
      else:
           # when the separator is not found
@@ -1969,11 +1972,11 @@ proc printBiCol*[T](s:T,sep:string = ":",colLeft:string = yellowgreen ,colRight:
      if nosepflag == false:
 
             if centered == false:
-                  print(z[0] & sep,fgr = colLeft,bgr = black,xpos = xpos)
+                  print(z[0],fgr = colLeft,bgr = black,xpos = xpos)
                   print(z[1],fgr = colRight,bgr = black)
             else:  # centered == true
                   let npos = centerX() - (zz).len div 2 - 1
-                  print(z[0] & sep,fgr = colLeft,bgr = black,xpos = npos)
+                  print(z[0],fgr = colLeft,bgr = black,xpos = npos)
                   print(z[1],fgr = colRight,bgr = black)
 
 
@@ -2004,12 +2007,12 @@ proc printLnBiCol*[T](s:T,sep:string = ":", colLeft:string = yellowgreen, colRig
      ##
      var nosepflag:bool = false
      var zz = $s
-     var z = zz.split(sep)
+     var z = zz.splitty(sep)  # using splitty we retain the sep on the left side
      # in case sep occures multiple time we only consider the first one
 
      if z.len > 1:
        for x in 2.. <z.len:
-           z[1] = z[1] & sep & z[x]
+           z[1] = z[1] & z[x]
      else:
           # when the separator is not found
           nosepflag = true
@@ -2019,7 +2022,7 @@ proc printLnBiCol*[T](s:T,sep:string = ":", colLeft:string = yellowgreen, colRig
      if nosepflag == false:
 
         if centered == false:
-              print(z[0] & sep,fgr = colLeft,bgr = black,xpos = xpos)
+              print(z[0],fgr = colLeft,bgr = black,xpos = xpos)
               if colRight == clrainbow:   # we currently do this as rainbow implementation has changed
                     printLn(z[1],fgr = randcol(),bgr = black)
               else:
@@ -2027,7 +2030,7 @@ proc printLnBiCol*[T](s:T,sep:string = ":", colLeft:string = yellowgreen, colRig
 
         else:  # centered == true
               let npos = centerX() - (zz).len div 2 - 1
-              print(z[0] & sep,fgr = colLeft,bgr = black,xpos = npos)
+              print(z[0],fgr = colLeft,bgr = black,xpos = npos)
               if colRight == clrainbow:   # we currently do this as rainbow implementation has changed
                     printLn(z[1],fgr = randcol(),bgr = black)
               else:
@@ -2434,13 +2437,12 @@ proc intervalsecs*(startDate,endDate:string) : float =
           var isecs = esecs - ssecs
           result = isecs
       else:
-          cechoLn(red,"Date error. : " &  startDate,"/",endDate," incorrect date found.")
+          println("Error: " &  startDate & "/" & endDate & " --> Format yyyy-MM-dd required",red)
           #result = -0.0
 
 proc intervalmins*(startDate,endDate:string) : float =
            var imins = intervalsecs(startDate,endDate) / 60
            result = imins
-
 
 
 proc intervalhours*(startDate,endDate:string) : float =
@@ -2468,7 +2470,7 @@ proc intervalyears*(startDate,endDate:string) : float =
 
 proc compareDates*(startDate,endDate:string) : int =
      # dates must be in form yyyy-MM-dd
-     # we want this to answehttps://github.com/nim-lang/Nr
+     # we want this to answer
      # s == e   ==> 0
      # s >= e   ==> 1
      # s <= e   ==> 2
@@ -2717,7 +2719,6 @@ proc printBigNumber*(xnumber:string|int,fgr:string = yellowgreen ,bgr:string = b
     var asn = newSeq[string]()
     var printseq = newSeq[seq[string]]()
     for x in anumber: asn.add($x)
-    #echo asn
     for x in asn:
       case  x
         of "0": printseq.add(number0)
@@ -2933,43 +2934,43 @@ proc printSlimNumber*(anumber:string,fgr:string = yellowgreen ,bgr:string = blac
 
 
 
-proc slimN(x:int):Tsn7 =
+proc slimN(x:int):T7 =
   # supporting slim number printing
-  var nnx:Tsn7
+  var nnx : T7
   case x
-    of 0: nnx.nx = snumber0
-    of 1: nnx.nx = snumber1
-    of 2: nnx.nx = snumber2
-    of 3: nnx.nx = snumber3
-    of 4: nnx.nx = snumber4
-    of 5: nnx.nx = snumber5
-    of 6: nnx.nx = snumber6
-    of 7: nnx.nx = snumber7
-    of 8: nnx.nx = snumber8
-    of 9: nnx.nx = snumber9
+    of 0: nnx.zx = snumber0
+    of 1: nnx.zx = snumber1
+    of 2: nnx.zx = snumber2
+    of 3: nnx.zx = snumber3
+    of 4: nnx.zx = snumber4
+    of 5: nnx.zx = snumber5
+    of 6: nnx.zx = snumber6
+    of 7: nnx.zx = snumber7
+    of 8: nnx.zx = snumber8
+    of 9: nnx.zx = snumber9
     else: discard
   result = nnx
 
 
-proc slimC(x:string):Tsn7 =
+proc slimC(x:string):T7 =
   # supporting slim chars printing
-  var nnx:Tsn7
+  var nnx:T7
   case x
-    of ".": nnx.nx = sdot
-    of ",": nnx.nx = scomma
-    of ":": nnx.nx = scolon
-    of " ": nnx.nx = sblank
+    of ".": nnx.zx = sdot
+    of ",": nnx.zx = scomma
+    of ":": nnx.zx = scolon
+    of " ": nnx.zx = sblank
     else : discard
   result = nnx
 
 
 proc prsn(x:int,fgr:string = termwhite,bgr:string = termblack,xpos:int = 0) =
      # print routine for slim numbers
-     for x in slimN(x).nx: println(x,fgr = fgr,bgr = bgr,xpos = xpos)
+     for x in slimN(x).zx: println(x,fgr = fgr,bgr = bgr,xpos = xpos)
 
 proc prsc(x:string,fgr:string = termwhite,bgr:string = termblack,xpos:int = 0) =
      # print routine for slim chars
-     for x in slimc(x).nx: println($x,fgr = fgr,bgr = bgr,xpos = xpos)
+     for x in slimc(x).zx: println($x,fgr = fgr,bgr = bgr,xpos = xpos)
 
 
 proc printSlim* (ss:string = "", frg:string = termwhite,bgr:string = termblack,xpos:int = 0,align:string = "left") =
@@ -3289,7 +3290,7 @@ proc getHosts*(dm:string):seq[string] =
                     cc += 1
                     s.add('.')
               s.add($int(c))
-          var ss =s.split(",")
+          var ss = s.split(",")
           for x in 0.. <ss.len:
               rx.add(ss[x])
 
@@ -3509,8 +3510,6 @@ template benchmark*(benchmarkName: string, code: stmt) =
   echo()
   println(lime & "CPU   Time [" & peru & benchmarkName & lime & "] : " & white & elapsedStr1 & " secs")
   println(lime & "EPOCH Time [" & peru & benchmarkName & lime & "] : " & white & elapsedStr & " secs")
-
-
 
 
 proc sortMe*[T](xs:var seq[T],order = Ascending): seq[T] =
@@ -3783,10 +3782,12 @@ proc spellFloat*(n:float64,sep:string = ".",sepname:string = " dot "):string =
   result = ok   
     
 
-proc showStats*(x:Runningstat) =
+proc showStats*(x:Runningstat,n:int = 3) =
      ## showStats
      ##
      ## quickly display runningStat data
+     ## 
+     ## adjust decimals
      ##
      ## .. code-block:: nim
      ##
@@ -3799,18 +3800,18 @@ proc showStats*(x:Runningstat) =
      ##    doFinish()
      ##
      var sep = ":"
-     printLnBiCol("Sum     : " & ff(x.sum),sep,yellowgreen,white)
-     printLnBiCol("Mean    : " & ff(x.mean),sep,yellowgreen,white)
-     printLnBiCol("Var     : " & ff(x.variance),sep,yellowgreen,white)
-     printLnBiCol("Var  S  : " & ff(x.varianceS),sep,yellowgreen,white)
-     printLnBiCol("Kurt    : " & ff(x.kurtosis),sep,yellowgreen,white)
-     printLnBiCol("Kurt S  : " & ff(x.kurtosisS),sep,yellowgreen,white)
-     printLnBiCol("Skew    : " & ff(x.skewness),sep,yellowgreen,white)
-     printLnBiCol("Skew S  : " & ff(x.skewnessS),sep,yellowgreen,white)
-     printLnBiCol("Std     : " & ff(x.standardDeviation),sep,yellowgreen,white)
-     printLnBiCol("Std  S  : " & ff(x.standardDeviationS),sep,yellowgreen,white)
-     printLnBiCol("Min     : " & ff(x.min),sep,yellowgreen,white)
-     printLnBiCol("Max     : " & ff(x.max),sep,yellowgreen,white)
+     printLnBiCol("Sum     : " & ff(x.sum,n),sep,yellowgreen,white)
+     printLnBiCol("Mean    : " & ff(x.mean,n),sep,yellowgreen,white)
+     printLnBiCol("Var     : " & ff(x.variance,n),sep,yellowgreen,white)
+     printLnBiCol("Var  S  : " & ff(x.varianceS,n),sep,yellowgreen,white)
+     printLnBiCol("Kurt    : " & ff(x.kurtosis,n),sep,yellowgreen,white)
+     printLnBiCol("Kurt S  : " & ff(x.kurtosisS,n),sep,yellowgreen,white)
+     printLnBiCol("Skew    : " & ff(x.skewness,n),sep,yellowgreen,white)
+     printLnBiCol("Skew S  : " & ff(x.skewnessS,n),sep,yellowgreen,white)
+     printLnBiCol("Std     : " & ff(x.standardDeviation,n),sep,yellowgreen,white)
+     printLnBiCol("Std  S  : " & ff(x.standardDeviationS,n),sep,yellowgreen,white)
+     printLnBiCol("Min     : " & ff(x.min,n),sep,yellowgreen,white)
+     printLnBiCol("Max     : " & ff(x.max,n),sep,yellowgreen,white)
 
 
 proc showRegression*(x, y: openArray[float | int]) =
@@ -3945,7 +3946,7 @@ proc checkClip*():string  =
          for x in 0.. <r.len:
              rx = rx & " " & r[x]
      else:
-         rx = "xclip returned errorcode : " & $ $errC & ". Clipboard not accessed correctly"
+         rx = "xclip returned errorcode : " & $errC & ". Clipboard not accessed correctly"
 
      result = rx
        
@@ -4189,20 +4190,17 @@ proc rainbow2*[T](s : T,xpos:int = 0,fitLine:bool = false,centered:bool = false,
     var c = 0
     var a = toSeq(1.. <colorset.len)
 
-
     if astr in emojis or astr in hiragana() or astr in katakana() or astr in iching():
+        c = a[randomInt(a.len)]
+        if centered == false:
+            print(astr,colorset[c][1],black,xpos = nxpos,fitLine)
 
-          c = a[randomInt(a.len)]
-          if centered == false:
-             print(astr,colorset[c][1],black,xpos = nxpos,fitLine)
-
-
-          else:
+        else:
               # need to calc the center here and increment by x
               nxpos = centerX() - ($astr).len div 2  - 1
               print(astr,colorset[c][1],black,xpos=nxpos,fitLine)
 
-          inc nxpos
+        inc nxpos
 
 
     else :
@@ -4210,7 +4208,6 @@ proc rainbow2*[T](s : T,xpos:int = 0,fitLine:bool = false,centered:bool = false,
           for x in 0.. <astr.len:
             c = a[randomInt(a.len)]
             if centered == false:
-
                 print(astr[x],colorset[c][1],black,xpos = nxpos,fitLine)
 
             else:
@@ -4361,14 +4358,12 @@ proc randpos*():int =
 
 
 
-
-
 # string splitters with additional capabilities to original split()
 
 proc fastsplit*(s: string, sep: char): seq[string] =
   ## fastsplit
   ##
-  ##  code by jehan lifted from Nim Forum
+  ## code by jehan lifted from Nim Forum
   ##
   ## maybe best results compile prog with : nim cc -d:release --gc:markandsweep
   ##
@@ -4383,8 +4378,8 @@ proc fastsplit*(s: string, sep: char): seq[string] =
   var start = 0
   for i in 0..high(s):
     if s[i] == sep:
-      result[fieldNum] = s[start..i-1]
-      start = i+1
+      result[fieldNum] = s[start.. i - 1]
+      start = i + 1
       fieldNum += 1
   result[fieldNum] = s[start..^1]
 
