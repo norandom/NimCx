@@ -1169,6 +1169,7 @@ proc hline*(n:int = tw,col:string = white) ## forward declaration
 proc hlineLn*(n:int = tw,col:string = white) ## forward declaration
 proc spellInteger*(n: int64): string ## forward declaration
 proc splitty*(txt:string,sep:string):seq[string] ## forward declaration
+proc getRandomInt*(mi:int = 0,ma:int = int.high):int {.inline.} ## forward declaration
 
 # procs lifted from terminal.nim as they are currently not exported from there
 proc styledEchoProcessArg(s: string) = write stdout, s
@@ -1196,7 +1197,11 @@ macro styledEchoPrint*(m: varargs[expr]): stmt =
 
 
 # templates
-
+template currentLine*: int = instantiationInfo().line
+   ## currentLine
+   ## 
+   ## simple template to return line number ,usefull for debugging 
+   
 
 template randPastelCol*: string = pastelSet[rxPastelCol.randomChoice()][1]
    ## randPastelCol
@@ -1321,6 +1326,48 @@ template hdx*(code:stmt,frm:string = "+",width:int = tw,xpos:int = 0):stmt =
    code
    printLn(lx,xpos = xpos)
    echo()
+   
+
+proc isBlank*(val:string):bool {.inline.} =
+   ## isBlank
+   ## 
+   ## returns true if a string is blank
+   ## 
+   return val == nil or val == ""
+
+
+proc isEmpty*(val:string):bool {.inline.} =
+   ## isEmpty
+   ## 
+   ## returns true if a string is empty if spaces are removed
+   ## 
+
+   return val == nil or val.strip() == ""
+
+
+proc makeRandomSignI*(): int = 
+    ## makeRandomSignI
+    ## 
+    ## returns -1 or 1 integer  to have a random positive or negative multiplier
+    ##  
+    var s = getRandomInt(0,1) 
+    if s == 0:
+       result = -1 
+    else:
+       result = 1
+    
+proc makeRandomSignF*():float = 
+    ## makeRandomSignF
+    ## 
+    ## returns -1.0 or 1.0 float  to have a random positive or negative multiplier
+    ##  
+  
+  
+    var s = getRandomInt(0,1) 
+    if s == 0:
+       result = -1.0   
+    else :
+       result = 1
 
 
 
@@ -3334,10 +3381,15 @@ proc showHosts*(dm:string) =
 var rng = initMersenneTwister(urandom(2500))
 
 
-proc getRandomInt*(mi:int = 0,ma:int = int.high):int {.inline.}=
+proc getRandomInt*(mi:int = 0,ma:int = int.high):int =
     ## getRandomInt
     ##
     ## convenience proc so we do not need to import random in calling prog
+    ## 
+    ## to get positive or negative random ints multiply with makeRandomSignI
+    ##
+    ## .. code-block:: nim 
+    ##    echo  getRandomInt() * makeRandomSignI()
     ##
     ##
     ## .. code-block:: nim
@@ -3356,7 +3408,7 @@ proc getRandomInt*(mi:int = 0,ma:int = int.high):int {.inline.}=
        result = rng.randomInt(mi,ma + 1)
 
 
-proc createSeqInt*(n:int = 10,mi:int = 0,ma:int = int.high) : seq[int] {.inline.} =
+proc createSeqInt*(n:int = 10,mi:int = 0,ma:int = 1000) : seq[int] {.inline.} =
     ## createSeqInt
     ##
     ## convenience proc to create a seq of random int with
@@ -3401,6 +3453,10 @@ proc getRandomFloat*():float =
      ##
      ## convenience proc so we do not need to import random in calling prog
      ##
+     ## to get positive or negative random floats multiply with makeRandomSignF
+     ## 
+     ## .. code-block:: nim
+     ##    echo  getRandomFloat() * makeRandomSignF()
      ##
      result = rng.random()
 
