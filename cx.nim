@@ -1345,8 +1345,8 @@ proc isEmpty*(val:string):bool {.inline.} =
    return val == nil or val.strip() == ""
 
 
-proc makeRandomSignI*(): int = 
-    ## makeRandomSignI
+proc getRandomSignI*(): int = 
+    ## getRandomSignI
     ## 
     ## returns -1 or 1 integer  to have a random positive or negative multiplier
     ##  
@@ -1356,8 +1356,8 @@ proc makeRandomSignI*(): int =
     else:
        result = 1
     
-proc makeRandomSignF*():float = 
-    ## makeRandomSignF
+proc getRandomSignF*():float = 
+    ## getRandomSignF
     ## 
     ## returns -1.0 or 1.0 float  to have a random positive or negative multiplier
     ##  
