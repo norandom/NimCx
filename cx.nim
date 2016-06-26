@@ -1352,9 +1352,10 @@ proc getRandomSignI*(): int =
     ##  
     var s = getRandomInt(0,1) 
     if s == 0:
-       result = -1 
-    else:
+       result = -1
+    else :
        result = 1
+
     
 proc getRandomSignF*():float = 
     ## getRandomSignF
@@ -1605,12 +1606,11 @@ proc checkColor*(colname: string): bool =
      ## returns true if colname is a known color name in colorNames
      ##
      ##
+     result = false
      for x in  colorNames:
-       if x[0] == colname:
-          result = true
-          break
-       else:
-          result = false
+         if x[0] == colname:
+            result = true
+               
 
 
 
@@ -3386,10 +3386,10 @@ proc getRandomInt*(mi:int = 0,ma:int = int.high):int =
     ##
     ## convenience proc so we do not need to import random in calling prog
     ## 
-    ## to get positive or negative random ints multiply with makeRandomSignI
+    ## to get positive or negative random ints multiply with getRandomSignI
     ##
     ## .. code-block:: nim 
-    ##    echo  getRandomInt() * makeRandomSignI()
+    ##    echo  getRandomInt() * getRandomSignI()
     ##
     ##
     ## .. code-block:: nim
@@ -3453,10 +3453,10 @@ proc getRandomFloat*():float =
      ##
      ## convenience proc so we do not need to import random in calling prog
      ##
-     ## to get positive or negative random floats multiply with makeRandomSignF
+     ## to get positive or negative random floats multiply with getRandomSignF
      ## 
      ## .. code-block:: nim
-     ##    echo  getRandomFloat() * makeRandomSignF()
+     ##    echo  getRandomFloat() * getRandomSignF()
      ##
      result = rng.random()
 
