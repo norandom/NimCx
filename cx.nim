@@ -32,7 +32,7 @@
 ##   Docs        : http://qqtop.github.io/cx.html
 ##
 ##   Tested      : OpenSuse 13.2 , OpenSuse Leap42.1 , Ubuntu 16.04 LTS 
-####
+##
 ##                 with var. terminal font : monospace size 9.0 - 15 depending on screen resolution
 ##
 ##                 xterm,bash,st terminals support truecolor ok
@@ -44,6 +44,8 @@
 ##                 run this awk script to see if your terminal supports truecolor
 ##
 ##                 script from : https://gist.github.com/XVilka/8346728
+##
+## .. code-block:: nim
 ##
 ##                  awk 'BEGIN{
 ##                      s="/\\/\\/\\/\\/\\"; s=s s s s s s s s;
@@ -4030,42 +4032,42 @@ proc remDir*(dirname:string) =
 
 
 proc dayOfYear*() : range[0..365] = getLocalTime(getTime()).yearday + 1
-## dayOfYear
-##
-## returns the day of the year for a given Time
-##
-## note Nim yearday starts with Jan 1 being 0 however many application
-##
-## actually need to start on day 1 being actually 1 , which is provided here.
-##
-## .. code-block:: nim
-##     var afile = "cx.nim"
-##     var mday = getLastModificationTime(afile).dayofyear
-##     var today = dayofyear
-##     printlnBiCol("Last Modified on day  : " & $mday)
-##     printLnBiCol("Day of Current year   : " & $today)
-##
-##
+    ## dayOfYear
+    ##
+    ## returns the day of the year for a given Time
+    ##
+    ## note Nim yearday starts with Jan 1 being 0 however many application
+    ##
+    ## actually need to start on day 1 being actually 1 , which is provided here.
+    ##
+    ## .. code-block:: nim
+    ##     var afile = "cx.nim"
+    ##     var mday = getLastModificationTime(afile).dayofyear
+    ##     var today = dayofyear
+    ##     printlnBiCol("Last Modified on day  : " & $mday)
+    ##     printLnBiCol("Day of Current year   : " & $today)
+    ##
+    ##
 
 
 
 proc dayOfYear*(tt:Time) : range[0..365] = getLocalTime(tt).yearday + 1
-## dayOfYear
-##
-## returns the day of the year for a given Time
-##
-## note Nim yearday starts with Jan 1 being 0 however many application
-##
-## actually need to start on day 1 being actually 1 , which is provided here.
-##
-## .. code-block:: nim
-##     var afile = "cx.nim"
-##     var mday  = getLastModificationTime(afile).dayofyear
-##     var today = dayofyear
-##     printlnBiCol("Last Modified on day  : " & $mday)
-##     printLnBiCol("Day of Current year   : " & $today)
-##
-##
+    ## dayOfYear
+    ##
+    ## returns the day of the year for a given Time
+    ##
+    ## note Nim yearday starts with Jan 1 being 0 however many application
+    ##
+    ## actually need to start on day 1 being actually 1 , which is provided here.
+    ##
+    ## .. code-block:: nim
+    ##     var afile = "cx.nim"
+    ##     var mday  = getLastModificationTime(afile).dayofyear
+    ##     var today = dayofyear
+    ##     printlnBiCol("Last Modified on day  : " & $mday)
+    ##     printLnBiCol("Day of Current year   : " & $today)
+    ##
+    ##
 
  
   
