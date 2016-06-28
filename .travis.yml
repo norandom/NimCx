@@ -1,4 +1,7 @@
+sudo: false
 language: c
+os:
+- linux
 compiler:
   - gcc
 before_install:
@@ -13,7 +16,7 @@ before_install:
   - export PATH=$PWD/bin:$PATH
   - cd ..
   
-  # still need to install dependencies strfmt,random 
+  # still need to install dependencies random 
   
 script:
-  - nim c --run cx
+  - nim c cx

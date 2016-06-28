@@ -6,7 +6,7 @@
 ##
 ##   License     : MIT opensource
 ##
-##   Version     : 0.9.8
+##   Version     : 0.9.9
 ##
 ##   ProjectStart: 2015-06-20
 ##
@@ -118,7 +118,7 @@ when defined(posix):
 # make terminal style constants available in the calling prog
 export terminal.Style,terminal.getch
 
-const CXLIBVERSION* = "0.9.8"
+const CXLIBVERSION* = "0.9.9"
 
 let start* = epochTime()  ##  simple execution timing with one line see doFinish()
 
@@ -144,6 +144,12 @@ proc bbright(bg:BackgroundColor): string =
 type
     T7 = object
       zx : seq[string]
+      
+# type used in getRandomPoint
+type
+    RpointInt*   = tuple[x, y : int]
+    RpointFloat* = tuple[x, y : float]
+
 
 
 const
@@ -3436,7 +3442,8 @@ proc sum*[T](aseq: seq[T]): T = foldl(aseq, a + b)
      ##
      ##
      ## returns sum of float or int seqs
-     ##
+     ## 
+     ## same effect as math.sum
      ##
 
 
@@ -3531,6 +3538,83 @@ proc getRandomPointInCircle*(radius:float) : seq[float] =
 
 
 
+proc getRandomPoint*(minx:float = -500.0,maxx:float = 500.0,miny:float = -500.0,maxy:float = 500.0) : RpointFloat =
+    ## getRandomPoint
+    ##
+    ## generate a random x,y float point pair and return it as RpointFloat
+    ## 
+    ## minx  min x  value
+    ## maxx  max x  value
+    ## miny  min y  value
+    ## maxy  max y  value
+    ##
+    ## .. code-block:: nim
+    ##    for x in 0.. 10:
+    ##    var n = getRandomPoint(-500.00,200.0,-100.0,300.00)
+    ##    printLnBiCol(fmtx([">4",">5","",">6",">5"],"x:",$n.x,spaces(7),"y:",$n.y),spaces(7))
+    ## 
+
+    var point : RpointFloat
+    var rx:    float
+    var ry:    float
+      
+      
+    if minx < 0.0:   rx = minx - 1.0 
+    else        :    rx = minx + 1.0  
+    if maxy < 0.0:   rx = maxx - 1.0 
+    else        :    rx = maxx + 1.0 
+        
+    if miny < 0.0:   ry = miny - 1.0 
+    else        :    ry = miny + 1.0  
+    if maxy < 0.0:   ry = maxy - 1.0 
+    else        :    ry = maxy + 1.0 
+              
+        
+    var mpl = abs(maxx) * 1000     
+    
+    while rx < minx or rx > maxx:
+       rx =  getRandomSignF() * mpl * getRandomFloat() 
+       
+       
+    mpl = abs(maxy) * 1000   
+    while ry < miny or ry > maxy:  
+          ry =  getRandomSignF() * mpl * getRandomFloat()
+        
+    point.x = rx
+    point.y = ry  
+    result =  point
+      
+  
+proc getRandomPoint*(minx:int = -500 ,maxx:int = 500 ,miny:int = -500 ,maxy:int = 500 ) : RpointInt =
+    ## getRandomPoint 
+    ##
+    ## generate a random x,y int point pair and return it as RpointInt
+    ## 
+    ## min    x or y value
+    ## max    x or y value
+    ##
+    ## .. code-block:: nim
+    ##    for x in 0.. 10:
+    ##    var n = getRandomPoint(-500,500,-500,200)
+    ##    printLnBiCol(fmtx([">4",">5","",">6",">5"],"x:",$n.x,spaces(7),"y:",$n.y),spaces(7))
+    ## 
+  
+    var point : RpointInt
+        
+    point.x =  getRandomSignI() * getRandomInt(minx,maxx) 
+    point.y =  getRandomSignI() * getRandomInt(miny,maxy)
+          
+    result =  point
+
+
+
+
+
+
+
+
+
+
 # Misc. routines
 
 template benchmark*(benchmarkName: string, code: stmt) =
@@ -3546,7 +3630,7 @@ template benchmark*(benchmarkName: string, code: stmt) =
   ##
   ## .. code-block:: nim
   ##    proc doit() =
-  ##      var s = createSeqFloat(10,1000)
+  ##      var s = createSeqFloat(10,3)
   ##      var c = 0
   ##      for x in sortMe(s):
   ##          inc c 
