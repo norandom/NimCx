@@ -1,4 +1,5 @@
-import cx,strutils,strfmt,random,times
+import cx,strutils,strfmt,times
+import "random-0.5.3/random"
 
 ## small demos repository for var. procs in cx.nim
 ## this file is imported by cxTest.nim to actually run the demos

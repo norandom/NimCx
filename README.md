@@ -3,12 +3,12 @@
 ![Image](http://qqtop.github.io/nimcolors11.png?raw=true)
 
 
-Color utilities for the Linux terminal
---------------------------------------
+Color and Utilities for the Linux Terminal
+-------------------------------------------
 
 
 
-|Code            | Demos            | Tests            |
+| Code           | Demos            | Tests            |
 |----------------|------------------|------------------|
 | cx.nim         | cxDemo.nim       | cxTest.nim       |
 
@@ -16,7 +16,7 @@ Color utilities for the Linux terminal
 Requires     : Latest Nim dev version
 
 
-Installation : nimble install nimFinLib    (this installs nimFinLib and cx libraries)
+Installation : nimble install nimFinLib    (this installs nimFinLib and NimCx libraries)
 
 
 
