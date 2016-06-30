@@ -10,7 +10,7 @@
 ##
 ##   ProjectStart: 2015-06-20
 ##
-##   Compiler    : Nim >= 0.13.1
+##   Compiler    : Nim >= 0.14.2
 ##
 ##   OS          : Linux
 ##
@@ -106,6 +106,10 @@ import sequtils,parseutils,strutils,httpclient,rawsockets,browsers,intsets, algo
 # imports based on modules available via nimble
 import "random-0.5.3/random"
 
+# make terminal style constants available in the calling prog
+export terminal.Style,terminal.getch
+
+
 when defined(macosx):
   {.warning : "CX is only tested on Linux ! Your mileage may vary".}
 
@@ -116,9 +120,6 @@ when defined(windows):
 when defined(posix):
   {.hint    : "Delicious Os flavour detected .... CX loves Linux !".}
 
-
-# make terminal style constants available in the calling prog
-export terminal.Style,terminal.getch
 
 const CXLIBVERSION* = "0.9.9"
 
@@ -3618,6 +3619,36 @@ proc getRandomPoint*(minx:int = -500 ,maxx:int = 500 ,miny:int = -500 ,maxy:int 
 
 
 # Misc. routines
+
+
+proc checkNimCi*(title:string) =
+  ## checkNimCi
+  ## 
+  ## checks nim-ci for recent ok or failed nimble packages install test
+  ## 
+  ## use full title for exact output or partial title for all matches found.
+  ## 
+  ## .. code-block:: nim
+  ##    checkNimCi("nimFinLib")  
+  ##    
+  
+  
+  var url = getcontent("https://136-60803270-gh.circle-artifacts.com/0/home/ubuntu/nim-ci/output/nimble_install_report.json")
+  var z:JsonNode  = parseJson(url)
+  println("\nResults for last nim-ci evaluation : \n",salmon)
+  for x in z.items():
+    if find(x["title"].getstr.toLower(),title.toLower()) != -1:  
+        printLnBiCol("Title     : " & unquote($x["title"]),":",yellowgreen,skyblue)
+        printLnBiCol("Url       : " & unquote($x["url"]))
+        printLnBiCol("Version   : " &  unquote($x["version"]))
+        if unquote($x["test_result"]) == "FAIL":
+          printLnBiCol("TestResult: " & unquote($x["test_result"]),":",yellowgreen,red)
+        else:
+          printLnBiCol("TestResult: " & unquote($x["test_result"]),":",yellowgreen,brightyellow)
+        echo()
+   
+
+
 
 template benchmark*(benchmarkName: string, code: stmt) =
   ## benchmark
