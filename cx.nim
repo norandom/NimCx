@@ -101,13 +101,15 @@
 ##
 ##
 
-import os,osproc,macros,posix,terminal,math,stats,unicode,times,tables,json,sets
+import os,osproc,macros,posix,terminal,math,stats,times,tables,json,sets
 import sequtils,parseutils,strutils,httpclient,rawsockets,browsers,intsets, algorithm
+import unicode except toLower,toUpper
+
 # imports based on modules available via nimble
 import "random-0.5.3/random"
 
-# make terminal style constants available in the calling prog
-export terminal.Style,terminal.getch
+export strutils,sequtils,times
+export terminal.Style,terminal.getch  # make terminal style constants available in the calling prog
 
 
 when defined(macosx):
@@ -124,6 +126,7 @@ when defined(posix):
 const CXLIBVERSION* = "0.9.9"
 
 let start* = epochTime()  ##  simple execution timing with one line see doFinish()
+
 
 proc getfg(fg:ForegroundColor):string =
     var gFG = ord(fg)
@@ -867,7 +870,21 @@ var slimNumberSet = newSeq[string]()
 for x in 0.. 9: slimNumberSet.add($(x))
 var slimCharSet   = @[",",".",":"," "]
 
-const snumberlen = 2
+
+# arrows
+
+const 
+      leftarrow*           = "\u2190"
+      uparrow*             = "\u2191"
+      rightarrow*          = "\u2192"
+      downarrow*           = "\u2193"
+      leftrightarrow*      = "\u2194"
+      updownaarrow*        = "\u2195"
+      northwestarrow*      = "\u2196"
+      northeastarrow*      = "\u2197"
+      southwestarrow*      = "\u2198"
+      southeastarrow*      = "\u2199"
+
 
 
 # emojis
@@ -2850,7 +2867,7 @@ proc printBigLetters*(aword:string,fgr:string = yellowgreen ,bgr:string = black,
       xpos = xpos + k
 
   for aw in aword:
-      var ak = tolower($aw)
+      var ak = $(aw.toLower())
       case ak
       of "a" : abc(abx,xpos)
       of "b" : abc(bbx,xpos)
@@ -2982,7 +2999,7 @@ proc printSlimNumber*(anumber:string,fgr:string = yellowgreen ,bgr:string = blac
         of ".": printseq.add(sdot)
         else: discard
 
-    for x in 0.. snumberlen:
+    for x in 0.. 2:
         curSetx(xpos)
         for y in 0.. <printseq.len:
             print(" " & printseq[y][x],fgr,bgr)
@@ -3053,7 +3070,7 @@ proc printSlim* (ss:string = "", frg:string = termwhite,bgr:string = termblack,x
     var npos = xpos
     #if we want to right align we need to know the overall length, which needs a scan
     var sswidth = 0
-    if tolower(align) == "right":
+    if strUtils.toLower(align) == "right":
       for x in ss:
          if $x in slimCharSet:
            sswidth = sswidth + 1
@@ -3620,33 +3637,37 @@ proc getRandomPoint*(minx:int = -500 ,maxx:int = 500 ,miny:int = -500 ,maxy:int 
 
 # Misc. routines
 
-
-proc checkNimCi*(title:string) =
-  ## checkNimCi
-  ## 
-  ## checks nim-ci for recent ok or failed nimble packages install test
-  ## 
-  ## use full title for exact output or partial title for all matches found.
-  ## 
-  ## .. code-block:: nim
-  ##    checkNimCi("nimFinLib")  
-  ##    
-  
-  
-  var url = getcontent("https://136-60803270-gh.circle-artifacts.com/0/home/ubuntu/nim-ci/output/nimble_install_report.json")
-  var z:JsonNode  = parseJson(url)
-  println("\nResults for last nim-ci evaluation : \n",salmon)
-  for x in z.items():
-    if find(x["title"].getstr.toLower(),title.toLower()) != -1:  
-        printLnBiCol("Title     : " & unquote($x["title"]),":",yellowgreen,skyblue)
-        printLnBiCol("Url       : " & unquote($x["url"]))
-        printLnBiCol("Version   : " &  unquote($x["version"]))
-        if unquote($x["test_result"]) == "FAIL":
-          printLnBiCol("TestResult: " & unquote($x["test_result"]),":",yellowgreen,red)
-        else:
-          printLnBiCol("TestResult: " & unquote($x["test_result"]),":",yellowgreen,brightyellow)
-        echo()
-   
+# 
+# proc checkNimCi*(title:string) =
+#   ## checkNimCi
+#   ## 
+#   ## checks nim-ci for recent ok or failed nimble packages install test
+#   ## 
+#   ## use full title for exact output or partial title for all matches found.
+#   ## 
+#   ## 
+#   ## Note : needs compilation with -d:ssl 
+#   ##
+#   ## 
+#   ## .. code-block:: nim
+#   ##    checkNimCi("nimFinLib")  
+#   ##    
+#   
+#   
+#   var url = getcontent("https://136-60803270-gh.circle-artifacts.com/0/home/ubuntu/nim-ci/output/nimble_install_report.json")
+#   var z:JsonNode  = parseJson(url)
+#   println("\nResults for last nim-ci evaluation : \n",salmon)
+#   for x in z.items():
+#     if find(x["title"].getstr.toLower(),title.toLower()) != -1:  
+#         printLnBiCol("Title     : " & unquote($x["title"]),":",yellowgreen,skyblue)
+#         printLnBiCol("Url       : " & unquote($x["url"]))
+#         printLnBiCol("Version   : " &  unquote($x["version"]))
+#         if unquote($x["test_result"]) == "FAIL":
+#           printLnBiCol("TestResult: " & unquote($x["test_result"]),":",yellowgreen,red)
+#         else:
+#           printLnBiCol("TestResult: " & unquote($x["test_result"]),":",yellowgreen,brightyellow)
+#         echo()
+#    
 
 
 
@@ -4099,6 +4120,74 @@ proc dayOfYear*(tt:Time) : range[0..365] = getLocalTime(tt).yearday + 1
     ##     printLnBiCol("Day of Current year   : " & $today)
     ##
     ##
+
+
+proc doNimUp*(xpos = 5, rev:bool = true) = 
+      ## doNimUp
+      ## 
+      ## A Nim dumbs up logo 
+      ## 
+      ## 
+      cleanScreen()
+      decho(2)
+      if rev == true:
+          
+          println("        $$$$               ".reversed,randcol(),xpos = xpos)
+          println("       $$  $               ".reversed,randcol(),xpos = xpos)
+          println("       $   $$              ".reversed,randcol(),xpos = xpos)
+          println("       $   $$              ".reversed,randcol(),xpos = xpos)
+          println("       $$   $$             ".reversed,randcol(),xpos = xpos)
+          println("        $    $$            ".reversed,randcol(),xpos = xpos)
+          println("        $$    $$$          ".reversed,randcol(),xpos = xpos)
+          println("         $$     $$         ".reversed,randcol(),xpos = xpos)
+          println("         $$      $$        ".reversed,randcol(),xpos = xpos)
+          println("          $       $$       ".reversed,randcol(),xpos = xpos)
+          println("    $$$$$$$        $$      ".reversed,randcol(),xpos = xpos)
+          println("  $$$               $$$$$  ".reversed,randcol(),xpos = xpos)
+          println(" $$    $$$$            $$$ ".reversed,randcol(),xpos = xpos)
+          println(" $   $$$  $$$            $$".reversed,randcol(),xpos = xpos)
+          println(" $$        $$$            $".reversed,randcol(),xpos = xpos)
+          println("  $$    $$$$$$            $".reversed,randcol(),xpos = xpos)
+          println("  $$$$$$$    $$           $".reversed,randcol(),xpos = xpos)
+          println("  $$       $$$$           $".reversed,randcol(),xpos = xpos)
+          println("   $$$$$$$$$  $$         $$".reversed,randcol(),xpos = xpos)
+          println("    $        $$$$     $$$$ ".reversed,randcol(),xpos = xpos)
+          println("    $$    $$$$$$    $$$$$$ ".reversed,randcol(),xpos = xpos)
+          println("     $$$$$$    $$  $$      ".reversed,randcol(),xpos = xpos)
+          println("       $     $$$ $$$       ".reversed,randcol(),xpos = xpos)
+          println("        $$$$$$$$$$         ".reversed,randcol(),xpos = xpos)
+
+      else:
+        
+          println("        $$$$               ",randcol(),xpos=60)
+          println("       $$  $               ",randcol(),xpos=60)
+          println("       $   $$              ",randcol(),xpos=60)
+          println("       $   $$              ",randcol(),xpos=60)
+          println("       $$   $$             ",randcol(),xpos=60)
+          println("        $    $$            ",randcol(),xpos=60)
+          println("        $$    $$$          ",randcol(),xpos=60)
+          println("         $$     $$         ",randcol(),xpos=60)
+          println("         $$      $$        ",randcol(),xpos=60)
+          println("          $       $$       ",randcol(),xpos=60)
+          println("    $$$$$$$        $$      ",randcol(),xpos=60)
+          println("  $$$               $$$$$  ",randcol(),xpos=60)
+          println(" $$    $$$$            $$$ ",randcol(),xpos=60)
+          println(" $   $$$  $$$            $$",randcol(),xpos=60)
+          println(" $$        $$$            $",randcol(),xpos=60)
+          println("  $$    $$$$$$            $",randcol(),xpos=60)
+          println("  $$$$$$$    $$           $",randcol(),xpos=60)
+          println("  $$       $$$$           $",randcol(),xpos=60)
+          println("   $$$$$$$$$  $$         $$",randcol(),xpos=60)
+          println("    $        $$$$     $$$$ ",randcol(),xpos=60)
+          println("    $$    $$$$$$    $$$$$$ ",randcol(),xpos=60)
+          println("     $$$$$$    $$  $$      ",randcol(),xpos=60)
+          println("       $     $$$ $$$       ",randcol(),xpos=60)
+          println("        $$$$$$$$$$         ",randcol(),xpos=60)
+
+      curup(15)
+      printBigLetters("NIM",fgr=randcol(),xpos = xpos + 33)
+      curdn(15)
+
 
  
   
