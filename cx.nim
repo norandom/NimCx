@@ -1346,6 +1346,9 @@ template hdx*(code:typed,frm:string = "+",width:int = tw,nxpos:int = 0):typed =
    ##
    ## width and xpos can be adjusted
    ##
+   ## .. code-block:: nim
+   ##    hdx(printLn("Nice things happen randomly",yellowgreen,xpos = 9),width = 35,nxpos = 5)
+   ##
    var xpos = nxpos
    var lx = repeat(frm,width div frm.len)
    printLn(lx,xpos = xpos)
