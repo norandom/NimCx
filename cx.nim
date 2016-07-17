@@ -89,7 +89,8 @@
 ##
 ##   Installation: nimble install nimFinLib ( a project which now uses cx.nim)
 ##
-##                 will install this library .                
+##                 will install this library . 
+##
 ##
 ##   Optional    : xclip              
 ##                 unicode font libraries 
@@ -1208,7 +1209,7 @@ proc styledEchoProcessArg(color: BackgroundColor) = setBackgroundColor color
 
 # macros
 
-macro styledEchoPrint*(m: varargs[expr]): stmt =
+macro styledEchoPrint*(m: varargs[untyped]): typed =
   ## lifted from terminal.nim and removed new line
   ## used in printStyled
   ##
@@ -1240,7 +1241,7 @@ template randPastelCol*: string = pastelSet[rxPastelCol.randomChoice()][1]
    ##
    ##
 
-template msgg*(code: stmt): stmt =
+template msgg*(code: typed): typed =
       ## msgX templates
       ## convenience templates for colored text output
       ## the assumption is that the terminal is white text and black background
@@ -1260,92 +1261,92 @@ template msgg*(code: stmt): stmt =
       setForeGroundColor(fgWhite)
 
 
-template msggb*(code: stmt): stmt   =
+template msggb*(code: typed): typed   =
       setForeGroundColor(fgGreen,true)
       code
       setForeGroundColor(fgWhite)
 
 
-template msgy*(code: stmt): stmt =
+template msgy*(code: typed): typed =
       setForeGroundColor(fgYellow)
       code
       setForeGroundColor(fgWhite)
 
 
-template msgyb*(code: stmt): stmt =
+template msgyb*(code: typed): typed =
       setForeGroundColor(fgYellow,true)
       code
       setForeGroundColor(fgWhite)
 
-template msgr*(code: stmt): stmt =
+template msgr*(code: typed): typed =
       setForeGroundColor(fgRed)
       code
       setForeGroundColor(fgWhite)
 
-template msgrb*(code: stmt): stmt =
+template msgrb*(code: typed): typed =
       setForeGroundColor(fgRed,true)
       code
       setForeGroundColor(fgWhite)
 
-template msgc*(code: stmt): stmt =
+template msgc*(code: typed): typed =
       setForeGroundColor(fgCyan)
       code
       setForeGroundColor(fgWhite)
 
-template msgcb*(code: stmt): stmt =
+template msgcb*(code: typed): typed =
       setForeGroundColor(fgCyan,true)
       code
       setForeGroundColor(fgWhite)
 
-template msgw*(code: stmt): stmt =
+template msgw*(code: typed): typed =
       setForeGroundColor(fgWhite)
       code
       setForeGroundColor(fgWhite)
 
-template msgwb*(code: stmt): stmt =
+template msgwb*(code: typed): typed =
       setForeGroundColor(fgWhite,true)
       code
       setForeGroundColor(fgWhite)
 
-template msgb*(code: stmt): stmt =
+template msgb*(code: typed): typed =
       setForeGroundColor(fgBlack,true)
       code
       setForeGroundColor(fgWhite)
 
-template msgbb*(code: stmt): stmt =
+template msgbb*(code: typed): typed =
       # invisible on black background
       setForeGroundColor(fgBlack)
       code
       setForeGroundColor(fgWhite)
 
-template msgbl*(code: stmt): stmt =
+template msgbl*(code: typed): typed =
       setForeGroundColor(fgBlue)
       code
       setForeGroundColor(fgWhite)
 
-template msgblb*(code: stmt): stmt =
+template msgblb*(code: typed): typed =
       setForeGroundColor(fgBlue,true)
       code
       setForeGroundColor(fgWhite)
 
-template msgm*(code: stmt): stmt =
+template msgm*(code: typed): typed =
       setForeGroundColor(fgMagenta)
       code
       setForeGroundColor(fgWhite)
 
-template msgmb*(code: stmt): stmt =
+template msgmb*(code: typed): typed =
       setForeGroundColor(fgMagenta,true)
       code
       setForeGroundColor(fgWhite)
 
-
-template hdx*(code:stmt,frm:string = "+",width:int = tw,xpos:int = 0):stmt =
+template hdx*(code:typed,frm:string = "+",width:int = tw,nxpos:int = 0):typed =
    ## hdx
    ##
    ## a simple sandwich frame made with + default or any string passed in
    ##
    ## width and xpos can be adjusted
    ##
+   var xpos = nxpos
    var lx = repeat(frm,width div frm.len)
    printLn(lx,xpos = xpos)
    cursetx(xpos + 2)
@@ -1448,7 +1449,7 @@ proc fmtengine[T](a:string,astring:T):string =
      var alx = spaces(max(0,pad - okstring.len))
 
      case op
-       of "<"  :   okstring = okstring & alx
+       of "<"  :   okstring = okstring & alx 
        of ">"  :   okstring = alx & okstring
        else: discard
 
@@ -1491,7 +1492,7 @@ proc fmtx*[T](fmts:openarray[string],fstrings:varargs[T, `$`]):string =
      ##    echo fmtx(["","","<8.3",""," High : ","<8","","","","","","","",""],lime,"OPen : ",unquote("1234.5986"),yellow,"",3456.67,red,showRune("FFEC"),white," Change:",unquote("-1.34 - 0.45%"),"  Range : ",lime,@[123,456,789])
      ##    echo fmtx(["","<18",":",">15","","",">8.2"],salmon,"nice something",steelblue,123,spaces(5),yellow,456.12345676)
      ##    ruler()
-     ##    echo fmtx([">22"],"nice something")
+     ##    echo fmtx([">22"],"nice something"inc c )
      ##    printlnBiCol(fmtx(["",">15.3f"],"Result : ",123.456789))  # formats the float to a string with precision 3 the f is not necessary
      ##    echo fmtx([">22.3"],234.43324234)  # this formats float and aligns last char tp pos 22
      ##    echo fmtx(["22.3"],234.43324234)   # this formats float but ignores position as no align operator given
@@ -1506,7 +1507,7 @@ proc fmtx*[T](fmts:openarray[string],fstrings:varargs[T, `$`]):string =
      result = okresult
 
 
-template withFile*(f: expr, filename: string, mode: FileMode, body: stmt): stmt {.immediate.} =
+template withFile*(f: expr, filename: string, mode: FileMode, body: typed): typed {.immediate.} =
      ## withFile
      ##
      ## file open close utility template
@@ -2848,7 +2849,7 @@ proc printBigLetters*(aword:string,fgr:string = yellowgreen ,bgr:string = black,
   ##
 
   var xpos = xpos
-  template abc(s:stmt,xpos:int) =
+  template abc(s:typed,xpos:int) =
       # abc
       #
       # template to support printBigLetters
@@ -3627,51 +3628,43 @@ proc getRandomPoint*(minx:int = -500 ,maxx:int = 500 ,miny:int = -500 ,maxy:int 
     result =  point
 
 
-
-
-
-
-
-
-
-
 # Misc. routines
 
-# 
-# proc checkNimCi*(title:string) =
-#   ## checkNimCi
-#   ## 
-#   ## checks nim-ci for recent ok or failed nimble packages install test
-#   ## 
-#   ## use full title for exact output or partial title for all matches found.
-#   ## 
-#   ## 
-#   ## Note : needs compilation with -d:ssl 
-#   ##
-#   ## 
-#   ## .. code-block:: nim
-#   ##    checkNimCi("nimFinLib")  
-#   ##    
-#   
-#   
-#   var url = getcontent("https://136-60803270-gh.circle-artifacts.com/0/home/ubuntu/nim-ci/output/nimble_install_report.json")
-#   var z:JsonNode  = parseJson(url)
-#   println("\nResults for last nim-ci evaluation : \n",salmon)
-#   for x in z.items():
-#     if find(x["title"].getstr.toLower(),title.toLower()) != -1:  
-#         printLnBiCol("Title     : " & unquote($x["title"]),":",yellowgreen,skyblue)
-#         printLnBiCol("Url       : " & unquote($x["url"]))
-#         printLnBiCol("Version   : " &  unquote($x["version"]))
-#         if unquote($x["test_result"]) == "FAIL":
-#           printLnBiCol("TestResult: " & unquote($x["test_result"]),":",yellowgreen,red)
-#         else:
-#           printLnBiCol("TestResult: " & unquote($x["test_result"]),":",yellowgreen,brightyellow)
-#         echo()
-#    
+
+proc checkNimCi*(title:string) =
+  ## checkNimCi
+  ## 
+  ## checks nim-ci for recent ok or failed nimble packages install test
+  ## 
+  ## use full title for exact output or partial title for all matches found.
+  ## 
+  ## 
+  ## Note : needs compilation with -d:ssl 
+  ##
+  ## 
+  ## .. code-block:: nim
+  ##    checkNimCi("nimFinLib")  
+  ##    
+  
+  
+  var url = getcontent("https://136-60803270-gh.circle-artifacts.com/0/home/ubuntu/nim-ci/output/nimble_install_report.json")
+  var z:JsonNode  = parseJson(url)
+  println("\nResults for last nim-ci evaluation : \n",salmon)
+  for x in z.items():
+    if find(x["title"].getstr.toLower(),title.toLower()) != -1:  
+        printLnBiCol("Title     : " & unquote($x["title"]),":",yellowgreen,skyblue)
+        printLnBiCol("Url       : " & unquote($x["url"]))
+        printLnBiCol("Version   : " &  unquote($x["version"]))
+        if unquote($x["test_result"]) == "FAIL":
+          printLnBiCol("TestResult: " & unquote($x["test_result"]),":",yellowgreen,red)
+        else:
+          printLnBiCol("TestResult: " & unquote($x["test_result"]),":",yellowgreen,brightyellow)
+        echo()
+   
 
 
 
-template benchmark*(benchmarkName: string, code: stmt) =
+template benchmark*(benchmarkName: string, code: typed) =
   ## benchmark
   ## 
   ## a quick benchmark template showing cpu and epoch times
@@ -3858,7 +3851,7 @@ proc tupleToStr*(xs: tuple): string =
      result.add(")")
 
 
-template loopy*[T](ite:T,st:stmt) =
+template loopy*[T](ite:T,st:typed) =
      ## loopy
      ##
      ## the lazy programmer's quick simple for-loop template
