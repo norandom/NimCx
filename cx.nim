@@ -9,6 +9,8 @@
 ##   Version     : 0.9.9
 ##
 ##   ProjectStart: 2015-06-20
+##   
+##   Latest      : 2016-07-22
 ##
 ##   Compiler    : Nim >= 0.14.2
 ##
@@ -92,7 +94,8 @@
 ##                 will install this library . 
 ##
 ##
-##   Optional    : xclip              
+##   Optional    : xclip  
+##               
 ##                 unicode font libraries 
 ##
 ##   Plans       : move some of the non core procs to a new module cxutils.nim
@@ -103,13 +106,14 @@
 ##
 
 import os,osproc,macros,posix,terminal,math,stats,times,tables,json,sets
-import sequtils,parseutils,strutils,httpclient,rawsockets,browsers,intsets, algorithm
-import unicode except toLower,toUpper
+import sequtils,parseutils,httpclient,rawsockets,browsers,intsets, algorithm
+import strutils except toLower,toUpper
+import unicode 
 
 # imports based on modules available via nimble
 import "random-0.5.3/random"
 
-export strutils,sequtils,times
+export strutils,sequtils,times,unicode
 export terminal.Style,terminal.getch  # make terminal style constants available in the calling prog
 
 
@@ -1115,7 +1119,7 @@ let pastelSet* = @[
       ("pastelyellow",pastelyellow),
       ("pastelyellowgreen",pastelyellowgreen)]
 
-let rxPastelCol* = toSeq(pastelSet.low.. pastelSet.high) ## index into pastelSet
+let rxPastelCol* = toSeq(pastelSet.low.. pastelSet.high) # index into pastelSet
 
 
 let cards* = @[
@@ -1135,7 +1139,7 @@ let cards* = @[
  "🂮" ,"🂾" ,"🃎" ,"🃞",
  "🂠" ,"🂿" ,"🃏" ,"🃟"]
 
-let rxCards* = toSeq(cards.low.. cards.high) ## index into cards
+let rxCards* = toSeq(cards.low.. cards.high) # index into cards
 
 
 converter toTwInt(x: cushort): int = result = int(x)
@@ -1161,7 +1165,7 @@ when defined(Linux):
         result = toTwInt(size.col)
 
 
-    template tw* : int = getTerminalwidth() ## latest terminalwidth always available in tw
+    template tw* : int = getTerminalwidth() ## latest terminal width always available in tw
 
 
     proc getTerminalHeight*() : int =
@@ -1566,7 +1570,7 @@ template withFile*(f: expr, filename: string, mode: FileMode, body: typed): type
          finally:
              close(f)
      else:
-         echo ()
+         echo()
          printLnBiCol("Error : Cannot open file " & filename,":",red,yellow)
          quit()
 
@@ -2751,6 +2755,7 @@ proc getNextMonday*(adate:string):string =
 # large font printing, numbers are implemented
 
 proc printBigNumber*(xnumber:string|int,fgr:string = yellowgreen ,bgr:string = black,xpos:int = 1,fun:bool = false) =
+    {.hint    : "Working on : printBigNumber".}
     ## printBigNumber
     ##
     ## prints a string in big block font
@@ -2871,7 +2876,8 @@ proc printBigLetters*(aword:string,fgr:string = yellowgreen ,bgr:string = black,
       xpos = xpos + k
 
   for aw in aword:
-      var ak = $(aw.toLower())
+      var aws = $aw
+      var ak = aws.toLower()
       case ak
       of "a" : abc(abx,xpos)
       of "b" : abc(bbx,xpos)
@@ -3074,7 +3080,7 @@ proc printSlim* (ss:string = "", frg:string = termwhite,bgr:string = termblack,x
     var npos = xpos
     #if we want to right align we need to know the overall length, which needs a scan
     var sswidth = 0
-    if strUtils.toLower(align) == "right":
+    if align.toLower() == "right":
       for x in ss:
          if $x in slimCharSet:
            sswidth = sswidth + 1
@@ -3135,13 +3141,13 @@ proc superHeader*(bstring:string) =
       let pdl = framechar.repeat(mddl)
       # now show it with the framing in yellow and text in white
       # really want a terminal color checker to avoid invisible lines
-      echo ()
+      echo()
       printLn(pdl,yellowgreen)
       print(framechar & " ",yellowgreen)
       print(astring)
       printLn(" " & framechar,yellowgreen)
       printLn(pdl,yellowgreen)
-      echo ()
+      echo()
 
 
 
@@ -3190,7 +3196,7 @@ proc superHeader*(bstring:string,strcol:string,frmcol:string) =
         let pdl = framechar.repeat(mddl)
         # now show it with the framing in yellow and text in white
         # really want to have a terminal color checker to avoid invisible lines
-        echo ()
+        echo()
 
         # frame line
         proc frameline(pdl:string) =

@@ -1,6 +1,5 @@
 import cx,strutils,strfmt,times
 import "random-0.5.3/random"
-
 ## small demos repository for var. procs in cx.nim
 ## this file is imported by cxTest.nim to actually run the demos
  
@@ -273,7 +272,6 @@ proc wideDotFieldDemo*()=
    
   loopy(0.. 10,loopy(1.. tw div 2, dotyLn(1,randcol(),xpos = getRandomInt(0,tw - 1))))
   printlnBiCol("coloredSnow","d",greenyellow,salmon)
-
 
 
 proc cxYourNimDemo*() =
