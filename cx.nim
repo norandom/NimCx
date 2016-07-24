@@ -162,6 +162,11 @@ type
     RpointFloat* = tuple[x, y : float]
 
 
+# type used in Benchmark
+type
+    Benchmarkres* = tuple[bname,cpu,epoch : string]
+# used to store all benchmarkresults   
+var benchmarkresults* =  newSeq[Benchmarkres]()
 
 const
 
@@ -2755,7 +2760,6 @@ proc getNextMonday*(adate:string):string =
 # large font printing, numbers are implemented
 
 proc printBigNumber*(xnumber:string|int,fgr:string = yellowgreen ,bgr:string = black,xpos:int = 1,fun:bool = false) =
-    {.hint    : "Working on : printBigNumber".}
     ## printBigNumber
     ##
     ## prints a string in big block font
@@ -3670,9 +3674,7 @@ proc checkNimCi*(title:string) =
           printLnBiCol("TestResult: " & unquote($x["test_result"]),":",yellowgreen,brightyellow)
         echo()
    
-
-
-
+ 
 template benchmark*(benchmarkName: string, code: typed) =
   ## benchmark
   ## 
@@ -3695,17 +3697,43 @@ template benchmark*(benchmarkName: string, code: typed) =
   ##    benchmark("doit"):
   ##      for x in 0.. 100:
   ##          doit()
- 
+  ##
+  ##    showBench() 
+  ##    
+  ##    
+  
+  var zbres:Benchmarkres
   let t0 = epochTime()
   let t1 = cpuTime()
   code
   let elapsed  = epochTime() - t0
   let elapsed1 = cpuTime()   - t1
-  let elapsedStr  = ff(elapsed,4)  
-  let elapsedStr1 = ff(elapsed1,4) 
-  echo()
-  println(lime & "CPU   Time [" & peru & benchmarkName & lime & "] : " & white & elapsedStr1 & " secs")
-  println(lime & "EPOCH Time [" & peru & benchmarkName & lime & "] : " & white & elapsedStr & " secs")
+  zbres.epoch  = ff(elapsed,4)  
+  zbres.cpu = ff(elapsed1,4) 
+  zbres.bname = benchmarkName
+  benchmarkresults.add(zbres)
+
+
+
+proc showBench*() =
+ ## showBench
+ ## 
+ ## Displays results of all benchmarks
+ ## 
+ if benchmarkresults.len > 0: 
+    for x in  benchmarkresults:
+      echo()
+      var tit = " BenchMark       Timing                "
+      printlnStyled(tit,tit,chartreuse,astyle = {styleUnderScore})
+      println(dodgerblue & " [" & salmon & x.bname & dodgerblue & "]" & spaces(7) & cornflowerblue & "Epoch Time : " & white & x.epoch & " secs")
+      println(dodgerblue & " [" & salmon & x.bname & dodgerblue & "]" & spaces(7) & cornflowerblue & "Cpu   Time : " & white & x.cpu & " secs")    
+    echo()
+    benchmarkresults = @[]
+    println("Benchmark results end. Results cleared.",goldenrod)
+ else:
+    printLn("Benchmark results emtpy.Nothing to show",red)   
+
+
 
 
 proc sortMe*[T](xs:var seq[T],order = Ascending): seq[T] =
