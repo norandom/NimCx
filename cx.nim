@@ -87,9 +87,6 @@
 ##
 ##                 after compiler updates .
 ##                 
-##                 
-##
-##                 Removed withFile template . Did no longer work after compiler update
 ##
 ##   Required    : random installed via nimble
 ##
@@ -3829,6 +3826,71 @@ proc tupleToStr*(xs: tuple): string =
            result.add(", ")
        result.add($x)
      result.add(")")
+
+
+
+
+
+template withFile*(f:untyped,filename: string, mode: FileMode, body: untyped): typed =
+     ## withFile
+     ##
+     ## file open close utility template
+     ##
+     ## Example 1
+     ##
+     ## .. code-block:: nim
+     ##   let curFile="/data5/notes.txt"    # some file
+     ##   withFile(txt, curFile, fmRead):
+     ##       while true:
+     ##          try:
+     ##             printLn(txt.readLine())   # do something with the lines
+     ##          except:
+     ##             break
+     ##   echo()
+     ##   printLn("Finished",clRainbow)
+     ##   doFinish()
+     ##
+     ##
+     ## Example 2
+     ##
+     ## .. code-block:: nim
+     ##    import cx,strutils,strfmt
+     ##
+     ##    let curFile="/data5/notes.txt"
+     ##    var lc = 0
+     ##    var oc = 0
+     ##    withFile(txt, curFile, fmRead):
+     ##           while 1 == 1:
+     ##               try:
+     ##                  inc lc
+     ##                  var al = $txt.readline()
+     ##                  var sw = "the"   # find all lines containing : the
+     ##                  if al.contains(sw) == true:
+     ##                     inc oc
+     ##                     msgy() do: write(stdout,"{:<8}{:>6} {:<7}{:>6}  ".fmt("Line :",lc,"Count :",oc))
+     ##                     printhl(al,sw,green)
+     ##                     echo()
+     ##               except:
+     ##                  break
+     ##
+     ##    echo()
+     ##    printLn("Finished",clRainbow)
+     ##    doFinish()
+     ##
+
+     let fn = filename
+     var f: File
+
+     if open(f, fn, mode):
+         try:
+             body
+         finally:
+             close(f)
+     else:
+         echo()
+         printLnBiCol("Error : Cannot open file " & filename,":",red,yellow)
+         quit()
+
 
 
 template loopy*[T](ite:T,st:typed) =
