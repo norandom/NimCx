@@ -10,7 +10,7 @@
 ##
 ##   ProjectStart: 2015-06-20
 ##   
-##   Latest      : 2016-07-22
+##   Latest      : 2016-08-04
 ##
 ##   Compiler    : Nim >= 0.14.2
 ##
@@ -86,6 +86,10 @@
 ##                 to remove dependency on strfmt , which breaks sometimes
 ##
 ##                 after compiler updates .
+##                 
+##                 
+##
+##                 Removed withFile template . Did no longer work after compiler update
 ##
 ##   Required    : random installed via nimble
 ##
@@ -1517,68 +1521,6 @@ proc fmtx*[T](fmts:openarray[string],fstrings:varargs[T, `$`]):string =
      for cc in 0.. <fmts.len:
          okresult = okresult & fmtengine(fmts[cc],fstrings[cc])
      result = okresult
-
-
-template withFile*(f: expr, filename: string, mode: FileMode, body: typed): typed {.immediate.} =
-     ## withFile
-     ##
-     ## file open close utility template
-     ##
-     ## Example 1
-     ##
-     ## .. code-block:: nim
-     ##   let curFile="/data5/notes.txt"    # some file
-     ##   withFile(txt, curFile, fmRead):
-     ##       while true:
-     ##          try:
-     ##             printLnW(txt.readLine())   # do something with the lines
-     ##          except:
-     ##             break
-     ##   echo()
-     ##   printLn("Finished",clRainbow)
-     ##   doFinish()
-     ##
-     ##
-     ## Example 2
-     ##
-     ## .. code-block:: nim
-     ##    import cx,strutils,strfmt
-     ##
-     ##    let curFile="/data5/notes.txt"
-     ##    var lc = 0
-     ##    var oc = 0
-     ##    withFile(txt, curFile, fmRead):
-     ##           while 1 == 1:
-     ##               try:
-     ##                  inc lc
-     ##                  var al = $txt.readline()
-     ##                  var sw = "the"   # find all lines containing : the
-     ##                  if al.contains(sw) == true:
-     ##                     inc oc
-     ##                     msgy() do: write(stdout,"{:<8}{:>6} {:<7}{:>6}  ".fmt("Line :",lc,"Count :",oc))
-     ##                     printhl(al,sw,green)
-     ##                     echo()
-     ##               except:
-     ##                  break
-     ##
-     ##    echo()
-     ##    printLn("Finished",clRainbow)
-     ##    doFinish()
-     ##
-
-     let fn = filename
-     var f: File
-
-     if open(f, fn, mode):
-         try:
-             body
-         finally:
-             close(f)
-     else:
-         echo()
-         printLnBiCol("Error : Cannot open file " & filename,":",red,yellow)
-         quit()
-
 
 
 proc showRune*(s:string) : string  =
@@ -3433,7 +3375,7 @@ proc getRandomInt*(mi:int = 0,ma:int = int.high):int =
     ##
     ##
     ## .. code-block:: nim
-    ##    import cx,math
+    ##    import cx,stats
     ##    var ps : Runningstat
     ##    loopy(0.. 1000000,ps.push(getRandomInt(0,10000)))
     ##    showStats(ps)
@@ -3639,6 +3581,7 @@ proc getRandomPoint*(minx:int = -500 ,maxx:int = 500 ,miny:int = -500 ,maxy:int 
     point.y =  getRandomSignI() * getRandomInt(miny,maxy)
           
     result =  point
+
 
 
 # Misc. routines
@@ -4015,7 +3958,7 @@ proc showStats*(x:Runningstat,n:int = 3) =
      ##
      ## .. code-block:: nim
      ##
-     ##    import cx,math
+     ##    import cx,stats
      ##    var rs:Runningstat
      ##    var z =  createSeqFloat(500000)
      ##    for x in z:
@@ -4036,7 +3979,7 @@ proc showStats*(x:Runningstat,n:int = 3) =
      printLnBiCol("Std  S  : " & ff(x.standardDeviationS,n),sep,yellowgreen,white)
      printLnBiCol("Min     : " & ff(x.min,n),sep,yellowgreen,white)
      printLnBiCol("Max     : " & ff(x.max,n),sep,yellowgreen,white)
-
+     println("S --> sample",peru)
 
 proc showRegression*(x, y: openArray[float | int]) =
      ## showRegression
