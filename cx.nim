@@ -3459,16 +3459,27 @@ proc ff2*(zz:float,n:int = 3):string =
   ## 
   ## formats a float into form 12,345,678.234 that is thousands separators are shown
   ## 
+  ## also can be used to format ints with thousands separators
+  ## 
   ## precision is after comma given by n with default set to 3
   ## 
   ## .. code-block:: nim
   ##    import cx
+  ##    
+  ##    # floats example
   ##    for x in 1.. 2000:
   ##       # generate some positve and negative random float
   ##       z = getrandomfloat() * 2345243.132310 * getRandomSignF()
   ##       printlnBiCol(fmtx(["",">6","",">20"],"NZ ",$x," : ",ff2(z)))
-  ## 
-  ##
+  ##  
+  ##  
+  ##    # int example
+  ##    for x in 1.. 20:
+  ##       # generate some positve and negative random integer
+  ##       var z = getrandomInt(50000,100000000) * getRandomSignI()
+  ##       printlnBiCol(fmtx(["",">6","",">20.0"],"NIM ",$x," : ",z))
+  ##       
+  ##       
   
   var sc = 0
   var nz = ""
