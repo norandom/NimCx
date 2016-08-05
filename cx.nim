@@ -3459,13 +3459,14 @@ proc ff2*(zz:float,n:int = 3):string =
   ## 
   ## formats a float into form 12,345,678.234 that is thousands separators are shown
   ## 
-  ## precision is after comma given by decl with default set to 3
+  ## precision is after comma given by n with default set to 3
   ## 
   ## .. code-block:: nim
-  ##  for x in 1.. 2000:
-  ##     generate some positve and negative random float
-  ##     z = getrandomfloat() * 2345243.132310 * getRandomSignF()
-  ##     printlnBiCol(fmtx(["",">6","",">20"],"NZ ",$x," : ",ff2(z)))
+  ##    import cx
+  ##    for x in 1.. 2000:
+  ##       # generate some positve and negative random float
+  ##       z = getrandomfloat() * 2345243.132310 * getRandomSignF()
+  ##       printlnBiCol(fmtx(["",">6","",">20"],"NZ ",$x," : ",ff2(z)))
   ## 
   ##
   
@@ -3498,6 +3499,7 @@ proc ff2*(zz:float,n:int = 3):string =
      nz = strip(nz,true,false,{','})
   elif nz.startswith("-,") == true:
      nz = nz.replace("-,","-")
+     
   result = nz
 
 
