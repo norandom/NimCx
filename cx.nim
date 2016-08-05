@@ -1195,6 +1195,7 @@ when defined(Linux):
 
 # forward declarations
 proc ff*(zz:float,n:int64 = 5):string
+proc ff2*(zz:float,n:int = 3):string
 converter colconv*(cx:string) : string
 proc rainbow*[T](s : T,xpos:int = 0,fitLine:bool = false ,centered:bool = false)  ## forward declaration
 proc print*[T](astring:T,fgr:string = termwhite , bgr:string = bblack,xpos:int = 0,fitLine:bool = false,centered:bool = false)
@@ -1415,7 +1416,7 @@ proc getRandomSignF*():float =
 proc fmtengine[T](a:string,astring:T):string =
      ## fmtengine   used internally
      ##
-     ## simple string formatter to right or left align within given param
+     ## simple string formater to right or left align within given param
      ##
      ## also can take care of floating point precision
      ##
@@ -1457,7 +1458,11 @@ proc fmtengine[T](a:string,astring:T):string =
      pad = parseInt(dg)
 
      if dotflag == true and textflag == false:
-               okstring = ff(parseFloat(okstring),parseInt(df))
+               # floats should not be shown with thousand seperator
+               # like 1,234.56  instead of 1234.56
+               okstring = ff2(parseFloat(okstring),parseInt(df))
+               
+             
 
      var alx = spaces(max(0,pad - okstring.len))
 
@@ -3353,6 +3358,26 @@ proc showHosts*(dm:string) =
          printLn(x)
 
 
+proc reverseMe*[T](xs: openarray[T]): seq[T] =
+  ## reverseMe
+  ##
+  ## reverse a sequence
+  ##
+  ## .. code-block:: nim
+  ##
+  ##    var z = @["nice","bad","abc","zztop","reverser"]
+  ##    printLn(z,lime)
+  ##    println(z.reverseMe,red)
+  ##
+
+  result = newSeq[T](xs.len)
+  for i, x in xs:
+    result[^i-1] = x # or: result[xs.high-i] = x
+
+
+
+
+
 # Convenience procs for random data creation and handling
 
 
@@ -3426,6 +3451,57 @@ proc ff*(zz:float,n:int64 = 5):string =
      ## formats a float to string with n decimals
      ##
      result = $formatFloat(zz,ffDecimal,n)
+
+
+
+proc ff2*(zz:float,n:int = 3):string =
+  ## ff2
+  ## 
+  ## formats a float into form 12,345,678.234 that is thousands separators are shown
+  ## 
+  ## precision is after comma given by decl with default set to 3
+  ## 
+  ## .. code-block:: nim
+  ##  for x in 1.. 2000:
+  ##     generate some positve and negative random float
+  ##     z = getrandomfloat() * 2345243.132310 * getRandomSignF()
+  ##     printlnBiCol(fmtx(["",">6","",">20"],"NZ ",$x," : ",ff2(z)))
+  ## 
+  ##
+  
+  var sc = 0
+  var nz = ""
+  var zok = ""
+  var zrs = ""
+  var zs = split($zz,".")
+  var zrv = reverseme(zs[0])
+ 
+  for x in 0 .. <zrv.len: 
+     zrs = zrs & $zrv[x]
+ 
+  for x in 0.. <zrs.len:
+    if sc == 2:
+        nz = "," & $zrs[x] & nz
+        sc = 0
+    else:
+        nz = $zrs[x] & nz
+        inc sc     
+     
+  for x in 0.. <zs[1].len:
+    if x < n:
+      zok = zok & zs[1][x]
+  
+  if n > 0:
+        nz = nz & "." & zok
+        
+  if nz.startswith(",") == true:
+     nz = strip(nz,true,false,{','})
+  elif nz.startswith("-,") == true:
+     nz = nz.replace("-,","-")
+  result = nz
+
+
+
 
 
 proc getRandomFloat*():float =
@@ -3691,25 +3767,6 @@ proc sortMe*[T](xs:var seq[T],order = Ascending): seq[T] =
      ##
      xs.sort(proc(x,y:T):int = cmp(x,y),order = order)
      result = xs
-
-
-proc reverseMe*[T](xs: openarray[T]): seq[T] =
-  ## reverseMe
-  ##
-  ## reverse a sequence
-  ##
-  ## .. code-block:: nim
-  ##
-  ##    var z = @["nice","bad","abc","zztop","reverser"]
-  ##    printLn(z,lime)
-  ##    println(z.reverseMe,red)
-  ##
-
-  result = newSeq[T](xs.len)
-  for i, x in xs:
-    result[^i-1] = x # or: result[xs.high-i] = x
-
-
 
 template getCard* :auto =
     ## getCard
