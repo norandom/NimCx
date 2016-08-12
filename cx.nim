@@ -10,7 +10,7 @@
 ##
 ##   ProjectStart: 2015-06-20
 ##   
-##   Latest      : 2016-08-04
+##   Latest      : 2016-08-12
 ##
 ##   Compiler    : Nim >= 0.14.2
 ##
@@ -1196,6 +1196,7 @@ when defined(Linux):
 # forward declarations
 proc ff*(zz:float,n:int64 = 5):string
 proc ff2*(zz:float,n:int = 3):string
+proc ff2*(zz:int,n:int = 0):string
 converter colconv*(cx:string) : string
 proc rainbow*[T](s : T,xpos:int = 0,fitLine:bool = false ,centered:bool = false)  ## forward declaration
 proc print*[T](astring:T,fgr:string = termwhite , bgr:string = bblack,xpos:int = 0,fitLine:bool = false,centered:bool = false)
@@ -1744,14 +1745,11 @@ proc rainbow*[T](s : T,xpos:int = 0,fitLine:bool = false,centered:bool = false) 
     for x in 0.. <astr.len:
        c = a[randomInt(a.len)]
        if centered == false:
-
           print(astr[x],colorNames[c][1],black,xpos = nxpos,fitLine)
-
        else:
           # need to calc the center here and increment by x
           nxpos = centerX() - ($astr).len div 2  + x - 1
           print(astr[x],colorNames[c][1],black,xpos=nxpos,fitLine)
-
        inc nxpos
 
 
@@ -2365,7 +2363,7 @@ proc drawRect*(h:int = 0 ,w:int = 3, frhLine:string = "_", frVLine:string = "|",
 
       # topline
       printDotPos(xpos,dotCol,blink)
-      print(frhLine.repeat(w-1),frcol)
+      print(frhLine.repeat(w - 3),frcol)
       if frhLine == widedot:
             printDotPos(xpos + w * 2 - 1 ,dotCol,blink)
       else:
@@ -2381,7 +2379,7 @@ proc drawRect*(h:int = 0 ,w:int = 3, frhLine:string = "_", frVLine:string = "|",
          writeLine(stdout,"")
       # bottom line
       printDotPos(xpos,dotCol,blink)
-      print(frhLine.repeat(w-1),frcol)
+      print(frhLine.repeat(w - 3),frcol)
       if frhLine == widedot:
             printDotPos(xpos + w * 2 - 1 ,dotCol,blink)
       else:
@@ -3382,7 +3380,7 @@ proc reverseMe*[T](xs: openarray[T]): seq[T] =
 
 
 # init the MersenneTwister
-var rng = initMersenneTwister(urandom(2500))
+var rng* = initMersenneTwister(urandom(2500))
 
 
 proc getRandomInt*(mi:int = 0,ma:int = int.high):int =
@@ -3390,7 +3388,7 @@ proc getRandomInt*(mi:int = 0,ma:int = int.high):int =
     ##
     ## convenience proc so we do not need to import random in calling prog
     ## 
-    ## to get positive or negative random ints multiply with getRandomSignI
+    ## get positive or negative random ints by using the random sign mulitplier
     ##
     ## .. code-block:: nim 
     ##    echo  getRandomInt() * getRandomSignI()
@@ -3406,7 +3404,7 @@ proc getRandomInt*(mi:int = 0,ma:int = int.high):int =
     ##
 
     # we do this to avoid overflow error if a int exceeding int.high is specified
-    if ma > int.high:
+    if ma >= int.high :
        result = rng.randomInt(mi,int.high)
     else:
        result = rng.randomInt(mi,ma + 1)
@@ -3454,12 +3452,11 @@ proc ff*(zz:float,n:int64 = 5):string =
 
 
 
-proc ff2*(zz:float,n:int = 3):string =
+proc ff2*(zz:float , n:int = 3):string =
   ## ff2
   ## 
   ## formats a float into form 12,345,678.234 that is thousands separators are shown
   ## 
-  ## also can be used to format ints with thousands separators
   ## 
   ## precision is after comma given by n with default set to 3
   ## 
@@ -3472,7 +3469,52 @@ proc ff2*(zz:float,n:int = 3):string =
   ##       z = getrandomfloat() * 2345243.132310 * getRandomSignF()
   ##       printlnBiCol(fmtx(["",">6","",">20"],"NZ ",$x," : ",ff2(z)))
   ##  
-  ##  
+  ##       
+  
+  var sc = 0
+  var nz = ""
+  var zok = ""
+  var zrs = ""
+  var zs = split($zz,".")
+  var zrv = reverseme(zs[0])
+ 
+  for x in 0 .. <zrv.len: 
+     zrs = zrs & $zrv[x]
+ 
+  for x in 0.. <zrs.len:
+    if sc == 2:
+        nz = "," & $zrs[x] & nz
+        sc = 0
+    else:
+        nz = $zrs[x] & nz
+        inc sc     
+     
+  for x in 0.. <zs[1].len:
+    if x < n:
+      zok = zok & zs[1][x]
+  
+  if n > 0:
+        nz = nz & "." & zok
+        
+  if nz.startswith(",") == true:
+     nz = strip(nz,true,false,{','})
+  elif nz.startswith("-,") == true:
+     nz = nz.replace("-,","-")
+     
+  result = nz
+
+
+proc ff2*(zz:int , n:int = 0):string =
+  ## ff2
+  ## 
+  ## formats a integer into form 12,345,678 that is thousands separators are shown
+  ## 
+  ## 
+  ## precision is after comma given by n with default set to 3
+  ## 
+  ## .. code-block:: nim
+  ##    import cx
+  ##    
   ##    # int example
   ##    for x in 1.. 20:
   ##       # generate some positve and negative random integer
@@ -3516,7 +3558,6 @@ proc ff2*(zz:float,n:int = 3):string =
 
 
 
-
 proc getRandomFloat*():float =
      ## getRandomFloat
      ##
@@ -3524,10 +3565,12 @@ proc getRandomFloat*():float =
      ##
      ## to get positive or negative random floats multiply with getRandomSignF
      ## 
+     ## Note: changed so to get positive and or negative floats
+     ## 
      ## .. code-block:: nim
-     ##    echo  getRandomFloat() * getRandomSignF()
+     ##    echo  getRandomFloat() * 10000.00 * getRandomSignF()
      ##
-     result = rng.random()
+     result = rng.random()  
 
 
 proc createSeqFloat*(n:BiggestInt = 10,prec:int = 3) : seq[float] =
@@ -3672,6 +3715,32 @@ proc getRandomPoint*(minx:int = -500 ,maxx:int = 500 ,miny:int = -500 ,maxy:int 
 
 # Misc. routines
 
+ 
+
+proc memCheck*(stats:bool = false) =
+  ## memCheck
+  ## 
+  ## memCheck shows memory before and after a GC_FullCollect run
+  ## 
+  ## set stats to true for full GC_getStatistics
+  ## 
+  echo()
+  printLnStyled("MemCheck            ","MemCheck            ",yellowgreen,{styleUnderscore})
+  echo()
+  println("Status    : Current ",salmon)
+  println(yellowgreen & "Mem: " &  lightsteelblue & "Used : " & white & ff2(getOccupiedMem()) & lightsteelblue & "  Free : " & white & ff2(getFreeMem()) & lightsteelblue & "  Total : " & white & ff2(getTotalMem() ))
+  if stats == true:
+    echo GC_getStatistics()
+  GC_fullCollect()
+  println("Status    : GC_FullCollect executed",salmon)
+  println(yellowgreen & "Mem: " &  lightsteelblue & "Used : " & white & ff2(getOccupiedMem()) & lightsteelblue & "  Free : " & white & ff2(getFreeMem()) & lightsteelblue & "  Total : " & white & ff2(getTotalMem() ))
+  if stats == true:
+     echo GC_getStatistics()
+ 
+ 
+
+
+
 
 proc checkNimCi*(title:string) =
   ## checkNimCi
@@ -3681,7 +3750,8 @@ proc checkNimCi*(title:string) =
   ## use full title for exact output or partial title for all matches found.
   ## 
   ## 
-  ## Note : needs compilation with -d:ssl 
+  ## Note : needs compilation with -d:ssl  and may not be up to date 
+  ##        for reference only in case such a system is actually taken live.
   ##
   ## 
   ## .. code-block:: nim
@@ -3752,7 +3822,7 @@ proc showBench*() =
  if benchmarkresults.len > 0: 
     for x in  benchmarkresults:
       echo()
-      var tit = " BenchMark       Timing                "
+      var tit = " BenchMark        Timing " & spaces(25)
       printlnStyled(tit,tit,chartreuse,astyle = {styleUnderScore})
       println(dodgerblue & " [" & salmon & x.bname & dodgerblue & "]" & spaces(7) & cornflowerblue & "Epoch Time : " & white & x.epoch & " secs")
       println(dodgerblue & " [" & salmon & x.bname & dodgerblue & "]" & spaces(7) & cornflowerblue & "Cpu   Time : " & white & x.cpu & " secs")    
@@ -4503,10 +4573,10 @@ proc iching*():seq[string] =
 
 
 
-proc ada*():seq[string] =
+proc apl*():seq[string] =
     ## ada
     ##
-    ## returns a seq containing ada language symbols
+    ## returns a seq containing apl language symbols
     ##
     var adx = newSeq[string]()
     # s U+30A0–U+30FF.
@@ -4980,4 +5050,5 @@ when isMainModule:
   decho(2)
   doInfo()
   showIpInfo(getWanIp())
+  memCheck()
   doFinish()
