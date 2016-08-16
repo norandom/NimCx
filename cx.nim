@@ -10,7 +10,7 @@
 ##
 ##   ProjectStart: 2015-06-20
 ##   
-##   Latest      : 2016-08-12
+##   Latest      : 2016-08-15
 ##
 ##   Compiler    : Nim >= 0.14.2
 ##
@@ -3372,7 +3372,31 @@ proc reverseMe*[T](xs: openarray[T]): seq[T] =
   for i, x in xs:
     result[^i-1] = x # or: result[xs.high-i] = x
 
+proc reverseText*(text:string):string = 
+  ## reverseText
+  ## 
+  ## reverses words in a sentence
+  ## 
+  for line in text.splitLines: result = line.split(" ").reversed.join(" ")
 
+proc reverseString*(text:string):string = 
+  ## reverseString
+  ## 
+  ## reverses chars in a word   
+  ## 
+  ## 
+  ## ..code-block:: nim
+  ## 
+  ##    var s = "A text to reverse could be this example 12345.0"
+  ##    echo "Original      : " & s  
+  ##    echo "reverseText   : " & reverseText(s)
+  ##    echo "reverseString : " & reverseString(s)
+  ##    # check if back to original is correct
+  ##    assert s == reverseString(reverseString(s))
+  ##    
+   
+  result = ""
+  for x in reverseMe(text): result = result & x
 
 
 
@@ -4366,7 +4390,7 @@ proc doNimUp*(xpos = 5, rev:bool = true) =
 
  
   
-proc checkClip*():string  = 
+proc checkClip*(sel:string = "primary"):string  = 
      ## checkClip
      ## 
      ## returns the newest entry from the Clipboard
@@ -4376,7 +4400,7 @@ proc checkClip*():string  =
      ##     printLnBiCol("Last Clipboard Entry : " & checkClip())
      ##
           
-     let (outp, errC) = execCmdEx("xclip -quiet -silent -o")
+     let (outp, errC) = execCmdEx("xclip -selection $1 -quiet -silent -o" % $sel)
      var rx = ""
      if errC == 0:
          let r = split($outp," ")
