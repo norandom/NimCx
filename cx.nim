@@ -10,7 +10,7 @@
 ##
 ##   ProjectStart: 2015-06-20
 ##   
-##   Latest      : 2016-08-15
+##   Latest      : 2016-08-22
 ##
 ##   Compiler    : Nim >= 0.14.2
 ##
@@ -34,6 +34,8 @@
 ##   Docs        : http://qqtop.github.io/cx.html
 ##
 ##   Tested      : OpenSuse 13.2 , OpenSuse Leap42.1 , Ubuntu 16.04 LTS 
+##     
+##                 Terminal set encoding to UTF-8  
 ##
 ##                 with var. terminal font : monospace size 9.0 - 15 depending on screen resolution
 ##
@@ -119,14 +121,14 @@ export terminal.Style,terminal.getch  # make terminal style constants available 
 
 
 when defined(macosx):
-  {.warning : "CX is only tested on Linux ! Your mileage may vary".}
+  {.warning : " \u2691 CX is only tested on Linux ! Your mileage may vary".}
 
 when defined(windows):
   {.hint    : "Time to switch to Linux !".}
   {.fatal   : "CX does not support Windows at this stage and never will !".}
 
 when defined(posix):
-  {.hint    : "Delicious Os flavour detected .... CX loves Linux !".}
+  {.hint    : "\x1b[38;2;154;205;50m \u2691 Delicious Os flavour detected .... CX loves Linux ! \u2691".}
 
 
 const CXLIBVERSION* = "0.9.9"
@@ -896,7 +898,8 @@ const
       southwestarrow*      = "\u2198"
       southeastarrow*      = "\u2199"
 
-
+      phone*               = "\u260E"
+      fullflag*            = "\u2691"
 
 # emojis
 # mileage here may vary depending on whatever your system supports
@@ -3761,9 +3764,6 @@ proc memCheck*(stats:bool = false) =
   if stats == true:
      echo GC_getStatistics()
  
- 
-
-
 
 
 proc checkNimCi*(title:string) =
@@ -3774,7 +3774,7 @@ proc checkNimCi*(title:string) =
   ## use full title for exact output or partial title for all matches found.
   ## 
   ## 
-  ## Note : needs compilation with -d:ssl  and may not be up to date 
+  ## Note : needs compilation with -d:ssl  and result may not be up to date 
   ##        for reference only in case such a system is actually taken live.
   ##
   ## 
@@ -4598,7 +4598,7 @@ proc iching*():seq[string] =
 
 
 proc apl*():seq[string] =
-    ## ada
+    ## apl
     ##
     ## returns a seq containing apl language symbols
     ##
@@ -4892,8 +4892,6 @@ proc showTerminalSize*() =
       cechoLn(yellowgreen,"Terminal : " & lime & " W " & white & $tw & red & " x" & lime & " H " & white & $th)
 
 
-
-
 # Info and handlers procs for quick information
 
 
@@ -4918,60 +4916,60 @@ proc doInfo*() =
   #var accTime = getLastAccessTime(filename)
   let modTime = getLastModificationTime(filename)
   let sep = ":"
-  superHeader("Information for file " & filename & " and System")
-  printLnBiCol("Last compilation on           : " & CompileDate &  " at " & CompileTime,sep,green,brightblack)
+  superHeader("Information for file " & filename & " and System      ")
+  printLnBiCol("Last compilation on           : " & CompileDate &  " at " & CompileTime,sep,yellowgreen,lightgrey)
   # this only makes sense for non executable files
-  #printLnBiCol("Last access time to file      : " & filename & " " & $(fromSeconds(int(getLastAccessTime(filename)))),sep,green,brightblack)
-  printLnBiCol("Last modificaton time of file : " & filename & " " & $(fromSeconds(int(modTime))),sep,green,brightblack)
-  printLnBiCol("Local TimeZone                : " & $(getTzName()),sep,green,brightblack)
-  printLnBiCol("Offset from UTC  in secs      : " & $(getTimeZone()),sep,green,brightblack)
-  printLnBiCol("Now                           : " & getDateStr() & " " & getClockStr(),sep,green,brightblack)
-  printLnBiCol("Local Time                    : " & $getLocalTime(getTime()),sep,green,brightblack)
-  printLnBiCol("GMT                           : " & $getGMTime(getTime()),sep,green,brightblack)
-  printLnBiCol("Environment Info              : " & getEnv("HOME"),sep,green,brightblack)
-  printLnBiCol("File exists                   : " & $(existsFile filename),sep,green,brightblack)
-  printLnBiCol("Dir exists                    : " & $(existsDir "/"),sep,green,brightblack)
-  printLnBiCol("AppDir                        : " & getAppDir(),sep,green,brightblack)
-  printLnBiCol("App File Name                 : " & getAppFilename(),sep,green,brightblack)
-  printLnBiCol("User home  dir                : " & getHomeDir(),sep,green,brightblack)
-  printLnBiCol("Config Dir                    : " & getConfigDir(),sep,green,brightblack)
-  printLnBiCol("Current Dir                   : " & getCurrentDir(),sep,green,brightblack)
+  #printLnBiCol("Last access time to file      : " & filename & " " & $(fromSeconds(int(getLastAccessTime(filename)))),sep,yellowgreen,lightgrey)
+  printLnBiCol("Last modificaton time of file : " & filename & " " & $(fromSeconds(int(modTime))),sep,yellowgreen,lightgrey)
+  printLnBiCol("Local TimeZone                : " & $(getTzName()),sep,yellowgreen,lightgrey)
+  printLnBiCol("Offset from UTC  in secs      : " & $(getTimeZone()),sep,yellowgreen,lightgrey)
+  printLnBiCol("Now                           : " & getDateStr() & " " & getClockStr(),sep,yellowgreen,lightgrey)
+  printLnBiCol("Local Time                    : " & $getLocalTime(getTime()),sep,yellowgreen,lightgrey)
+  printLnBiCol("GMT                           : " & $getGMTime(getTime()),sep,yellowgreen,lightgrey)
+  printLnBiCol("Environment Info              : " & getEnv("HOME"),sep,yellowgreen,lightgrey)
+  printLnBiCol("File exists                   : " & $(existsFile filename),sep,yellowgreen,lightgrey)
+  printLnBiCol("Dir exists                    : " & $(existsDir "/"),sep,yellowgreen,lightgrey)
+  printLnBiCol("AppDir                        : " & getAppDir(),sep,yellowgreen,lightgrey)
+  printLnBiCol("App File Name                 : " & getAppFilename(),sep,yellowgreen,lightgrey)
+  printLnBiCol("User home  dir                : " & getHomeDir(),sep,yellowgreen,lightgrey)
+  printLnBiCol("Config Dir                    : " & getConfigDir(),sep,yellowgreen,lightgrey)
+  printLnBiCol("Current Dir                   : " & getCurrentDir(),sep,yellowgreen,lightgrey)
   let fi = getFileInfo(filename)
-  printLnBiCol("File Id                       : " & $(fi.id.device) ,sep,green,brightblack)
-  printLnBiCol("File No.                      : " & $(fi.id.file),sep,green,brightblack)
-  printLnBiCol("Kind                          : " & $(fi.kind),sep,green,brightblack)
-  printLnBiCol("Size                          : " & $(float(fi.size)/ float(1000)) & " kb",sep,green,brightblack)
-  printLnBiCol("File Permissions              : ",sep,green,brightblack)
+  printLnBiCol("File Id                       : " & $(fi.id.device) ,sep,yellowgreen,lightgrey)
+  printLnBiCol("File No.                      : " & $(fi.id.file),sep,yellowgreen,lightgrey)
+  printLnBiCol("Kind                          : " & $(fi.kind),sep,yellowgreen,lightgrey)
+  printLnBiCol("Size                          : " & $(float(fi.size)/ float(1000)) & " kb",sep,yellowgreen,lightgrey)
+  printLnBiCol("File Permissions              : ",sep,yellowgreen,lightgrey)
   for pp in fi.permissions:
-      printLnBiCol("                              : " & $pp,sep,green,brightblack)
-  printLnBiCol("Link Count                    : " & $(fi.linkCount),sep,green,brightblack)
+      printLnBiCol("                              : " & $pp,sep,yellowgreen,lightgrey)
+  printLnBiCol("Link Count                    : " & $(fi.linkCount),sep,yellowgreen,lightgrey)
   # these only make sense for non executable files
-  #printLnBiCol("Last Access                   : " & $(fi.lastAccessTime),sep,green,brightblack)
-  #printLnBiCol("Last Write                    : " & $(fi.lastWriteTime),sep,green,brightblack)
-  printLnBiCol("Creation                      : " & $(fi.creationTime),sep,green,brightblack)
+  #printLnBiCol("Last Access                   : " & $(fi.lastAccessTime),sep,yellowgreen,lightgrey)
+  #printLnBiCol("Last Write                    : " & $(fi.lastWriteTime),sep,yellowgreen,lightgrey)
+  printLnBiCol("Creation                      : " & $(fi.creationTime),sep,yellowgreen,lightgrey)
 
   when defined windows:
-        printLnBiCol("System                        : Windows ..... Really ??",sep,red,brightblack)
+        printLnBiCol("System                        : Windows ..... Really ??",sep,red,lightgrey)
   elif defined linux:
-        printLnBiCol("System                        : Running on Linux" ,sep,brightcyan,green)
+        printLnBiCol("System                        : Running on Linux" ,sep,brightcyan,yellowgreen)
   else:
-        printLnBiCol("System                        : Interesting Choice" ,sep,green,brightblack)
+        printLnBiCol("System                        : Interesting Choice" ,sep,yellowgreen,lightgrey)
 
   when defined x86:
-        printLnBiCol("Code specifics                : x86" ,sep,green,brightblack)
+        printLnBiCol("Code specifics                : x86" ,sep,yellowgreen,lightgrey)
 
   elif defined amd64:
-        printLnBiCol("Code specifics                : amd86" ,sep,green,brightblack)
+        printLnBiCol("Code specifics                : amd86" ,sep,yellowgreen,lightgrey)
   else:
-        printLnBiCol("Code specifics                : generic" ,sep,green,brightblack)
+        printLnBiCol("Code specifics                : generic" ,sep,yellowgreen,lightgrey)
 
-  printLnBiCol("Nim Version                   : " & $NimMajor & "." & $NimMinor & "." & $NimPatch,sep,green,brightblack)
-  printLnBiCol("Processor count               : " & $countProcessors(),sep,green,brightblack)
-  printBiCol("OS                            : "& hostOS,sep,green,brightblack)
-  printBiCol(" | CPU: "& hostCPU,sep,green,brightblack)
-  printLnBiCol(" | cpuEndian: "& $cpuEndian,sep,green,brightblack)
+  printLnBiCol("Nim Version                   : " & $NimMajor & "." & $NimMinor & "." & $NimPatch,sep,yellowgreen,lightgrey)
+  printLnBiCol("Processor count               : " & $countProcessors(),sep,yellowgreen,lightgrey)
+  printBiCol("OS                            : "& hostOS,sep,yellowgreen,lightgrey)
+  printBiCol(" | CPU: "& hostCPU,sep,yellowgreen,lightgrey)
+  printLnBiCol(" | cpuEndian: "& $cpuEndian,sep,yellowgreen,lightgrey)
   let pd = getpid()
-  printLnBiCol("Current pid                   : " & $pd,sep,green,brightblack)
+  printLnBiCol("Current pid                   : " & $pd,sep,yellowgreen,lightgrey)
 
 
 
