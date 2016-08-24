@@ -3493,7 +3493,7 @@ proc ff2*(zz:float , n:int = 3):string =
   ##    # floats example
   ##    for x in 1.. 2000:
   ##       # generate some positve and negative random float
-  ##       z = getrandomfloat() * 2345243.132310 * getRandomSignF()
+  ##       var z = getrandomfloat() * 2345243.132310 * getRandomSignF()
   ##       printlnBiCol(fmtx(["",">6","",">20"],"NZ ",$x," : ",ff2(z)))
   ##  
   ##       
