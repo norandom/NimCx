@@ -171,6 +171,8 @@ type
 # used to store all benchmarkresults   
 var benchmarkresults* =  newSeq[Benchmarkres]()
 
+
+
 const
 
       # Terminal consts for bash terminal cleanup
@@ -1202,11 +1204,12 @@ proc ff2*(zz:float,n:int = 3):string
 proc ff2*(zz:int,n:int = 0):string
 converter colconv*(cx:string) : string
 proc rainbow*[T](s : T,xpos:int = 0,fitLine:bool = false ,centered:bool = false)  ## forward declaration
-proc print*[T](astring:T,fgr:string = termwhite , bgr:string = bblack,xpos:int = 0,fitLine:bool = false,centered:bool = false)
+proc print*[T](astring:T,fgr:string = termwhite ,bgr:string = bblack,xpos:int = 0,fitLine:bool = false ,centered:bool = false,styled : set[Style]= {})
 proc printBiCol*[T](s:T,sep:string = ":",colLeft:string = yellowgreen ,colRight:string = termwhite,xpos:int = 0,centered:bool = false) ## forward declaration
 proc printLnBiCol*[T](s:T,sep:string = ":",colLeft:string = yellowgreen ,colRight:string = termwhite,xpos:int = 0,centered:bool = false) ## forward declaration
-proc printStyledSimple*[T](ss:T,fg:string,astyle:set[Style]) ## forward declaration
-proc printStyled*[T](ss:T,substr:string,col:string,astyle : set[Style]) ## forward declaration
+proc printRainbow*(s : string,styled:set[Style] = {}) 
+proc printStyledSimple*(ss:string,fg:string,astyle:set[Style]) ## forward declaration
+proc printStyled*(ss:string,substr:string,col:string,astyle : set[Style]) ## forward declaration
 proc hline*(n:int = tw,col:string = white) ## forward declaration
 proc hlineLn*(n:int = tw,col:string = white) ## forward declaration
 proc spellInteger*(n: int64): string ## forward declaration
@@ -1628,7 +1631,8 @@ converter colconv*(cx:string) : string =
 
 
 
-proc print*[T](astring:T,fgr:string = termwhite ,bgr:string = bblack ,xpos:int = 0,fitLine:bool = false ,centered:bool = false) =
+
+proc print*[T](astring:T,fgr:string = termwhite ,bgr:string = bblack,xpos:int = 0,fitLine:bool = false ,centered:bool = false,styled : set[Style]= {}) =
     ## print
     ##
     ## fore and background colors can be set
@@ -1638,9 +1642,31 @@ proc print*[T](astring:T,fgr:string = termwhite ,bgr:string = bblack ,xpos:int =
     ## fitLine = true will try to write the text into the current line irrespective of xpos
     ##
     ## centered = true will try to center and disregard xpos
+    ## 
+    ## styled allows style parameters to be set 
+    ##
+    ## available styles :
+    ##
+    ## styleBright = 1,            # bright text
+    ##
+    ## styleDim,                   # dim text
+    ##
+    ## styleUnknown,               # unknown
+    ##
+    ## styleUnderscore = 4,        # underscored text
+    ##
+    ## styleBlink,                 # blinking/bold text
+    ##
+    ## styleReverse = 7,           # reverses currentforground and backgroundcolor
+    ##
+    ## styleHidden                 # hidden text
+    ##
     ##
     ## for extended colorset background colors use printStyled with styleReverse
     ##
+    ## for highlighting or styling substrings use printstyled routines
+    ## 
+    ## or use 2 or more print statements for the desired effect
     ##
 
     var npos = xpos
@@ -1663,19 +1689,38 @@ proc print*[T](astring:T,fgr:string = termwhite ,bgr:string = bblack ,xpos:int =
           npos = centerX() - ($astring).len div 2 - 1
           setCursorXPos(npos)
 
-    case fgr
-      of clrainbow: rainbow(" " & $astring,npos)
-      else:
-            write(stdout,fgr & colconv(bgr) & $astring)
+
+    if styled != {}:
+          var s = $astring
+          var substr = $astring
+          if substr.len > 0:
+              var rx = s.split(substr)
+              for x in rx.low.. rx.high:
+                  writestyled(rx[x],{})
+                  if x != rx.high:
+                    case fgr
+                      of clrainbow   : printRainbow(substr,styled)
+                      else: styledEchoPrint(fgr,styled,substr,termwhite)
+          else:
+              printStyledSimple(s,fgr,styled)
+
+    else:
+      
+        case fgr
+          of clrainbow: rainbow(" " & $astring,npos)
+          else:
+                write(stdout,fgr & colconv(bgr) & $astring)
 
     # reset to white/black only if any changes
     if fgr != $fgWhite or bgr != $bgBlack:
       setForeGroundColor(fgWhite)
       setBackGroundColor(bgBlack)
+      
+      
 
 
 
-proc printLn*[T](astring:T,fgr:string = termwhite , bgr:string = bblack,xpos:int = 0,fitLine:bool = false,centered:bool = false) =
+proc printLn*[T](astring:T,fgr:string = termwhite , bgr:string = bblack,xpos:int = 0,fitLine:bool = false,centered:bool = false,styled : set[Style]= {}) =
     ## printLn
     ##
     ## similar to echo but with additional settings
@@ -1685,6 +1730,7 @@ proc printLn*[T](astring:T,fgr:string = termwhite , bgr:string = bblack,xpos:int
     ## position
     ## fitLine
     ## centered
+    ## styled
     ##
     ## all colornames are supported for font color:
     ##
@@ -1720,9 +1766,7 @@ proc printLn*[T](astring:T,fgr:string = termwhite , bgr:string = bblack,xpos:int
     ##
     ##
 
-    print($(astring) & "\L",fgr,bgr,xpos,fitLine,centered)
-
-
+    print($(astring) & "\L",fgr,bgr,xpos,fitLine,centered,styled)
 
 proc rainbow*[T](s : T,xpos:int = 0,fitLine:bool = false,centered:bool = false) =
     ## rainbow
@@ -1921,7 +1965,7 @@ proc sleepy*[T:float|int](secs:T) =
 # these procs have similar functionality
 
 
-proc printRainbow*[T](s : T,astyle:set[Style]) =
+proc printRainbow*(s : string,styled:set[Style] = {}) =
     ## printRainbow
     ##
     ##
@@ -1934,15 +1978,15 @@ proc printRainbow*[T](s : T,astyle:set[Style]) =
     ##    printRainBow("  --> No Style",{})
     ##
 
-    var astr = $s
+    var astr = s
     var c = 0
     var a = toSeq(1.. <colorNames.len)
     for x in 0.. <astr.len:
        c = a[randomInt(a.len)]
-       printStyled($astr[x],"",colorNames[c][1],astyle)
+       printStyled($astr[x],"",colorNames[c][1],astyle = styled)
 
 
-proc printLnRainbow*[T](s : T,astyle:set[Style]) =
+proc printLnRainbow*[T](s : T,styled:set[Style]) =
     ## printLnRainbow
     ##
     ##
@@ -1956,7 +2000,7 @@ proc printLnRainbow*[T](s : T,astyle:set[Style]) =
     ##    printLnRainBow("WoW So Nice",{styleUnderScore})
     ##    printLnRainBow("Aha --> No Style",{})
     ##
-    printRainBow($(s) & "\L",astyle)
+    printRainBow($(s) & "\L",styled)
 
 
 
@@ -2107,7 +2151,7 @@ proc printLnHl*(s:string,substr:string,col:string = termwhite) =
 
 
 
-proc printStyledSimple*[T](ss:T,fg:string,astyle:set[Style]) =
+proc printStyledSimple*(ss:string,fg:string,astyle:set[Style]) =
    ## printStyledsimple
    ##
    ## an extended version of writestyled to enable colors
@@ -2121,7 +2165,7 @@ proc printStyledSimple*[T](ss:T,fg:string,astyle:set[Style]) =
       else: styledEchoPrint(fg,astyle,$astr,termwhite)
 
 
-proc printStyled*[T](ss:T,substr:string,col:string,astyle : set[Style] )  =
+proc printStyled*(ss:string,substr:string,col:string,astyle : set[Style] )  =
       ## printStyled
       ##
       ## extended version of writestyled and printHl to allow color and styles
@@ -2174,7 +2218,7 @@ proc printStyled*[T](ss:T,substr:string,col:string,astyle : set[Style] )  =
 
 
 
-proc printLnStyled*[T](ss:T,substr:string,col:string,astyle : set[Style] ) =
+proc printLnStyled*(ss:string,substr:string,col:string,astyle : set[Style] ) =
       ## printLnStyled
       ##
       ## extended version of writestyled and printHl to allow color and styles
