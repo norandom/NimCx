@@ -26,7 +26,7 @@ Documentation for cx.nim : http://qqtop.github.io/cx.html
 Example usage of print procs 
 
 
-![Image](http://qqtop.github.io/sierpcxdemo.png?raw=true)
+![Image](http://qqtop.github.io/sierpcxdemp.png?raw=true)
 
 
 Screenshots from cxTest
