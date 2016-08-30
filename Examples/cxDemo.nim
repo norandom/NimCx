@@ -1,8 +1,9 @@
 import cx,strutils,strfmt,times
 import "random-0.5.3/random"
+
 ## small demos repository for var. procs in cx.nim
 ## this file is imported by cxTest.nim to actually run the demos
- 
+
 
 proc futureIsNimDemo*(posx:int = 0) = 
       ## futureIsNim
@@ -63,7 +64,7 @@ proc flyNimDemo*(astring:string = "Fly Nim",col:string = red,tx:float = 0.08) =
       for x in 0.. twc - asc:
         hline(x,yellowgreen)
         if x < twc - asc :
-              printStyled("✈\L","",brightyellow,{styleBlink})
+              print("✈\L",brightyellow,styled = {styleBlink})
                            
         else:
               print(astring,truetomato,centered = true)
@@ -81,7 +82,7 @@ proc centerNimDemo*() =
    
    for x in 0.. 4:
            centerPos(b)
-           printLnStyled(b,"",gray,{styleDim})
+           printLn(b,gray,styled = {styleDim})
            
    sleepy(0.1)
    echo()
@@ -89,11 +90,8 @@ proc centerNimDemo*() =
    echo()
    for x in 0.. 4:
       centerpos(b)   
-      printLnStyled(b,"",gray,{styleDim})
-
-
-
-            
+      printLn(b,gray,styled = {styleDim})
+      
             
 proc movNimDemo*() =
     ## movNim
@@ -190,13 +188,13 @@ proc ndLineDemo*() =
   var c = (tw.float / 2.76666).int 
   for x in 0.. <c:
       if x == c div 2 :
-        printStyled($x,$x,lime,{styleBlink})
+        print($x,lime,styled = {styleBlink},substr = $x)
       else:  
-        printStyled($x,$x,goldenrod,{styleBright})  
+        print($x,goldenrod,styled = {styleBright},substr = $x)  
       curdn(1)
       curbk(1)
       if x == c div 2 :
-        printStyled(".",".",lime,{styleBright,styleBlink})
+        print(".",lime,styled = {styleBright,styleBlink},substr = ".")
       else:
         print(".",truetomato)
       curup(1)
@@ -241,10 +239,9 @@ proc sierpCarpetDemo*(n:int,xpos:int = 1) =
       if inCarpet(i, j):
         print("* ",skyblue)
       else:
-          printStyled("  ","",randcol(),{stylereverse,styleunderscore,styleblink})
-          # print("  ","",lime)
-        
-    echo ""
+          print("  ",randcol(),styled = {stylereverse,styleunderscore,styleblink})
+     
+    echo()
 
 
 

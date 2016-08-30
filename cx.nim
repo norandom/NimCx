@@ -1204,12 +1204,10 @@ proc ff2*(zz:float,n:int = 3):string
 proc ff2*(zz:int,n:int = 0):string
 converter colconv*(cx:string) : string
 proc rainbow*[T](s : T,xpos:int = 0,fitLine:bool = false ,centered:bool = false)  ## forward declaration
-proc print*[T](astring:T,fgr:string = termwhite ,bgr:string = bblack,xpos:int = 0,fitLine:bool = false ,centered:bool = false,styled : set[Style]= {})
+proc print*[T](astring:T,fgr:string = termwhite ,bgr:string = bblack,xpos:int = 0,fitLine:bool = false ,centered:bool = false,styled : set[Style]= {},substr:string = "")
 proc printBiCol*[T](s:T,sep:string = ":",colLeft:string = yellowgreen ,colRight:string = termwhite,xpos:int = 0,centered:bool = false) ## forward declaration
 proc printLnBiCol*[T](s:T,sep:string = ":",colLeft:string = yellowgreen ,colRight:string = termwhite,xpos:int = 0,centered:bool = false) ## forward declaration
 proc printRainbow*(s : string,styled:set[Style] = {}) 
-proc printStyledSimple*(ss:string,fg:string,astyle:set[Style]) ## forward declaration
-proc printStyled*(ss:string,substr:string,col:string,astyle : set[Style]) ## forward declaration
 proc hline*(n:int = tw,col:string = white) ## forward declaration
 proc hlineLn*(n:int = tw,col:string = white) ## forward declaration
 proc spellInteger*(n: int64): string ## forward declaration
@@ -1632,12 +1630,12 @@ converter colconv*(cx:string) : string =
 
 
 
-proc print*[T](astring:T,fgr:string = termwhite ,bgr:string = bblack,xpos:int = 0,fitLine:bool = false ,centered:bool = false,styled : set[Style]= {}) =
+proc print*[T](astring:T,fgr:string = termwhite ,bgr:string = bblack,xpos:int = 0,fitLine:bool = false ,centered:bool = false,styled : set[Style]= {},substr:string = "") =
     ## print
     ##
-    ## fore and background colors can be set
+    ## fgr / bgr  fore and background colors can be set
     ##
-    ## allows positioning on x-axis
+    ## xpos allows positioning on x-axis
     ##
     ## fitLine = true will try to write the text into the current line irrespective of xpos
     ##
@@ -1692,7 +1690,7 @@ proc print*[T](astring:T,fgr:string = termwhite ,bgr:string = bblack,xpos:int = 
 
     if styled != {}:
           var s = $astring
-          var substr = $astring
+                    
           if substr.len > 0:
               var rx = s.split(substr)
               for x in rx.low.. rx.high:
@@ -1702,7 +1700,9 @@ proc print*[T](astring:T,fgr:string = termwhite ,bgr:string = bblack,xpos:int = 
                       of clrainbow   : printRainbow(substr,styled)
                       else: styledEchoPrint(fgr,styled,substr,termwhite)
           else:
-              printStyledSimple(s,fgr,styled)
+               case fgr
+                    of clrainbow   : printRainbow($s,styled)
+                    else: styledEchoPrint(fgr,styled,$s,termwhite)
 
     else:
       
@@ -1720,7 +1720,7 @@ proc print*[T](astring:T,fgr:string = termwhite ,bgr:string = bblack,xpos:int = 
 
 
 
-proc printLn*[T](astring:T,fgr:string = termwhite , bgr:string = bblack,xpos:int = 0,fitLine:bool = false,centered:bool = false,styled : set[Style]= {}) =
+proc printLn*[T](astring:T,fgr:string = termwhite , bgr:string = bblack,xpos:int = 0,fitLine:bool = false,centered:bool = false,styled : set[Style]= {},substr:string = "") =
     ## printLn
     ##
     ## similar to echo but with additional settings
@@ -1748,25 +1748,10 @@ proc printLn*[T](astring:T,fgr:string = termwhite , bgr:string = bblack,xpos:int
     ##    # or use it as a replacement of echo
     ##    printLn(red & "What's up ? " & green & "Grub's up ! "
     ##    printLn("No need to reset the original color")
-    ##
-    ## As a side effect we also can do this now :
-    ##
-    ##
-    ## .. code-block:: nim
-    ##    echo(yellowgreen,"aha nice",termwhite)
-    ##    echo(rosybrown)
-    ##    echo("grizzly bear")
-    ##    echo(termwhite)  # reset to usual terminal white color
-    ##
-    ##
-    ## that is we print the string in yellowgreen , but need to reset the color manually
-    ##
-    ##
-    ## also see cechoLn
-    ##
+    ##    println("Nim does it again",peru,centered = true ,styled = {styleDim,styleUnderscore},substr = "i")
     ##
 
-    print($(astring) & "\L",fgr,bgr,xpos,fitLine,centered,styled)
+    print($(astring) & "\L",fgr,bgr,xpos,fitLine,centered,styled,substr)
 
 proc rainbow*[T](s : T,xpos:int = 0,fitLine:bool = false,centered:bool = false) =
     ## rainbow
@@ -1983,7 +1968,7 @@ proc printRainbow*(s : string,styled:set[Style] = {}) =
     var a = toSeq(1.. <colorNames.len)
     for x in 0.. <astr.len:
        c = a[randomInt(a.len)]
-       printStyled($astr[x],"",colorNames[c][1],astyle = styled)
+       print($astr[x],colorNames[c][1],styled = styled)
 
 
 proc printLnRainbow*[T](s : T,styled:set[Style]) =
@@ -2150,101 +2135,6 @@ proc printLnHl*(s:string,substr:string,col:string = termwhite) =
       printHl($(s) & "\L",substr,col)
 
 
-
-proc printStyledSimple*(ss:string,fg:string,astyle:set[Style]) =
-   ## printStyledsimple
-   ##
-   ## an extended version of writestyled to enable colors
-   ##
-   ##
-   #  Note this also will be extended to accommodate xpos and centered soon
-   #
-   var astr = $ss
-   case fg
-      of clrainbow   : printRainbow($astr,astyle)
-      else: styledEchoPrint(fg,astyle,$astr,termwhite)
-
-
-proc printStyled*(ss:string,substr:string,col:string,astyle : set[Style] )  =
-      ## printStyled
-      ##
-      ## extended version of writestyled and printHl to allow color and styles
-      ##
-      ## to print and highlight all appearances of a substring
-      ##
-      ## styles may and in some cases not have the desired effect
-      ##
-      ## available styles :
-      ##
-      ## styleBright = 1,            # bright text
-      ##
-      ## styleDim,                   # dim text
-      ##
-      ## styleUnknown,               # unknown
-      ##
-      ## styleUnderscore = 4,        # underscored text
-      ##
-      ## styleBlink,                 # blinking/bold text
-      ##
-      ## styleReverse = 7,           # reverses currentforground and backgroundcolor
-      ##
-      ## styleHidden                 # hidden text
-      ##
-      ##
-      ##
-      ## .. code-block:: nim
-      ##
-      ##    # this highlights all T in green and underscore them
-      ##    printStyled("HELLO THIS IS A TEST","T",green,{styleUnderScore})
-      ##
-      ##    # this highlights all T in rainbow colors underscore and blink them
-      ##    printStyled("HELLO THIS IS A TEST","T",clrainbow,{styleUnderScore,styleBlink})
-      ##
-      ##    # this highlights all T in rainbow colors , no style is applied
-      ##    printStyled("HELLO THIS IS A TEST","T",clrainbow,{})
-      ##
-      ##
-      var s = $ss
-      if substr.len > 0:
-          var rx = s.split(substr)
-          for x in rx.low.. rx.high:
-              writestyled(rx[x],{})
-              if x != rx.high:
-                case col
-                  of clrainbow   : printRainbow(substr,astyle)
-                  else: styledEchoPrint(col,astyle,substr,termwhite)
-      else:
-          printStyledSimple(s,col,astyle)
-
-
-
-proc printLnStyled*(ss:string,substr:string,col:string,astyle : set[Style] ) =
-      ## printLnStyled
-      ##
-      ## extended version of writestyled and printHl to allow color and styles
-      ##
-      ## to print and highlight all appearances of a substring and issue a new line
-      ##
-      ## styles may and in some cases not have the desired effect
-      ##
-      ##
-      ## .. code-block:: nim
-      ##
-      ##    # this highlights all T in green and underscore them
-      ##    printLnStyled("HELLO THIS IS A TEST","T",green,{styleUnderScore})
-      ##
-      ##    # this highlights all T in rainbow colors underscore and blink them
-      ##    printLnStyled("HELLO THIS IS A TEST","T",clrainbow,{styleUnderScore,styleBlink})
-      ##
-      ##    # this highlights all T in rainbow colors , no style is applied
-      ##    printLnStyled("HELLO THIS IS A TEST","T",clrainbow,{})
-      ##
-      ##
-      ##
-      printStyled($ss & "\L",substr,col,astyle)
-
-
-
 proc cecho*(col:string,ggg: varargs[string, `$`] = @[""] )  =
       ## cecho
       ##
@@ -2298,7 +2188,7 @@ proc showColors*() =
   ##
   for x in colorNames:
      print(fmtx(["<22"],x[0]) & spaces(2) & "▒".repeat(10) & spaces(2) & "⌘".repeat(10) & spaces(2) & "ABCD abcd 1234567890 --> " & " Nim Colors  " , x[1],black)
-     printLnStyled(fmtx(["<23"],"  " & x[0]) , fmtx(["<23"],"  " & x[0]),x[1],{styleReverse})
+     printLn(fmtx(["<23"],"  " & x[0]) ,x[1],styled = {styleReverse},substr =  fmtx(["<23"],"  " & x[0]))
      sleepy(0.075)
   decho(2)
 
@@ -2368,9 +2258,9 @@ proc printDotPos*(xpos:int,dotCol:string,blink:bool) =
 
       curSetx(xpos)
       if blink == true:
-        printStyled(wideDot,wideDot,dotCol,{styleBlink})
+        print(wideDot,dotCol,styled = {styleBlink},substr = wideDot)
       else:
-        printStyled(wideDot,wideDot,dotCol,{})
+        print(wideDot,dotCol,styled = {},substr = wideDot)
 
 
 
@@ -3796,7 +3686,7 @@ proc memCheck*(stats:bool = false) =
   ## set stats to true for full GC_getStatistics
   ## 
   echo()
-  printLnStyled("MemCheck            ","MemCheck            ",yellowgreen,{styleUnderscore})
+  printLn("MemCheck            ",yellowgreen,styled = {styleUnderscore},substr = "MemCheck            ")
   echo()
   println("Status    : Current ",salmon)
   println(yellowgreen & "Mem: " &  lightsteelblue & "Used : " & white & ff2(getOccupiedMem()) & lightsteelblue & "  Free : " & white & ff2(getFreeMem()) & lightsteelblue & "  Total : " & white & ff2(getTotalMem() ))
@@ -3891,7 +3781,7 @@ proc showBench*() =
     for x in  benchmarkresults:
       echo()
       var tit = " BenchMark        Timing " & spaces(25)
-      printlnStyled(tit,tit,chartreuse,astyle = {styleUnderScore})
+      printLn(tit,chartreuse,styled = {styleUnderScore},substr = tit)
       println(dodgerblue & " [" & salmon & x.bname & dodgerblue & "]" & spaces(7) & cornflowerblue & "Epoch Time : " & white & x.epoch & " secs")
       println(dodgerblue & " [" & salmon & x.bname & dodgerblue & "]" & spaces(7) & cornflowerblue & "Cpu   Time : " & white & x.cpu & " secs")    
     echo()
@@ -4778,16 +4668,17 @@ proc drawBox*(hy:int = 1, wx:int = 1 , hsec:int = 1 ,vsec:int = 1,frCol:string =
      curSetx(xpos)
      # top
      if blink == true:
-           printStyled($Rune(parsehexint("250C")),$Rune(parsehexint("250C")),cornerCol,{styleBlink})
+       
+           print($Rune(parsehexint("250C")),cornerCol,styled = {styleBlink},substr = $Rune(parsehexint("250C")))
      else:
-           printStyled($Rune(parsehexint("250C")),$Rune(parsehexint("250C")),cornerCol,{})
+           print($Rune(parsehexint("250C")),cornerCol,styled = {},substr = $Rune(parsehexint("250C")))
 
      print(repeat($Rune(parseHexInt("2500")),w - 1) ,fgr = frcol)
 
      if blink == true:
-           printLnStyled($Rune(parsehexint("2510")),$Rune(parsehexint("2510")),cornerCol,{styleBlink})
+           printLn($Rune(parsehexint("2510")),cornerCol,styled = {styleBlink},substr = $Rune(parsehexint("2510")))
      else:
-           printLnStyled($Rune(parsehexint("2510")),$Rune(parsehexint("2510")),cornerCol,{})
+           printLn($Rune(parsehexint("2510")),cornerCol,styled = {} ,substr = $Rune(parsehexint("2510")))
 
 
      #sides
