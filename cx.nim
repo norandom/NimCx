@@ -10,7 +10,7 @@
 ##
 ##   ProjectStart: 2015-06-20
 ##   
-##   Latest      : 2016-08-22
+##   Latest      : 2016-08-31
 ##
 ##   Compiler    : Nim >= 0.14.2
 ##
@@ -1152,7 +1152,6 @@ let cards* = @[
 
 let rxCards* = toSeq(cards.low.. cards.high) # index into cards
 
-
 converter toTwInt(x: cushort): int = result = int(x)
 
 when defined(Linux):
@@ -1417,7 +1416,6 @@ proc getRandomSignF*():float =
        result = 1
 
 
-
 proc fmtengine[T](a:string,astring:T):string =
      ## fmtengine   used internally
      ##
@@ -1465,9 +1463,7 @@ proc fmtengine[T](a:string,astring:T):string =
      if dotflag == true and textflag == false:
                # floats should not be shown with thousand seperator
                # like 1,234.56  instead of 1234.56
-               okstring = ff2(parseFloat(okstring),parseInt(df))
-               
-             
+               okstring = ff2(parseFloat(okstring),parseInt(df))       
 
      var alx = spaces(max(0,pad - okstring.len))
 
@@ -1587,7 +1583,6 @@ proc centerPos*(astring:string) =
 
 
 
-
 proc checkColor*(colname: string): bool =
      ## checkColor
      ##
@@ -1599,7 +1594,6 @@ proc checkColor*(colname: string): bool =
          if x[0] == colname:
             result = true
                
-
 
 
 converter colconv*(cx:string) : string =
@@ -1674,7 +1668,6 @@ proc print*[T](astring:T,fgr:string = termwhite ,bgr:string = bblack,xpos:int = 
         if npos > 0:  # the result of this is our screen position start with 1
             setCursorXPos(npos)
 
-
         if ($astring).len + xpos >= tw:
 
             if fitLine == true:
@@ -1702,14 +1695,13 @@ proc print*[T](astring:T,fgr:string = termwhite ,bgr:string = bblack,xpos:int = 
           else:
                case fgr
                     of clrainbow   : printRainbow($s,styled)
-                    else: styledEchoPrint(fgr,styled,$s,termwhite)
+                    else: styledEchoPrint(fgr,styled,s,termwhite)
 
     else:
       
         case fgr
           of clrainbow: rainbow(" " & $astring,npos)
-          else:
-                write(stdout,fgr & colconv(bgr) & $astring)
+          else: write(stdout,fgr & colconv(bgr) & $astring)
 
     # reset to white/black only if any changes
     if fgr != $fgWhite or bgr != $bgBlack:
@@ -1752,6 +1744,7 @@ proc printLn*[T](astring:T,fgr:string = termwhite , bgr:string = bblack,xpos:int
     ##
 
     print($(astring) & "\L",fgr,bgr,xpos,fitLine,centered,styled,substr)
+
 
 proc rainbow*[T](s : T,xpos:int = 0,fitLine:bool = false,centered:bool = false) =
     ## rainbow
@@ -1829,9 +1822,7 @@ proc dline*(n:int = tw,lt:string = "-",col:string = termwhite) =
      ##    dline(30,"/+")
      ##    dline(30,col= yellow)
      ##
-     if lt.len <= n:
-         #writeLine(stdout,repeat(lt,n div lt.len))
-         print(repeat(lt,n div lt.len),col)
+     if lt.len <= n: print(repeat(lt,n div lt.len),col)
 
 
 proc dlineLn*(n:int = tw,lt:string = "-",col:string = termwhite) =
@@ -1861,8 +1852,7 @@ proc decho*(z:int = 1)  =
     ## .. code-block:: nim
     ##    decho(10)
     ## to create 10 blank lines
-    for x in 0.. <z:
-        writeLine(stdout,"")
+    for x in 0.. <z: writeLine(stdout,"")
 
 
 # simple navigation mostly mirrors terminal.nim functions
@@ -2150,11 +2140,11 @@ proc cecho*(col:string,ggg: varargs[string, `$`] = @[""] )  =
 
       case col
        of clrainbow :
-                for x  in ggg:
-                     rainbow(x)
+                for x in ggg:  rainbow(x)
        else:
          write(stdout,col)
          write(stdout,ggg)
+         
       write(stdout,termwhite)
 
 
@@ -2175,8 +2165,7 @@ proc cechoLn*(col:string,ggg: varargs[string, `$`] = @[""] )  =
       ##
       ##
       var z = ""
-      for x in ggg:
-          z = $(x)
+      for x in ggg: z = $(x)
       z = z & "\L"
       cecho(col ,z)
 
@@ -2223,10 +2212,8 @@ proc doty*(d:int,fgr:string = white, bgr:string = black,xpos:int = 1) =
      ##
 
      var astr = $(wideDot.repeat(d))
-     if fgr == clrainbow:
-        print(astring = astr,white,bgr,xpos)
-     else:
-        print(astring = astr,fgr,bgr,xpos)
+     if fgr == clrainbow: print(astring = astr,white,bgr,xpos)
+     else: print(astring = astr,fgr,bgr,xpos)
 
 
 proc dotyLn*(d:int,fgr:string = white, bgr:string = black,xpos:int = 1) =
@@ -2257,12 +2244,8 @@ proc printDotPos*(xpos:int,dotCol:string,blink:bool) =
       ##
 
       curSetx(xpos)
-      if blink == true:
-        print(wideDot,dotCol,styled = {styleBlink},substr = wideDot)
-      else:
-        print(wideDot,dotCol,styled = {},substr = wideDot)
-
-
+      if blink == true: print(wideDot,dotCol,styled = {styleBlink},substr = wideDot)
+      else: print(wideDot,dotCol,styled = {},substr = wideDot)
 
 
 proc drawRect*(h:int = 0 ,w:int = 3, frhLine:string = "_", frVLine:string = "|",frCol:string = darkgreen,dotCol = truetomato,xpos:int = 1,blink:bool = false) =
@@ -2301,26 +2284,20 @@ proc drawRect*(h:int = 0 ,w:int = 3, frhLine:string = "_", frVLine:string = "|",
       # topline
       printDotPos(xpos,dotCol,blink)
       print(frhLine.repeat(w - 3),frcol)
-      if frhLine == widedot:
-            printDotPos(xpos + w * 2 - 1 ,dotCol,blink)
-      else:
-            printDotPos(xpos + w,dotCol,blink)
+      if frhLine == widedot: printDotPos(xpos + w * 2 - 1 ,dotCol,blink)
+      else: printDotPos(xpos + w,dotCol,blink)
       writeLine(stdout,"")
       # sidelines
       for x in 2.. h:
          print(frVLine,frcol,xpos = xpos)
-         if frhLine == widedot:
-             print(frVLine,frcol,xpos = xpos + w * 2 - 1)
-         else:
-              print(frVLine,frcol,xpos = xpos + w)
+         if frhLine == widedot: print(frVLine,frcol,xpos = xpos + w * 2 - 1)
+         else: print(frVLine,frcol,xpos = xpos + w)
          writeLine(stdout,"")
       # bottom line
       printDotPos(xpos,dotCol,blink)
       print(frhLine.repeat(w - 3),frcol)
-      if frhLine == widedot:
-            printDotPos(xpos + w * 2 - 1 ,dotCol,blink)
-      else:
-            printDotPos(xpos + w,dotCol,blink)
+      if frhLine == widedot:printDotPos(xpos + w * 2 - 1 ,dotCol,blink)
+      else: printDotPos(xpos + w,dotCol,blink)
 
       writeLine(stdout,"")
 
@@ -2391,16 +2368,14 @@ proc year*(aDate:string) : string = aDate.split("-")[0]
      ## Format yyyy
 
 
+
 proc intervalsecs*(startDate,endDate:string) : float =
       ## interval procs returns time elapsed between two dates in secs,hours etc.
       #  since all interval routines call intervalsecs error message display also here
       #
       if validdate(startDate) and validdate(endDate):
           var f     = "yyyy-MM-dd"
-          var ssecs = toSeconds(toTime(startDate.parse(f)))
-          var esecs = toSeconds(toTime(endDate.parse(f)))
-          var isecs = esecs - ssecs
-          result = isecs
+          result = toSeconds(toTime(endDate.parse(f)))  - toSeconds(toTime(startDate.parse(f)))
       else:
           println("Error: " &  startDate & "/" & endDate & " --> Format yyyy-MM-dd required",red)
           #result = -0.0
@@ -2539,7 +2514,6 @@ proc minusDays*(aDate:string,days:int):string =
       result = "Error"
 
 
-
 proc getFirstMondayYear*(ayear:string):string =
     ## getFirstMondayYear
     ##
@@ -2551,14 +2525,11 @@ proc getFirstMondayYear*(ayear:string):string =
     ##    echo  getFirstMondayYear("2015")
     ##
     ##
-
-    #var n:WeekDay
+ 
     for x in 1.. 8:
        var datestr= ayear & "-01-0" & $x
        if validdate(datestr) == true:
-         var z = dayofweekjulian(datestr)
-         if z == "Monday":
-             result = datestr
+          if dayofweekjulian(datestr) == "Monday": result = datestr
 
 
 
@@ -2584,8 +2555,7 @@ proc getFirstMondayYearMonth*(aym:string):string =
           amx = yr & "-" & mo
        var datestr = amx & "-0" & $x
        if validdate(datestr) == true:
-         var z = dayofweekjulian(datestr)
-         if z == "Monday":
+          if dayofweekjulian(datestr) == "Monday":
             result = datestr
 
 
@@ -3160,12 +3130,9 @@ proc getWanIp*():string =
    var z = "Wan Ip not established. "
    try:
       z = getContent("http://my-ip.heroku.com",timeout = 1000)
-      z = z.replace(sub = "{",by = " ")
-      z = z.replace(sub = "}",by = " ")
-      z = z.replace(sub = "\"ip\":"," ")
-      z = z.replace(sub = '"' ,' ')
-      z = z.strip()
+      z = z.replace(sub = "{",by = " ").replace(sub = "}",by = " ").replace(sub = "\"ip\":"," ").replace(sub = '"' ,' ').strip()
    except:
+       print("Ip checking failed. See if heroku is still here",red)
        print("Check Heroku Status : https://status.heroku.com",red)
        try:
          opendefaultbrowser("https://status.heroku.com")
@@ -4206,13 +4173,13 @@ proc remDir*(dirname:string) =
 
         if existsDir(dirname):
 
-          try:
-              removeDir(dirname)
-              printLn("Directory " & dirname & " deleted ok",yellowgreen)
-          except OSError:
-              printLn("Directory " & dirname & " deletion failed",red)
+            try:
+                removeDir(dirname)
+                printLn("Directory " & dirname & " deleted ok",yellowgreen)
+            except OSError:
+                printLn("Directory " & dirname & " deletion failed",red)
         else:
-              printLn("Directory " & dirname & " does not exists !",red)
+            printLn("Directory " & dirname & " does not exists !",red)
 
 
 

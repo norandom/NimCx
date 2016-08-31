@@ -104,115 +104,109 @@ echo()
 sierpCarpetDemo(3)
 decho(3)
 
-# 
-# printSlimNumber($getClockStr() & "  ",pastelpink,black,xpos=25)
-# decho(5)
-# 
-# printBigNumber($getClockStr(),fgr=salmon,xpos=10)
-# decho(5)
-# 
-# superHeader("Nim Colors ")
-# # show a full list of colorNames availabale
-# showColors()
-# decho(2)
-# 
-# cleanScreen()
-# for x in 0.. 10:
-#     centerMark()
-#     echo()
-#     sleepy(0.1)
-# 
-# flyNimDemo()
-# 
-# decho(3)
-# 
-# futureIsNimDemo(25)
-# 
-# decho(3)
-# ndLineDemo()
-# decho(2)
-# sleepy(3.5)
-# 
-#    
-# movNimDemo()   
-# 
-# clearUp(18)
-# curSet()
-# drawRectDemo()
-# decho(5)  
-# sleepy(3)
-# 
-# widedotfieldDemo()
-# sleepy(3)
-# decho(3)
-# 
-# 
-# decho(3)
-# randomCardsClockDemo() 
-# decho(2)
-# 
-# 
-# 
-# #testing bigblock characters
-# cxYourNimDemo()
-# sleepy(2)
-# decho(10)
-# 
-# 
-# # testing emojis
-# 
-# printLn(heart & " Nim " & heart,red)    
-# print(smile,randcol())  
-# print(copyright,randcol())
-# print(trademark,randcol())  
-# print(roof,lime)
-# print(snowflake,randcol())  
-# print(music,lime)
-# print(xmark,randcol())  
-# print(check,randcol())
-# print(scissors,randcol())  
-# print(darkstar,randcol())
-# print(star,randcol())  
-# print(umbrella,randcol())
-# print(flag,randcol())  
-# print(skull,randcol())
-# print(heart,red)  
-# 
-# println(sun,randcol())
-# print(innocent,randcol())
-# print(lol,randcol())
-# print(smiley,randcol())
-# print(tongue,randcol())
-# print(blush,randcol())
-# print(sad,randcol())
-# print(cry,randcol())
-# print(rage,randcol())
-# print(cat,randcol())
-# print(kitty,randcol())
-# print(monkey,randcol())
-# printLn(cow,randcol())
-# 
-# happyemojis()
-# sleepy(2)
-# 
-# colorCJKDemo()
-# decho(5)    
-# 
-# rainbow2Demo()
-# decho(5)
-# 
-# bigPanelDemo()
-# sleepy(2)
-# 
-# #rulerDemo
-# cleanScreen()
-# var kpos = 15
-# for x in 0.. 2: 
-#      rulerDemo(ypos= kpos)
-#      inc kpos
-#   
 
+printSlimNumber($getClockStr() & "  ",pastelpink,black,xpos=25)
 decho(5)
+
+printBigNumber($getClockStr(),fgr=salmon,xpos=10)
+decho(5)
+
+superHeader("Nim Colors ")
+# show a full list of colorNames availabale
+showColors()
+decho(2)
+
+cleanScreen()
+for x in 0.. 10:
+    centerMark()
+    echo()
+    sleepy(0.1)
+
+flyNimDemo()
+
+decho(3)
+ndLineDemo()
+
+decho(2)
+sleepy(3.5)
+   
+movNimDemo()   
+
+clearUp(18)
+curSet()
+drawRectDemo()
+
+decho(5)  
+sleepy(3)
+
+widedotfieldDemo()
+
+sleepy(3)
+decho(3)
+
+
+decho(3)
+randomCardsClockDemo() 
+decho(2)
+
+
+#testing bigblock characters
+cxYourNimDemo()
+sleepy(2)
+decho(10)
+
+
+# testing emojis
+
+printLn(heart & " Nim " & heart,red)    
+print(smile,randcol())  
+print(copyright,randcol())
+print(trademark,randcol())  
+print(roof,lime)
+print(snowflake,randcol())  
+print(music,lime)
+print(xmark,randcol())  
+print(check,randcol())
+print(scissors,randcol())  
+print(darkstar,randcol())
+print(star,randcol())  
+print(umbrella,randcol())
+print(flag,randcol())  
+print(skull,randcol())
+print(heart,red)  
+
+println(sun,randcol())
+print(innocent,randcol())
+print(lol,randcol())
+print(smiley,randcol())
+print(tongue,randcol())
+print(blush,randcol())
+print(sad,randcol())
+print(cry,randcol())
+print(rage,randcol())
+print(cat,randcol())
+print(kitty,randcol())
+print(monkey,randcol())
+printLn(cow,randcol())
+
+happyemojis()
+sleepy(2)
+
+colorCJKDemo()
+decho(5)    
+
+rainbow2Demo()
+decho(5)
+
+bigPanelDemo()
+sleepy(2)
+
+#rulerDemo
+cleanScreen()
+rulerDemo()
+  
+
+decho(15)
 var twc = tw div 2
 showTerminalSize()
 printLnBiCol("Terminal Center : " & $twc,":")
