@@ -1159,12 +1159,10 @@ when defined(Linux):
         ## getTerminalWidth
         ##
         ## and get linux terminal width in columns
-        ##
-        ##
-        ## for a similar attempt see:
-        ## https://github.com/c-blake/cligen/blob/master/termwidth.nim
-        ##
-
+        ## a terminalwith function now incorporated in Nim dev of 2016-09-02
+        ## which is slightly slower than the one presented here
+        ## 
+       
         type WinSize = object
           row, col, xpixel, ypixel: cushort
         const TIOCGWINSZ = 0x5413
@@ -1226,7 +1224,7 @@ proc styledEchoProcessArg(color: BackgroundColor) = setBackgroundColor color
 
 macro styledEchoPrint*(m: varargs[untyped]): typed =
   ## lifted from terminal.nim and removed new line
-  ## used in printStyled
+  ## used in print
   ##
   let m = callsite()
   result = newNimNode(nnkStmtList)
@@ -1654,10 +1652,8 @@ proc print*[T](astring:T,fgr:string = termwhite ,bgr:string = bblack,xpos:int = 
     ## styleHidden                 # hidden text
     ##
     ##
-    ## for extended colorset background colors use printStyled with styleReverse
+    ## for extended colorset background colors use styleReverse
     ##
-    ## for highlighting or styling substrings use printstyled routines
-    ## 
     ## or use 2 or more print statements for the desired effect
     ##
 
@@ -1944,7 +1940,7 @@ proc printRainbow*(s : string,styled:set[Style] = {}) =
     ## printRainbow
     ##
     ##
-    ## print multicolored string with styles , for available styles see printStyled
+    ## print multicolored string with styles , for available styles see print
     ##
     ## may not work with certain Rune
     ##
@@ -1965,7 +1961,7 @@ proc printLnRainbow*[T](s : T,styled:set[Style]) =
     ## printLnRainbow
     ##
     ##
-    ## print multicolored string with styles , for available styles see printStyled
+    ## print multicolored string with styles , for available styles see print
     ##
     ## and issues a new line
     ##
@@ -3971,7 +3967,6 @@ template loopy*[T](ite:T,st:typed) =
 
 
 proc shift*[T](x: var seq[T], zz: Natural = 0): T =
-
      ## shift takes a seq and returns the first , and deletes it from the seq
      ##
      ## build in pop does the same from the other side
