@@ -1470,6 +1470,7 @@ proc fmtengine[T](a:string,astring:T):string =
        of ">"  :   okstring = alx & okstring
        else: discard
 
+      
      result = okstring
 
 
@@ -2075,7 +2076,7 @@ proc printLnBiCol*[T](s:T,sep:string = ":", colLeft:string = yellowgreen, colRig
                     printLn(z[1],fgr = colRight,bgr = black)
 
         else:  # centered == true
-              let npos = centerX() - (zz).len div 2 - 1
+              let npos = centerX() - zz.len div 2 - 1
               print(z[0],fgr = colLeft,bgr = black,xpos = npos)
               if colRight == clrainbow:   # we currently do this as rainbow implementation has changed
                     printLn(z[1],fgr = randcol(),bgr = black)
@@ -2456,7 +2457,7 @@ proc dayOfWeekJulian*(datestr:string): string =
    ## actually starts to fail with 2100-03-01 which shud be a monday but this proc says tuesday
    ##
    ##
-   if parseInt(year(datestr)) < 2200:
+   if parseInt(year(datestr)) < 2100:
      let dw = dayofweekjulianA(parseInt(day(datestr)),parseInt(month(datestr)),parseInt(year(datestr)))
      result = $dw
    else:
@@ -4902,7 +4903,7 @@ proc doFinish*() =
     print(fmtx(["<14"],"Elapsed     : "),yellowgreen)
     printLn(fmtx(["<",">5"],ff(epochtime() - cx.start,3),"secs"),goldenrod)
     echo()
-    quit 0
+    quit(0)
 
 proc handler*() {.noconv.} =
     ## handler
