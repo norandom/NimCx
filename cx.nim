@@ -10,7 +10,7 @@
 ##
 ##   ProjectStart: 2015-06-20
 ##   
-##   Latest      : 2016-08-31
+##   Latest      : 2016-09-15
 ##
 ##   Compiler    : Nim >= 0.14.2
 ##
@@ -92,9 +92,7 @@
 ##
 ##   Required    : random installed via nimble
 ##
-##   Installation: nimble install nimFinLib ( a project which now uses cx.nim)
-##
-##                 will install this library . 
+##   Installation: nimble install https://github.com/qqtop/NimCx.git
 ##
 ##
 ##   Optional    : xclip  
@@ -1459,7 +1457,7 @@ proc fmtengine[T](a:string,astring:T):string =
      pad = parseInt(dg)
 
      if dotflag == true and textflag == false:
-               # floats should not be shown with thousand seperator
+               # floats should now be shown with thousand seperator
                # like 1,234.56  instead of 1234.56
                okstring = ff2(parseFloat(okstring),parseInt(df))       
 
@@ -1470,7 +1468,15 @@ proc fmtengine[T](a:string,astring:T):string =
        of ">"  :   okstring = alx & okstring
        else: discard
 
-      
+     # this cuts the okstring to size for display , not wider than dg parameter passed in
+     # if the format string is "" no op no width than this will not be attempted
+     if okstring.len > parseInt(dg) and parseInt(dg) > 0:
+        var dps = ""
+        for x in 0.. <parseInt(dg):  
+          dps = dps & okstring[x]
+        okstring = dps
+        
+        
      result = okstring
 
 
@@ -1512,7 +1518,7 @@ proc fmtx*[T](fmts:openarray[string],fstrings:varargs[T, `$`]):string =
      ##    ruler()
      ##    echo fmtx([">22"],"nice something"inc c )
      ##    printlnBiCol(fmtx(["",">15.3f"],"Result : ",123.456789))  # formats the float to a string with precision 3 the f is not necessary
-     ##    echo fmtx([">22.3"],234.43324234)  # this formats float and aligns last char tp pos 22
+     ##    echo fmtx([">22.3"],234.43324234)  # this formats float and aligns last char to pos 22
      ##    echo fmtx(["22.3"],234.43324234)   # this formats float but ignores position as no align operator given
      ##
 
@@ -3417,6 +3423,10 @@ proc ff2*(zz:float , n:int = 3):string =
   for x in 0.. <zs[1].len:
     if x < n:
       zok = zok & zs[1][x]
+    
+  if zok == "0":
+    while zok.len < n:
+      zok = zok & "0"
   
   if n > 0:
         nz = nz & "." & zok

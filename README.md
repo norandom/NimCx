@@ -16,7 +16,13 @@ Color and Utilities for the Linux Terminal
 Requires     : Latest Nim dev version
 
 
-Installation : nimble install nimFinLib    (this installs nimFinLib and NimCx libraries)
+Installation : 
+
+
+```
+    nimble install https://github.com/qqtop/NimCx.git
+
+```
 
 
 
