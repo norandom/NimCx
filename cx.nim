@@ -1200,6 +1200,7 @@ proc ff2*(zz:int,n:int = 0):string
 converter colconv*(cx:string) : string
 proc rainbow*[T](s : T,xpos:int = 0,fitLine:bool = false ,centered:bool = false)  ## forward declaration
 proc print*[T](astring:T,fgr:string = termwhite ,bgr:string = bblack,xpos:int = 0,fitLine:bool = false ,centered:bool = false,styled : set[Style]= {},substr:string = "")
+proc printLn*[T](astring:T,fgr:string = termwhite , bgr:string = bblack,xpos:int = 0,fitLine:bool = false,centered:bool = false,styled : set[Style]= {},substr:string = "")
 proc printBiCol*[T](s:T,sep:string = ":",colLeft:string = yellowgreen ,colRight:string = termwhite,xpos:int = 0,centered:bool = false) ## forward declaration
 proc printLnBiCol*[T](s:T,sep:string = ":",colLeft:string = yellowgreen ,colRight:string = termwhite,xpos:int = 0,centered:bool = false) ## forward declaration
 proc printRainbow*(s : string,styled:set[Style] = {}) 
@@ -1208,6 +1209,8 @@ proc hlineLn*(n:int = tw,col:string = white) ## forward declaration
 proc spellInteger*(n: int64): string ## forward declaration
 proc splitty*(txt:string,sep:string):seq[string] ## forward declaration
 proc getRandomInt*(mi:int = 0,ma:int = int.high):int {.inline.} ## forward declaration
+proc doFinish*()
+
 
 # procs lifted from terminal.nim as they are currently not exported from there
 proc styledEchoProcessArg(s: string) = write stdout, s
@@ -1459,7 +1462,17 @@ proc fmtengine[T](a:string,astring:T):string =
      if dotflag == true and textflag == false:
                # floats should now be shown with thousand seperator
                # like 1,234.56  instead of 1234.56
-               okstring = ff2(parseFloat(okstring),parseInt(df))       
+               
+               # if df is nil we make it zero so no valueerror occurs
+               if df.strip(true,true).len == 0: df = "0"
+               # in case of any edge cases throwing an error  
+               try:
+                  okstring = ff2(parseFloat(okstring),parseInt(df))       
+               except ValueError:   
+                  println("Error , invalid format string dedected.",red)
+                  println("Showing exception thrown : ",peru)
+                  echo()
+                  raise            
 
      var alx = spaces(max(0,pad - okstring.len))
 
@@ -1510,6 +1523,9 @@ proc fmtx*[T](fmts:openarray[string],fstrings:varargs[T, `$`]):string =
      ## >12  means align right so that the most right char is in position 12
      ## >8.2 means align a float right so that most right char is position 8 with precision 2
      ##
+     ## Note that thousand separators are counted as position so 123456 needs 
+     ## echo fmtx(["<10.2"],123456)    --->  123,456.00
+     ## 
      ## Examples :
      ##
      ## .. code-block:: nim
@@ -1534,7 +1550,7 @@ proc fmtx*[T](fmts:openarray[string],fstrings:varargs[T, `$`]):string =
 proc showRune*(s:string) : string  =
      ## showRune
      ##
-     ## utility proc to show a single unicode char
+     ## utility proc to show a single unicode char given in hex representation
      ##
      ## note that not all unicode chars may be available on all systems
      ##
