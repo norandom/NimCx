@@ -110,6 +110,7 @@ import os,osproc,macros,posix,terminal,math,stats,times,tables,json,sets
 import sequtils,parseutils,httpclient,rawsockets,browsers,intsets, algorithm
 import strutils except toLower,toUpper
 import unicode 
+#import nimprof       # needs compile with: nim c --profiler:on --stackTrace:on  -d:memProfiler cx
 
 # imports based on modules available via nimble
 import "random-0.5.3/random"
@@ -1201,11 +1202,11 @@ converter colconv*(cx:string) : string
 proc rainbow*[T](s : T,xpos:int = 0,fitLine:bool = false ,centered:bool = false)  ## forward declaration
 proc print*[T](astring:T,fgr:string = termwhite ,bgr:string = bblack,xpos:int = 0,fitLine:bool = false ,centered:bool = false,styled : set[Style]= {},substr:string = "")
 proc printLn*[T](astring:T,fgr:string = termwhite , bgr:string = bblack,xpos:int = 0,fitLine:bool = false,centered:bool = false,styled : set[Style]= {},substr:string = "")
-proc printBiCol*[T](s:T,sep:string = ":",colLeft:string = yellowgreen ,colRight:string = termwhite,xpos:int = 0,centered:bool = false) ## forward declaration
-proc printLnBiCol*[T](s:T,sep:string = ":",colLeft:string = yellowgreen ,colRight:string = termwhite,xpos:int = 0,centered:bool = false) ## forward declaration
+proc printBiCol*[T](s:T,sep:string = ":",colLeft:string = yellowgreen ,colRight:string = termwhite,xpos:int = 0,centered:bool = false,styled : set[Style]= {}) ## forward declaration
+proc printLnBiCol*[T](s:T,sep:string = ":",colLeft:string = yellowgreen ,colRight:string = termwhite,xpos:int = 0,centered:bool = false,styled : set[Style]= {}) ## forward declaration
 proc printRainbow*(s : string,styled:set[Style] = {}) 
-proc hline*(n:int = tw,col:string = white) ## forward declaration
-proc hlineLn*(n:int = tw,col:string = white) ## forward declaration
+proc hline*(n:int = tw,col:string = white,xpos:int = 1) ## forward declaration
+proc hlineLn*(n:int = tw,col:string = white,xpos:int = 1) ## forward declaration
 proc spellInteger*(n: int64): string ## forward declaration
 proc splitty*(txt:string,sep:string):seq[string] ## forward declaration
 proc getRandomInt*(mi:int = 0,ma:int = int.high):int {.inline.} ## forward declaration
@@ -1555,6 +1556,8 @@ proc showRune*(s:string) : string  =
      ## note that not all unicode chars may be available on all systems
      ##
      ## .. code-block : nim
+     ##      # example use
+     ##      for x in 10.. 55203: printLnBiCol($x & " : " & showRune(toHex(x)))
      ##      print(showRune("FFEA"),lime)
      ##      print(showRune("FFEC"),red)
      ##
@@ -1799,7 +1802,7 @@ proc rainbow*[T](s : T,xpos:int = 0,fitLine:bool = false,centered:bool = false) 
 
 
 # output  horizontal lines
-proc hline*(n:int = tw,col:string = white) =
+proc hline*(n:int = tw,col:string = white,xpos:int = 1) =
      ## hline
      ##
      ## draw a full line in stated length and color no linefeed will be issued
@@ -1807,14 +1810,14 @@ proc hline*(n:int = tw,col:string = white) =
      ## defaults full terminal width and white
      ##
      ## .. code-block:: nim
-     ##    hline(30,green)
+     ##    hline(30,green,xpos=xpos)
      ##
 
      print(repeat("_",n),col)
 
 
 
-proc hlineLn*(n:int = tw,col:string = white) =
+proc hlineLn*(n:int = tw,col:string = white,xpos:int = 1) =
      ## hlineLn
      ##
      ## draw a full line in stated length and color a linefeed will be issued
@@ -1824,7 +1827,7 @@ proc hlineLn*(n:int = tw,col:string = white) =
      ## .. code-block:: nim
      ##    hlineLn(30,green)
      ##
-     print(repeat("_",n),col)
+     print(repeat("_",n),col,xpos = xpos)
      echo()
 
 
@@ -1998,7 +2001,7 @@ proc printLnRainbow*[T](s : T,styled:set[Style]) =
 
 
 
-proc printBiCol*[T](s:T,sep:string = ":",colLeft:string = yellowgreen ,colRight:string = termwhite,xpos:int = 0,centered:bool = false) =
+proc printBiCol*[T](s:T,sep:string = ":",colLeft:string = yellowgreen ,colRight:string = termwhite,xpos:int = 0,centered:bool = false,styled : set[Style]= {}) =
      ## printBiCol
      ##
      ## echos a line in 2 colors based on a seperators first occurance
@@ -2036,23 +2039,23 @@ proc printBiCol*[T](s:T,sep:string = ":",colLeft:string = yellowgreen ,colRight:
           # when the separator is not found
           nosepflag = true
           # no separator so we just execute print with left color
-          print(zz,fgr=colLeft,xpos=xpos,centered=centered)
+          print(zz,fgr=colLeft,xpos=xpos,centered=centered,styled = styled)
 
      if nosepflag == false:
 
             if centered == false:
-                  print(z[0],fgr = colLeft,bgr = black,xpos = xpos)
-                  print(z[1],fgr = colRight,bgr = black)
+                  print(z[0],fgr = colLeft,bgr = black,xpos = xpos,styled = styled)
+                  print(z[1],fgr = colRight,bgr = black,styled = styled)
             else:  # centered == true
                   let npos = centerX() - (zz).len div 2 - 1
-                  print(z[0],fgr = colLeft,bgr = black,xpos = npos)
-                  print(z[1],fgr = colRight,bgr = black)
+                  print(z[0],fgr = colLeft,bgr = black,xpos = npos,styled = styled)
+                  print(z[1],fgr = colRight,bgr = black,styled = styled)
 
 
 
 
 
-proc printLnBiCol*[T](s:T,sep:string = ":", colLeft:string = yellowgreen, colRight:string = termwhite,xpos:int = 0,centered:bool = false) =
+proc printLnBiCol*[T](s:T,sep:string = ":", colLeft:string = yellowgreen, colRight:string = termwhite,xpos:int = 0,centered:bool = false,styled : set[Style]= {}) =
      ## printLnBiCol
      ##
      ## same as printBiCol but issues a new line
@@ -2086,24 +2089,24 @@ proc printLnBiCol*[T](s:T,sep:string = ":", colLeft:string = yellowgreen, colRig
           # when the separator is not found
           nosepflag = true
           # no separator so we just execute println with left color
-          println(zz,fgr=colLeft,xpos=xpos,centered=centered)
+          println(zz,fgr=colLeft,xpos=xpos,centered=centered,styled = styled)
 
      if nosepflag == false:
 
         if centered == false:
-              print(z[0],fgr = colLeft,bgr = black,xpos = xpos)
+              print(z[0],fgr = colLeft,bgr = black,xpos = xpos,styled = styled)
               if colRight == clrainbow:   # we currently do this as rainbow implementation has changed
-                    printLn(z[1],fgr = randcol(),bgr = black)
+                    printLn(z[1],fgr = randcol(),bgr = black,styled = styled)
               else:
-                    printLn(z[1],fgr = colRight,bgr = black)
+                    printLn(z[1],fgr = colRight,bgr = black,styled = styled)
 
         else:  # centered == true
               let npos = centerX() - zz.len div 2 - 1
               print(z[0],fgr = colLeft,bgr = black,xpos = npos)
               if colRight == clrainbow:   # we currently do this as rainbow implementation has changed
-                    printLn(z[1],fgr = randcol(),bgr = black)
+                    printLn(z[1],fgr = randcol(),bgr = black,styled = styled)
               else:
-                    printLn(z[1],fgr = colRight,bgr = black)
+                    printLn(z[1],fgr = colRight,bgr = black,styled = styled)
 
 
 
