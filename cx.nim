@@ -1623,7 +1623,7 @@ proc checkColor*(colname: string): bool =
 converter colconv*(cx:string) : string =
      # converter so we can use the same terminal color names for
      # fore- and background colors in print and printLn procs.
-     var bg : string = ""
+     var bg = ""
      case cx
       of black        : bg = bblack
       of white        : bg = bwhite
@@ -1650,7 +1650,11 @@ converter colconv*(cx:string) : string =
 
 proc print*[T](astring:T,fgr:string = termwhite ,bgr:string = bblack,xpos:int = 0,fitLine:bool = false ,centered:bool = false,styled : set[Style]= {},substr:string = "") =
     ## print
-    ##
+    ## 
+    ## original print with bgr = string which is mostly ignored
+    ## 
+    ## if bgr = any of the Backgroundcolor terminal types then the print proc below will be called
+    ## 
     ## fgr / bgr  fore and background colors can be set
     ##
     ## xpos allows positioning on x-axis
@@ -1684,6 +1688,9 @@ proc print*[T](astring:T,fgr:string = termwhite ,bgr:string = bblack,xpos:int = 
     ##
 
     var npos = xpos
+    
+    if bgr.startswith("bgre"):
+       setBackgroundColor(bgred)
 
     if centered == false:
 
@@ -1733,9 +1740,145 @@ proc print*[T](astring:T,fgr:string = termwhite ,bgr:string = bblack,xpos:int = 
       
 
 
+proc print*[T](astring:T,fgr:string = termwhite ,bgr:BackgroundColor ,xpos:int = 0,fitLine:bool = false ,centered:bool = false,styled : set[Style]= {},substr:string = "") =
+    ## print
+    ## 
+    ## this is the newer print which uses terminal Backgroundcolor to cover all situations
+    ## 
+    ## fgr / bgr  fore and background colors can be set
+    ##
+    ## xpos allows positioning on x-axis
+    ##
+    ## fitLine = true will try to write the text into the current line irrespective of xpos
+    ##
+    ## centered = true will try to center and disregard xpos
+    ## 
+    ## styled allows style parameters to be set 
+    ##
+    ## available styles :
+    ##
+    ## styleBright = 1,            # bright text
+    ##
+    ## styleDim,                   # dim text
+    ##
+    ## styleUnknown,               # unknown
+    ##
+    ## styleUnderscore = 4,        # underscored text
+    ##
+    ## styleBlink,                 # blinking/bold text
+    ##
+    ## styleReverse = 7,           # reverses currentforground and backgroundcolor
+    ##
+    ## styleHidden                 # hidden text
+    ##
+    ##
+    ## for extended colorset background colors use styleReverse
+    ##
+    ## or use 2 or more print statements for the desired effect
+    ##
+    ## .. code-block:: nim
+    ##    # To achieve colored text with styleReverse try:
+    ##    setBackgroundColor(bgRed)
+    ##    print("The end never comes on time ! ",pastelBlue,styled = {styleReverse})
+    ##
+
+    var npos = xpos
+    
+    if centered == false:
+
+        if npos > 0:  # the result of this is our screen position start with 1
+            setCursorXPos(npos)
+
+        if ($astring).len + xpos >= tw:
+
+            if fitLine == true:
+                # force to write on same line within in terminal whatever the xpos says
+                npos = tw - ($astring).len
+                setCursorXPos(npos)
+
+    else:
+          # centered == true
+          npos = centerX() - ($astring).len div 2 - 1
+          setCursorXPos(npos)
+
+
+    if styled != {}:
+          var s = $astring
+                    
+          if substr.len > 0:
+              var rx = s.split(substr)
+              for x in rx.low.. rx.high:
+                  writestyled(rx[x],{})
+                  if x != rx.high:
+                    case fgr
+                      of clrainbow   : printRainbow(substr,styled)
+                      else: styledEchoPrint(fgr,styled,substr,termwhite)
+          else:
+               case fgr
+                    of clrainbow   : printRainbow($s,styled)
+                    else: styledEchoPrint(fgr,styled,s,termwhite)
+
+    else:
+      
+        case fgr
+          of clrainbow: rainbow(" " & $astring,npos)
+          else: 
+              
+              setBackGroundColor(bgr)
+              write(stdout,fgr & $astring)
+
+    # reset to white/black only if any changes
+    if fgr != $fgWhite or bgr != bgBlack:
+      setForeGroundColor(fgWhite)
+      setBackGroundColor(bgBlack)
+      
+     
+
 
 proc printLn*[T](astring:T,fgr:string = termwhite , bgr:string = bblack,xpos:int = 0,fitLine:bool = false,centered:bool = false,styled : set[Style]= {},substr:string = "") =
     ## printLn
+    ## 
+    ## original with bgr:string
+    ## 
+    ## similar to echo but with additional settings
+    ##
+    ## foregroundcolor
+    ## backgroundcolor
+    ## position
+    ## fitLine
+    ## centered
+    ## styled
+    ##
+    ## all colornames are supported for font color:
+    ##
+    ## color names supported for background color:
+    ##
+    ## white,red,green,blue,yellow,cyan,magenta,black
+    ##
+    ## brightwhite,brightred,brightgreen,brightblue,brightyellow,
+    ##
+    ## brightcyan,brightmagenta,brightblack
+    ##
+    ## .. code-block:: nim
+    ##    printLn("Yes ,  we made it.",clrainbow,brightyellow) # background has no effect with font in  clrainbow
+    ##    printLn("Yes ,  we made it.",green,brightyellow)
+    ##    # or use it as a replacement of echo
+    ##    printLn(red & "What's up ? " & green & "Grub's up ! "
+    ##    printLn("No need to reset the original color")
+    ##    println("Nim does it again",peru,centered = true ,styled = {styleDim,styleUnderscore},substr = "i")
+    ##
+    ##    # To achieve colored text with styleReverse try:
+    ##    setBackgroundColor(bgRed)
+    ##    println("The End never comes on time ! ",lime,styled = {styleReverse})
+    ##
+
+    print($(astring) & "\L",fgr,bgr,xpos,fitLine,centered,styled,substr)
+   
+
+proc printLn*[T](astring:T,fgr:string = termwhite , bgr:BackgroundColor,xpos:int = 0,fitLine:bool = false,centered:bool = false,styled : set[Style]= {},substr:string = "") =
+    ## printLn
+    ## 
+    ## with bgr:setBackGroundColor
     ##
     ## similar to echo but with additional settings
     ##
@@ -1765,7 +1908,12 @@ proc printLn*[T](astring:T,fgr:string = termwhite , bgr:string = bblack,xpos:int
     ##    println("Nim does it again",peru,centered = true ,styled = {styleDim,styleUnderscore},substr = "i")
     ##
 
-    print($(astring) & "\L",fgr,bgr,xpos,fitLine,centered,styled,substr)
+    #print($(astring) & "\L",fgr,bgr,xpos,fitLine,centered,styled,substr)
+    print($(astring),fgr,bgr,xpos,fitLine,centered,styled,substr)
+    echo()
+    print cleareol
+
+
 
 
 proc rainbow*[T](s : T,xpos:int = 0,fitLine:bool = false,centered:bool = false) =
@@ -2200,7 +2348,7 @@ proc showColors*() =
   for x in colorNames:
      print(fmtx(["<22"],x[0]) & spaces(2) & "▒".repeat(10) & spaces(2) & "⌘".repeat(10) & spaces(2) & "ABCD abcd 1234567890 --> " & " Nim Colors  " , x[1],black)
      printLn(fmtx(["<23"],"  " & x[0]) ,x[1],styled = {styleReverse},substr =  fmtx(["<23"],"  " & x[0]))
-     sleepy(0.075)
+     sleepy(0.015)
   decho(2)
 
 
@@ -2627,6 +2775,66 @@ proc getNextMonday*(adate:string):string =
                 else:
                     result = ndatestr
 
+
+
+proc createSeqDate*(fromDate:string,toDate:string):seq[string] = 
+     ## createSeqDate
+     ## 
+     ## creates a seq of dates in format yyyy-MM-dd 
+     ## 
+     ## from fromDate to toDate
+     ##  
+  
+  
+     var aresult = newSeq[string]()
+     var aDate = fromDate
+     while compareDates(aDate,toDate) == 2 : 
+         if validDate(aDate) == true: 
+            aresult.add(aDate)
+         aDate = plusDays(aDate,1)  
+     result = aresult    
+         
+     
+
+proc createSeqDate*(fromDate:string,days:int = 1):seq[string] = 
+     ## createSeqDate
+     ## 
+     ## creates a seq of dates in format yyyy-MM-dd 
+     ## 
+     ## from fromDate to fromDate + days
+     ## 
+     var aresult = newSeq[string]()
+     var aDate = fromDate
+     var toDate = plusDays(adate,days)
+     while compareDates(aDate,toDate) == 2 : 
+         if validDate(aDate) == true: 
+            aresult.add(aDate)
+         aDate = plusDays(aDate,1)  
+     result = aresult    
+         
+            
+     
+
+
+
+proc newdate():string =   
+  var year = getRandomInt(1900,2099)
+  var month = getRandomInt(1,12)
+  var day = getRandomInt(1,31)
+  var date = $year & "-" & $month & "-" & $day
+  result = date
+
+proc getRandomDate*():string = 
+  ## getRandomDate
+  ## 
+  ## gets a randomdate between 1900-01-01 and 2099-12-31
+  ## 
+  ## larger dates not supported 
+  ## 
+  ## 
+  var okdate = newdate()
+  while validdate(okdate) == false: okdate = newdate()  
+  result = okdate  
 
 # large font printing, numbers are implemented
 
@@ -3148,10 +3356,11 @@ proc getWanIp*():string =
    ## get your wan ip from heroku
    ##
    ## problems ? check : https://status.heroku.com/
-
+   
+   var zcli = newHttpClient(timeout = 1000)
    var z = "Wan Ip not established. "
    try:
-      z = getContent("http://my-ip.heroku.com",timeout = 1000)
+      z = zcli.getContent(url = "http://my-ip.heroku.com")
       z = z.replace(sub = "{",by = " ").replace(sub = "}",by = " ").replace(sub = "\"ip\":"," ").replace(sub = '"' ,' ').strip()
    except:
        print("Ip checking failed. See if heroku is still here",red)
@@ -3188,8 +3397,9 @@ proc getIpInfo*(ip:string):JsonNode =
      ##   echo jj["city"].getstr
      ##
      ##
+     var zcli = newHttpClient()
      if ip != "":
-        result = parseJson(getContent("http://ip-api.com/json/" & ip))
+        result = parseJson(zcli.getContent("http://ip-api.com/json/" & ip))
 
 
 
@@ -3439,15 +3649,16 @@ proc ff2*(zz:float , n:int = 3):string =
         nz = $zrs[x] & nz
         inc sc     
      
-  for x in 0.. <zs[1].len:
+  for x in 0.. <zs[1].len:     # after comma part
     if x < n:
       zok = zok & zs[1][x]
-    
-  if zok == "0":
-    while zok.len < n:
-      zok = zok & "0"
+
   
-  if n > 0:
+  if zok == "0" or zok.len < n:  # pad 0 up to n
+     while zok.len < n :
+         zok = zok & "0"
+  
+  if n > 0:  #if comma part to be shown we add it to nz
         nz = nz & "." & zok
         
   if nz.startswith(",") == true:
@@ -3709,8 +3920,8 @@ proc checkNimCi*(title:string) =
   ##    checkNimCi("nimFinLib")  
   ##    
   
-  
-  var url = getcontent("https://136-60803270-gh.circle-artifacts.com/0/home/ubuntu/nim-ci/output/nimble_install_report.json")
+  var zcli = newHttpClient()
+  var url = zcli.getContent("https://136-60803270-gh.circle-artifacts.com/0/home/ubuntu/nim-ci/output/nimble_install_report.json")
   var z:JsonNode  = parseJson(url)
   println("\nResults for last nim-ci evaluation : \n",salmon)
   for x in z.items():
@@ -4206,6 +4417,14 @@ proc remDir*(dirname:string) =
         else:
             printLn("Directory " & dirname & " does not exists !",red)
 
+
+
+proc localTime*() : auto =
+  ## localTime
+  ## 
+  ## quick access to local time for printing
+  ## 
+  result = getTime().getLocalTime
 
 
 proc dayOfYear*() : range[0..365] = getLocalTime(getTime()).yearday + 1
