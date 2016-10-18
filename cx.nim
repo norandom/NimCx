@@ -10,7 +10,7 @@
 ##
 ##   ProjectStart: 2015-06-20
 ##   
-##   Latest      : 2016-09-15
+##   Latest      : 2016-10-18
 ##
 ##   Compiler    : Nim >= 0.14.2
 ##
@@ -22,7 +22,7 @@
 ##
 ##                 for easy colored display in a linux terminal , 
 ##                 
-##                 date handling and much more.
+##                 date handling,printing and much more.
 ##
 ##                 some procs may mirror functionality found in other moduls for convenience
 ##
@@ -110,6 +110,9 @@ import os,osproc,macros,posix,terminal,math,stats,times,tables,json,sets
 import sequtils,parseutils,httpclient,rawsockets,browsers,intsets, algorithm
 import strutils except toLower,toUpper
 import unicode 
+import typeinfo
+import typetraits
+
 #import nimprof       # needs compile with: nim c --profiler:on --stackTrace:on  -d:memProfiler cx
 
 # imports based on modules available via nimble
@@ -1239,6 +1242,22 @@ macro styledEchoPrint*(m: varargs[untyped]): typed =
 
 
 # templates
+
+template upperCase*(s:string):string = unicode.toUpper(s)
+  ## upperCase
+  ## 
+  ## upper cases a string
+  ## 
+
+template lowerCase*(s:string):string = unicode.toLower(s)
+  ## lowerCase
+  ## 
+  ## lower cases a string
+  ## 
+
+
+
+
 template currentLine*: int = instantiationInfo().line
    ## currentLine
    ## 
@@ -3348,6 +3367,29 @@ proc superHeaderA*(bb:string = "",strcol:string = white,frmcol:string = green,an
       echo()
 
 
+
+proc tupleToStr*(xs: tuple): string =
+     ## tupleToStr
+     ##
+     ## tuple to string unpacker , returns a string
+     ##
+     ## code ex nim forum
+     ##
+     ## .. code-block:: nim
+     ##    echo tupleToStr((1,2))         # prints (1, 2)
+     ##    echo tupleToStr((3,4))         # prints (3, 4)
+     ##    echo tupleToStr(("A","B","C")) # prints (A, B, C)
+     
+     result = "("
+     for x in xs.fields:
+       if result.len > 1:
+           result.add(", ")
+       result.add($x)
+     result.add(")")
+     
+
+
+
 # Var. internet related procs
 
 proc getWanIp*():string =
@@ -3422,8 +3464,20 @@ proc showIpInfo*(ip:string) =
           echo fmtx(["<15","",""],$x.key ," : " ,unquote($x.val))
       printLnBiCol(fmtx(["<15","",""],"Source"," : ","ip-api.com"),":",yellowgreen,salmon)
 
+proc localIp*():string=
+   # localIp
+   # 
+   # returns current machine ip
+   # 
 
-
+   let z = tupletostr(execCmdEx("ip route | grep src"))
+   let zz = z.split("src")
+   let zzz = zz[1].split(", 0")  # keep space after comma  !!
+   # need to strip 3 times to avoid spaces and newlines etc.
+   result =  strip(zzz[0],true,true,{' '})
+   result =  strip(result,false,true,{'\x0D', '\x0A'})
+   result =  strip(result,true,true,{' '})
+   
 
 proc getHosts*(dm:string):seq[string] =
     ## getHosts
@@ -3674,8 +3728,14 @@ proc ff2*(zz:int , n:int = 0):string =
   ## 
   ## formats a integer into form 12,345,678 that is thousands separators are shown
   ## 
+  ## precision is after comma given by n with default set to 0
+  ## in context of integer this means display format could even show 
+  ## a 0 after comma part if needed
   ## 
-  ## precision is after comma given by n with default set to 3
+  ## ff2(12345,0)  ==> 12,345     # display an integer with thousands seperator as we know it
+  ## ff2(12345,1)  ==> 12,345.0   # display an integer but like a float with 1 after comma pos
+  ## ff2(12345,2)  ==> 12,345.00  # display an integer but like a float with 2 after comma pos
+  ## 
   ## 
   ## .. code-block:: nim
   ##    import cx
@@ -3690,7 +3750,6 @@ proc ff2*(zz:int , n:int = 0):string =
   
   var sc = 0
   var nz = ""
-  var zok = ""
   var zrs = ""
   var zs = split($zz,".")
   var zrv = reverseme(zs[0])
@@ -3705,22 +3764,13 @@ proc ff2*(zz:int , n:int = 0):string =
     else:
         nz = $zrs[x] & nz
         inc sc     
-     
-  for x in 0.. <zs[1].len:
-    if x < n:
-      zok = zok & zs[1][x]
-  
-  if n > 0:
-        nz = nz & "." & zok
-        
+       
   if nz.startswith(",") == true:
      nz = strip(nz,true,false,{','})
   elif nz.startswith("-,") == true:
      nz = nz.replace("-,","-")
      
   result = nz
-
-
 
 
 proc getRandomFloat*():float =
@@ -3994,7 +4044,11 @@ proc showBench*() =
  else:
     printLn("Benchmark results emtpy.Nothing to show",red)   
 
-
+proc `$`*[T](some:typedesc[T]): string = name(T)
+proc typetest*[T](x:T): T =
+  # used to determine the field types in the temp sqllite table used for sorting
+  printlnBicol("Type     : " & $type(x))
+  printlnBiCol("Value    : " & $x)
 
 
 proc sortMe*[T](xs:var seq[T],order = Ascending): seq[T] =
@@ -4108,27 +4162,6 @@ proc centerMark*(showpos :bool = false) =
      centerPos(".")
      print(".",truetomato)
      if showpos == true:  print "x" & $(tw/2)
-
-
-proc tupleToStr*(xs: tuple): string =
-     ## tupleToStr
-     ##
-     ## tuple to string unpacker , returns a string
-     ##
-     ## code ex nim forum
-     ##
-     ## .. code-block:: nim
-     ##    echo tupleToStr((1,2))         # prints (1, 2)
-     ##    echo tupleToStr((3,4))         # prints (3, 4)
-     ##    echo tupleToStr(("A","B","C")) # prints (A, B, C)
-
-     result = "("
-     for x in xs.fields:
-       if result.len > 1:
-           result.add(", ")
-       result.add($x)
-     result.add(")")
-
 
 
 
