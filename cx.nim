@@ -1,107 +1,108 @@
 {.deadCodeElim: on.}
+## ::
+## 
+##     Library     : cx.nim
 ##
-##   Library     : cx.nim
+##     Status      : stable
 ##
-##   Status      : stable
+##     License     : MIT opensource
 ##
-##   License     : MIT opensource
+##     Version     : 0.9.9
 ##
-##   Version     : 0.9.9
-##
-##   ProjectStart: 2015-06-20
+##     ProjectStart: 2015-06-20
 ##   
-##   Latest      : 2016-10-18
+##     Latest      : 2016-10-18
 ##
-##   Compiler    : Nim >= 0.14.2
+##     Compiler    : Nim >= 0.14.2
 ##
-##   OS          : Linux
+##     OS          : Linux
 ##
-##   Description :
+##     Description :
 ##
-##                 cx.nim is a collection of simple procs and templates
+##                   cx.nim is a collection of simple procs and templates
 ##
-##                 for easy colored display in a linux terminal , 
+##                   for easy colored display in a linux terminal , 
+##                   
+##                   date handling,printing and much more.
+##
+##                   some procs may mirror functionality of stdlib moduls 
+##
+##
+##     Usage       : import cx
+##
+##     Project     : https://github.com/qqtop/NimCx
+##
+##     Docs        : http://qqtop.github.io/cx.html
+##
+##     Tested      : OpenSuse 13.2 , OpenSuse Leap42.1 , Ubuntu 16.04 LTS 
+##       
+##                   Terminal set encoding to UTF-8  
+##
+##                   with var. terminal font : monospace size 9.0 - 15  tested
+##
+##                   xterm,bash,st terminals support truecolor ok
+##
+##                   some ubuntu based gnome-terminals may not be able to display all colors
+##
+##                   as they are not correctly linked , see ubuntuu forum questions.
+##
+##                   run this awk script to see if your terminal supports truecolor
+##
+##                   script from : https://gist.github.com/XVilka/8346728
+##
+##                   ..   code-block:: nim
+##
+##                    awk 'BEGIN{
+##                        s="/\\/\\/\\/\\/\\"; s=s s s s s s s s;
+##                        for (colnum = 0; colnum<77; colnum++) {
+##                            r = 255-(colnum*255/76);
+##                            g = (colnum*510/76);
+##                            b = (colnum*255/76);
+##                            if (g>255) g = 510-g;
+##                            printf "\033[48;2;%d;%d;%dm", r,g,b;
+##                            printf "\033[38;2;%d;%d;%dm", 255-r,255-g,255-b;
+##                            printf "%s\033[0m", substr(s,colnum+1,1);
+##                        }
+##                        printf "\n";
+##                    }'
+##
+##
+##     Related     :
+##
+##                  * demo library: cxDemo.nim
+##
+##                  * tests       : cxTest.nim   (run some rough demos from cxDemo)
+##
+##
+##     Programming : qqTop
+##
+##     Note        : may be improved at any time
+##
+##                   mileage may vary depending on the available
+##
+##                   unicode libraries and terminal support in your system
+##
+##                   terminal x-axis position start with 1
+##
+##                   proc fmtx a formatting utility has been added
+##
+##                   to remove dependency on strfmt , which breaks sometimes
+##
+##                   after compiler updates .
+##                   
+##
+##     Required    : random installed via nimble
+##
+##     Installation: nimble install https://github.com/qqtop/NimCx.git
+##
+##
+##     Optional    : xclip  
 ##                 
-##                 date handling,printing and much more.
+##                   unicode font libraries 
 ##
-##                 some procs may mirror functionality found in other moduls for convenience
-##
-##
-##   Usage       : import cx
-##
-##   Project     : https://github.com/qqtop/NimCx
-##
-##   Docs        : http://qqtop.github.io/cx.html
-##
-##   Tested      : OpenSuse 13.2 , OpenSuse Leap42.1 , Ubuntu 16.04 LTS 
-##     
-##                 Terminal set encoding to UTF-8  
-##
-##                 with var. terminal font : monospace size 9.0 - 15 depending on screen resolution
-##
-##                 xterm,bash,st terminals support truecolor ok
-##
-##                 some ubuntu based gnome-terminals may not be able to display all colors
-##
-##                 as they are not correctly linked for whatever reason , see ubuntu forum questions.
-##
-##                 run this awk script to see if your terminal supports truecolor
-##
-##                 script from : https://gist.github.com/XVilka/8346728
-##
-## .. code-block:: nim
-##
-##                  awk 'BEGIN{
-##                      s="/\\/\\/\\/\\/\\"; s=s s s s s s s s;
-##                      for (colnum = 0; colnum<77; colnum++) {
-##                          r = 255-(colnum*255/76);
-##                          g = (colnum*510/76);
-##                          b = (colnum*255/76);
-##                          if (g>255) g = 510-g;
-##                          printf "\033[48;2;%d;%d;%dm", r,g,b;
-##                          printf "\033[38;2;%d;%d;%dm", 255-r,255-g,255-b;
-##                          printf "%s\033[0m", substr(s,colnum+1,1);
-##                      }
-##                      printf "\n";
-##                  }'
-##
-##
-##   Related     :
-##
-##                * demo library: cxDemo.nim
-##
-##                * tests       : cxTest.nim   (run some rough demos from cxDemo)
-##
-##
-##   Programming : qqTop
-##
-##   Note        : may be improved at any time
-##
-##                 mileage may vary depending on the available
-##
-##                 unicode libraries and terminal support in your system
-##
-##                 terminal x-axis position start with 1
-##
-##                 proc fmtx a formatting utility has been added
-##
-##                 to remove dependency on strfmt , which breaks sometimes
-##
-##                 after compiler updates .
-##                 
-##
-##   Required    : random installed via nimble
-##
-##   Installation: nimble install https://github.com/qqtop/NimCx.git
-##
-##
-##   Optional    : xclip  
-##               
-##                 unicode font libraries 
-##
-##   Plans       : move some of the non core procs to a new module cxutils.nim
+##     Plans       : move some of the non core procs to a new module cxutils.nim
 ##   
-##                 
+##                   
 ##
 ##
 ##
@@ -1840,7 +1841,7 @@ proc print*[T](astring:T,fgr:string = termwhite ,bgr:BackgroundColor ,xpos:int =
     else:
       
         case fgr
-          of clrainbow: rainbow(" " & $astring,npos)
+          of clrainbow: rainbow(spaces(1) & $astring,npos)
           else: 
               
               setBackGroundColor(bgr)
