@@ -11,9 +11,9 @@
 ##
 ##     ProjectStart: 2015-06-20
 ##   
-##     Latest      : 2016-10-18
+##     Latest      : 2016-10-22
 ##
-##     Compiler    : Nim >= 0.14.2
+##     Compiler    : Nim >= 0.15.2
 ##
 ##     OS          : Linux
 ##
@@ -1161,6 +1161,37 @@ template colPalette*(coltype:string,n:int): auto =
          ts[m]
  
  
+template colorsPalette*(coltype:string): auto =
+         ## ::
+         ##   colPalette
+         ## 
+         ##   returns a colorpalette which can be used to iterate over
+         ##    
+         ## .. code-block:: nim
+         ##    import cx
+         ##    let z = "The big money waits in the bank"  
+         ##    println(z,colPalette("pastel",getrandomint(0,colPaletteLen("pastel") - 1)),black)
+         ##    rainbow2(z & "\n",centered = false,colorset = colorsPalette("medium"))
+         ##    rainbow2("what's up ?\n",centered = true,colorset = colorsPalette("light"))
+         ##    doFinish()
+         ##    
+         ##    
+      
+         
+         var pal = newseq[(string,string)]()         
+         for colx in 0.. <colorNames.len:
+            if colorNames[colx][0].startswith(coltype) or colorNames[colx][0].contains(coltype):
+              pal.add((colorNames[colx][0],colorNames[colx][1]))
+              
+         if pal.len < 1:
+           println("Error : colorsPalette",red)
+           println("Desired filter may not be available",red)
+           println("        Try:  medium , dark, light, blue, yellow etc.",red)  
+           doFinish()   
+         pal
+  
+ 
+ 
 template colPaletteName*(coltype:string,n:int): auto =
          ## ::
          ##
@@ -1191,31 +1222,31 @@ template randCol*: string = colorNames[rxCol.randomChoice()][1]
    ##    loopy(0..5,printLn("Hello Random Color",randCol()))
    ##
    ##
-
-# subsets of colorNames
-#
-# more colorsets may be added in the future  currently used in rainbow2
-#
-#
-let pastelSet* = @[
-      ("pastelbeige",pastelbeige),
-      ("pastelblue",pastelblue),
-      ("pastelgreen",pastelgreen),
-      ("pastelorange",pastelorange),
-      ("pastelpink",pastelpink),
-      ("pastelwhite",pastelwhite),
-      ("pastelyellow",pastelyellow),
-      ("pastelyellowgreen",pastelyellowgreen)]
-
-let rxPastelCol* = toSeq(pastelSet.low.. pastelSet.high) # index into pastelSet
-
-template randPastelCol*: string = colorNames[rxPastelCol.randomChoice()][1]
-   ## randPastelCol
-   ##
-   ## get a random pastel color from colorNames
-   ##
-
-       
+# 
+# # subsets of colorNames
+# #
+# # more colorsets may be added in the future  currently used in rainbow2
+# #
+# #
+# let pastelSet* = @[
+#       ("pastelbeige",pastelbeige),
+#       ("pastelblue",pastelblue),
+#       ("pastelgreen",pastelgreen),
+#       ("pastelorange",pastelorange),
+#       ("pastelpink",pastelpink),
+#       ("pastelwhite",pastelwhite),
+#       ("pastelyellow",pastelyellow),
+#       ("pastelyellowgreen",pastelyellowgreen)]
+# 
+# let rxPastelCol* = toSeq(pastelSet.low.. pastelSet.high) # index into pastelSet
+# 
+# template randPastelCol*: string = colorNames[rxPastelCol.randomChoice()][1]
+#    ## randPastelCol
+#    ##
+#    ## get a random pastel color from colorNames
+#    ##
+# 
+#        
 
 
 
@@ -4927,7 +4958,7 @@ proc katakana*():seq[string] =
 
 
 
-proc rainbow2*[T](s : T,xpos:int = 0,fitLine:bool = false,centered:bool = false, colorset:seq[(string, string)] = colorNames) =
+proc rainbow2*[T](s : T,xpos:int = 1,fitLine:bool = false,centered:bool = false, colorset:seq[(string, string)] = colorNames) =
     ## rainbow2
     ##
     ## multicolored string  based on colorsets  see pastelSet
@@ -4935,24 +4966,32 @@ proc rainbow2*[T](s : T,xpos:int = 0,fitLine:bool = false,centered:bool = false,
     ## may not work with certain Rune
     ##
     ## .. code-block:: nim
-    ##    rainbow2("what's up ?\n",centered = true,colorset = pastelSet)
+    ##    rainbow2("what's up ?\n",centered = true,colorset = colorsPalette("green"))
     ##
     ##
     ##
     var nxpos = xpos
     var astr = $s
     var c = 0
-    var a = toSeq(1.. <colorset.len)
+    
+    # in case the passed in set contains nothing , maybe a unsuitable filter was used then
+    # we use the original full colorNames seq
+    var okcolorset = colorset
+    if okcolorset.len < 1:
+      okcolorset = colorNames
+    
+    var a = toSeq(0.. <okcolorset.len)
 
     if astr in emojis or astr in hiragana() or astr in katakana() or astr in iching():
         c = a[randomInt(a.len)]
+         
         if centered == false:
             print(astr,colorset[c][1],black,xpos = nxpos,fitLine)
 
         else:
               # need to calc the center here and increment by x
-              nxpos = centerX() - ($astr).len div 2  - 1
-              print(astr,colorset[c][1],black,xpos=nxpos,fitLine)
+              nxpos = centerX() - (astr).len div 2  - 1
+              print(astr,okcolorset[c][1],black,xpos=nxpos,fitLine)
 
         inc nxpos
 
@@ -4961,13 +5000,14 @@ proc rainbow2*[T](s : T,xpos:int = 0,fitLine:bool = false,centered:bool = false,
 
           for x in 0.. <astr.len:
             c = a[randomInt(a.len)]
+            
             if centered == false:
-                print(astr[x],colorset[c][1],black,xpos = nxpos,fitLine)
+                print(astr[x],okcolorset[c][1],black,xpos = nxpos,fitLine)
 
             else:
                 # need to calc the center here and increment by x
                 nxpos = centerX() - ($astr).len div 2  + x - 1
-                print(astr[x],colorset[c][1],black,xpos=nxpos,fitLine)
+                print(astr[x],okcolorset[c][1],black,xpos=nxpos,fitLine)
 
             inc nxpos
 
@@ -5359,7 +5399,7 @@ when isMainModule:
         printLnBiCol(smm,sep = "and ",colLeft = yellowgreen,colRight = clrainbow,centered = false)
         sleepy(0.2)
         curup(1)
-        rainbow2(smm,centered = false,colorset=pastelSet)
+        rainbow2(smm,centered = false,colorset = colorsPalette("pastel"))
         echo()
   clearup()      
   printLn(kitty,lime,black,centered=true)

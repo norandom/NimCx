@@ -353,7 +353,7 @@ proc rainbow2Demo*() =
 
       centerMark()
       echo()
-      rainbow2("Iching it and know the future. Or not.",centered = true,colorset = pastelset)
+      rainbow2("Iching it and know the future. Or not.",centered = true,colorset = colorspalette("pastel"))
       echo()
 
       for w in hi:
@@ -361,7 +361,7 @@ proc rainbow2Demo*() =
           rainbow2(w,xpos = centerX() - n div 2 * w.len + x * w.len,colorset = colorNames)
         echo()
 
-      rainbow2("What's up ?\n",centered = true,colorset = pastelSet)
+      rainbow2("What's up ?\n",centered = true,colorset = colorspalette("light"))
       centerMark()
 
 
