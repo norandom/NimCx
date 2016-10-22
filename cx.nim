@@ -1106,7 +1106,81 @@ let colorNames* = @[
 
 let rxCol* = toSeq(colorNames.low.. colorNames.high) ## index into colorNames
 
+template colPaletteIndexer*(colx:seq[string]):auto =  toSeq(colx.low.. colx.high) 
 
+template colPaletteLen*(coltype:string): auto =
+         ##  colPaletteLen
+         ##  
+         ##  returns the len of a colPalette 
+         ##  
+         var ts = newseq[string]()         
+         for x in 0.. <colorNames.len:
+            if colorNames[x][0].startswith(coltype) or colorNames[x][0].contains(coltype):
+               ts.add(colorNames[x][1])           
+         colPaletteIndexer(ts).len  
+
+
+
+template randCol*(coltype:string): auto =
+         ## ::
+         ##   randCol
+         ##   
+         ##   returns a random color based on a palette
+         ##   
+         ##   palettes are filters into colnames
+         ##   
+         ##   coltype examples : "red","blue","medium","dark","light","pastel" etc..
+         ##   
+         ##   
+         var ts = newseq[string]()         
+         for x in 0.. <colorNames.len:
+            if colorNames[x][0].startswith(coltype) or colorNames[x][0].contains(coltype):
+              ts.add(colorNames[x][1])
+         var rxColt = colPaletteIndexer(ts)   
+         ts[rxColt.randomChoice()]
+ 
+ 
+template colPalette*(coltype:string,n:int): auto =
+         ## ::
+         ##   colPalette
+         ## 
+         ##   returns a color from the palette which can be used in print statements
+         ##   
+         ##   if n > larger than palette length the first palette entry will be used
+         ##   
+         ## .. code-block:: nim
+         ##     println("something blue ", colPalette("blue",5)   # gets the fifth entry of the bluepalette
+         ##
+         
+         var ts = newseq[string]()         
+         for colx in 0.. <colorNames.len:
+            if colorNames[colx][0].startswith(coltype) or colorNames[colx][0].contains(coltype):
+              ts.add(colorNames[colx][1])
+         var m = n
+         if m > colPaletteLen(coltype): m = 0
+         ts[m]
+ 
+ 
+template colPaletteName*(coltype:string,n:int): auto =
+         ## ::
+         ##
+         ## returns the actual name of the palette entry 
+         ## eg. "mediumslateblue"
+         ## 
+         ##
+         var ts = newseq[string]()  
+         # build the custom palette ts       
+         for colx in 0.. <colorNames.len:
+            if colorNames[colx][0].startswith(coltype) or colorNames[colx][0].contains(coltype):
+              ts.add(colorNames[colx][0])
+         
+         # simple error handling to avoid indexerrors n ltoo large we try 0
+         # this fails too something will error out
+         var m = n
+         if m > colPaletteLen(coltype): m = 0
+         ts[m] 
+ 
+ 
 template randCol*: string = colorNames[rxCol.randomChoice()][1]
    ## randCol
    ##
@@ -1134,6 +1208,17 @@ let pastelSet* = @[
       ("pastelyellowgreen",pastelyellowgreen)]
 
 let rxPastelCol* = toSeq(pastelSet.low.. pastelSet.high) # index into pastelSet
+
+template randPastelCol*: string = colorNames[rxPastelCol.randomChoice()][1]
+   ## randPastelCol
+   ##
+   ## get a random pastel color from colorNames
+   ##
+
+       
+
+
+
 
 
 let cards* = @[
@@ -1438,12 +1523,10 @@ proc getRandomSignF*():float =
 
 proc fmtengine[T](a:string,astring:T):string =
      ## fmtengine   used internally
-     ##
-     ## simple string formater to right or left align within given param
-     ##
-     ## also can take care of floating point precision
-     ##
-     ## called by fmtx to process alignment requests
+     ## ::
+     ##   simple string formater to right or left align within given param
+     ##   also can take care of floating point precision
+     ##   called by fmtx to process alignment requests
      ##
      var okstring = $astring
      var op  = ""
@@ -1517,36 +1600,34 @@ proc fmtengine[T](a:string,astring:T):string =
 
 proc fmtx*[T](fmts:openarray[string],fstrings:varargs[T, `$`]):string =
      ## fmtx
-     ##
-     ## simple format utility similar to strfmt to accommodate our needs
-     ##
-     ## implemented :  right or left align within given param and float precision
-     ##
-     ##  returns a string
-     ##
-     ##  Some observations:
-     ##
-     ##  If text starts with a digit it must be on the right side...
-     ##
-     ##  Function calls must be executed on the right side
-     ##
-     ##  Space adjustment can be done with any "" on left or right side
-     ##
-     ##  an assert error is thrown if format block left and data block right are imbalanced
-     ##
-     ##  the "" acts as suitable placeholder
-     ##
-     ##  If one of the operator chars are needed as a first char in some text put it on the right side
-     ##
-     ##  Operator chars : <  >  .
-     ##
-     ## <12  means align left and pad so that max length = 12 and any following char will be in position 13
-     ## >12  means align right so that the most right char is in position 12
-     ## >8.2 means align a float right so that most right char is position 8 with precision 2
-     ##
-     ## Note that thousand separators are counted as position so 123456 needs 
-     ## echo fmtx(["<10.2"],123456)    --->  123,456.00
      ## 
+     ## ::
+     ##   simple format utility similar to strfmt to accommodate our needs
+     ##   implemented :  right or left align within given param and float precision
+     ##   returns a string
+     ##
+     ##   Some observations:
+     ##
+     ##   If text starts with a digit it must be on the right side...
+     ##   Function calls must be executed on the right side
+     ##
+     ##   Space adjustment can be done with any "" on left or right side
+     ##   an assert error is thrown if format block left and data block right are imbalanced
+     ##   the "" acts as suitable placeholder
+     ##
+     ##   If one of the operator chars are needed as a first char in some text put it on the right side
+     ##
+     ##   Operator chars : <  >  .
+     ##
+     ##   <12  means align left and pad so that max length = 12 and any following char will be in position 13
+     ##   >12  means align right so that the most right char is in position 12
+     ##   >8.2 means align a float right so that most right char is position 8 with precision 2
+     ##
+     ##   Note that thousand separators are counted as position so 123456 needs 
+     ##   echo fmtx(["<10.2"],123456)    --->  123,456.00
+     ## 
+     ## 
+     ##
      ## Examples :
      ##
      ## .. code-block:: nim
@@ -1570,13 +1651,13 @@ proc fmtx*[T](fmts:openarray[string],fstrings:varargs[T, `$`]):string =
 
 proc showRune*(s:string) : string  =
      ## showRune
+     ## ::
+     ##   utility proc to show a single unicode char given in hex representation
+     ##   note that not all unicode chars may be available on all systems
      ##
-     ## utility proc to show a single unicode char given in hex representation
-     ##
-     ## note that not all unicode chars may be available on all systems
-     ##
-     ## .. code-block : nim
-     ##      # example use
+     ## Example
+     ## 
+     ## .. code-block :: nim
      ##      for x in 10.. 55203: printLnBiCol($x & " : " & showRune(toHex(x)))
      ##      print(showRune("FFEA"),lime)
      ##      print(showRune("FFEC"),red)
@@ -1669,6 +1750,7 @@ converter colconv*(cx:string) : string =
 
 
 proc print*[T](astring:T,fgr:string = termwhite ,bgr:string = bblack,xpos:int = 0,fitLine:bool = false ,centered:bool = false,styled : set[Style]= {},substr:string = "") =
+    ## ::
     ## print
     ## 
     ## original print with bgr = string which is mostly ignored
@@ -1761,40 +1843,44 @@ proc print*[T](astring:T,fgr:string = termwhite ,bgr:string = bblack,xpos:int = 
 
 
 proc print*[T](astring:T,fgr:string = termwhite ,bgr:BackgroundColor ,xpos:int = 0,fitLine:bool = false ,centered:bool = false,styled : set[Style]= {},substr:string = "") =
-    ## print
+ 
+    ## ::
+    ##   print
     ## 
-    ## this is the newer print which uses terminal Backgroundcolor to cover all situations
-    ## 
-    ## fgr / bgr  fore and background colors can be set
+    ##   this is the newer print which uses terminal Backgroundcolor to cover all situations
+    ##   
+    ##   fgr / bgr  fore and background colors can be set
+    ##  
+    ##   xpos allows positioning on x-axis
+    ##  
+    ##   fitLine = true will try to write the text into the current line irrespective of xpos
+    ##  
+    ##   centered = true will try to center and disregard xpos
+    ##   
+    ##   styled allows style parameters to be set 
+    ##  
+    ##   available styles :
+    ##  
+    ##   styleBright = 1,            # bright text
+    ##  
+    ##   styleDim,                   # dim text
+    ##  
+    ##   styleUnknown,               # unknown
+    ##  
+    ##   styleUnderscore = 4,        # underscored text
+    ##  
+    ##   styleBlink,                 # blinking/bold text
+    ##  
+    ##   styleReverse = 7,           # reverses currentforground and backgroundcolor
+    ##  
+    ##   styleHidden                 # hidden text
+    ##  
+    ##  
+    ##   for extended colorset background colors use styleReverse
+    ##  
+    ##   or use 2 or more print statements for the desired effect
     ##
-    ## xpos allows positioning on x-axis
-    ##
-    ## fitLine = true will try to write the text into the current line irrespective of xpos
-    ##
-    ## centered = true will try to center and disregard xpos
-    ## 
-    ## styled allows style parameters to be set 
-    ##
-    ## available styles :
-    ##
-    ## styleBright = 1,            # bright text
-    ##
-    ## styleDim,                   # dim text
-    ##
-    ## styleUnknown,               # unknown
-    ##
-    ## styleUnderscore = 4,        # underscored text
-    ##
-    ## styleBlink,                 # blinking/bold text
-    ##
-    ## styleReverse = 7,           # reverses currentforground and backgroundcolor
-    ##
-    ## styleHidden                 # hidden text
-    ##
-    ##
-    ## for extended colorset background colors use styleReverse
-    ##
-    ## or use 2 or more print statements for the desired effect
+    ## Example
     ##
     ## .. code-block:: nim
     ##    # To achieve colored text with styleReverse try:
@@ -1856,28 +1942,34 @@ proc print*[T](astring:T,fgr:string = termwhite ,bgr:BackgroundColor ,xpos:int =
 
 
 proc printLn*[T](astring:T,fgr:string = termwhite , bgr:string = bblack,xpos:int = 0,fitLine:bool = false,centered:bool = false,styled : set[Style]= {},substr:string = "") =
-    ## printLn
+
+    
     ## 
-    ## original with bgr:string
+    ## ::
+    ##   printLn
     ## 
-    ## similar to echo but with additional settings
+    ##   original with bgr:string
+    ##   
+    ##   similar to echo but with additional settings
+    ##  
+    ##   foregroundcolor
+    ##   backgroundcolor
+    ##   position
+    ##   fitLine
+    ##   centered
+    ##   styled
+    ##  
+    ##   Colornames supported for font colors     : 
+    ##     
+    ##    -  all
+    ##  
+    ##   Colornames supported for background color:
+    ##  
+    ##     - white,red,green,blue,yellow,cyan,magenta,black 
+    ##     - brightwhite,brightred,brightgreen,brightblue,brightyellow,
+    ##     - brightcyan,brightmagenta,brightblack
     ##
-    ## foregroundcolor
-    ## backgroundcolor
-    ## position
-    ## fitLine
-    ## centered
-    ## styled
-    ##
-    ## all colornames are supported for font color:
-    ##
-    ## color names supported for background color:
-    ##
-    ## white,red,green,blue,yellow,cyan,magenta,black
-    ##
-    ## brightwhite,brightred,brightgreen,brightblue,brightyellow,
-    ##
-    ## brightcyan,brightmagenta,brightblack
+    ## Examples
     ##
     ## .. code-block:: nim
     ##    printLn("Yes ,  we made it.",clrainbow,brightyellow) # background has no effect with font in  clrainbow
@@ -1896,29 +1988,32 @@ proc printLn*[T](astring:T,fgr:string = termwhite , bgr:string = bblack,xpos:int
    
 
 proc printLn*[T](astring:T,fgr:string = termwhite , bgr:BackgroundColor,xpos:int = 0,fitLine:bool = false,centered:bool = false,styled : set[Style]= {},substr:string = "") =
-    ## printLn
+    ## :: 
+    ##   printLn
     ## 
-    ## with bgr:setBackGroundColor
+    ##   with bgr:setBackGroundColor
     ##
-    ## similar to echo but with additional settings
+    ##   similar to echo but with additional settings
     ##
-    ## foregroundcolor
-    ## backgroundcolor
-    ## position
-    ## fitLine
-    ## centered
-    ## styled
+    ##   foregroundcolor
+    ##   backgroundcolor
+    ##   position
+    ##   fitLine
+    ##   centered
+    ##   styled
     ##
-    ## all colornames are supported for font color:
+    ##   Colornames supported for font colors     : 
+    ##     
+    ##    -  all
+    ##  
+    ##   Colornames supported for background color:
+    ##  
+    ##     - white,red,green,blue,yellow,cyan,magenta,black 
+    ##     - brightwhite,brightred,brightgreen,brightblue,brightyellow,
+    ##     - brightcyan,brightmagenta,brightblack
     ##
-    ## color names supported for background color:
-    ##
-    ## white,red,green,blue,yellow,cyan,magenta,black
-    ##
-    ## brightwhite,brightred,brightgreen,brightblue,brightyellow,
-    ##
-    ## brightcyan,brightmagenta,brightblack
-    ##
+    ## Examples
+    ## 
     ## .. code-block:: nim
     ##    printLn("Yes ,  we made it.",clrainbow,brightyellow) # background has no effect with font in  clrainbow
     ##    printLn("Yes ,  we made it.",green,brightyellow)
@@ -2282,7 +2377,7 @@ proc printLnBiCol*[T](s:T,sep:string = ":", colLeft:string = yellowgreen, colRig
 proc printHl*(s:string,substr:string,col:string = termwhite) =
       ## printHl
       ##
-      ## print and highlight all appearances of a char or substring of a string
+      ## print and highlight all appearances of a substring 
       ##
       ## with a certain color
       ##
@@ -2338,7 +2433,7 @@ proc cecho*(col:string,ggg: varargs[string, `$`] = @[""] )  =
       write(stdout,termwhite)
 
 
-proc cechoLn*(col:string,ggg: varargs[string, `$`] = @[""] )  =
+proc cechoLn*(col:string,astring: varargs[string, `$`] = @[""] )  =
       ## cechoLn
       ##
       ## color echo with new line
@@ -2355,7 +2450,7 @@ proc cechoLn*(col:string,ggg: varargs[string, `$`] = @[""] )  =
       ##
       ##
       var z = ""
-      for x in ggg: z = $(x)
+      for x in astring: z = $(x)
       z = z & "\L"
       cecho(col ,z)
 
@@ -4241,6 +4336,25 @@ template loopy*[T](ite:T,st:typed) =
 
 
 
+         
+proc showPalette*(coltype:string = "white") = 
+    ## ::
+    ##   showPalette
+    ##   
+    ##   Displays palette with all coltype as found in  colorNames
+    ##   coltype examples : "red","blue","medium","dark","light","pastel" etc..
+    ##   
+    echo()
+    let z = colPaletteLen(coltype)
+    for x in 0.. <z:
+          println(fmtx([">3",">4"],$x,rightarrow) & " ABCD 12345678909   " & colPaletteName(coltype,x) , colPalette(coltype,x))
+    printlnbicol("\n" & coltype & "Palette items count   : " & $z)  
+    echo()  
+    
+
+
+
+
 proc shift*[T](x: var seq[T], zz: Natural = 0): T =
      ## shift takes a seq and returns the first , and deletes it from the seq
      ##
@@ -4808,7 +4922,7 @@ proc katakana*():seq[string] =
     var kat = newSeq[string]()
     # s U+30A0–U+30FF.
     for j in parsehexint("30A0") .. parsehexint("30FF"):
-        kat.add($RUne(j))
+        kat.add($Rune(j))
     result = kat
 
 

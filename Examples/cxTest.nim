@@ -116,7 +116,22 @@ superHeader("Nim Colors ")
 showColors()
 decho(2)
 
-cleanScreen()
+
+var mycol = "green"  
+
+showPalette(mycol)
+
+echo colPaletteName("green",5) #show entry 5 of the green palette
+println("something blue ", colPalette("blue",5) )  #show entry 5 of the blue palette
+
+decho(2)
+# showing randcol with custom palette selection and full randcol with all colors
+for x in 0.. <colPaletteLen(mycol):   
+  print(rightarrow & "what 12345678909 ",randCol(mycol))
+  println("  what 12345678909 ",randCol())
+  
+  
+
 for x in 0.. 10:
     centerMark()
     echo()
@@ -195,9 +210,6 @@ sleepy(2)
 colorCJKDemo()
 decho(5)    
 
-rainbow2Demo()
-decho(5)
-
 bigPanelDemo()
 sleepy(2)
 
@@ -210,5 +222,10 @@ decho(15)
 var twc = tw div 2
 showTerminalSize()
 printLnBiCol("Terminal Center : " & $twc,":")
+
+# here showing iching
+rainbow2Demo()
+decho(5)
+
 
 doFinish()

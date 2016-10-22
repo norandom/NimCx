@@ -47,7 +47,7 @@ proc futureIsNimDemo*(posx:int = 0) =
 
 
 
-proc flyNimDemo*(astring:string = "Fly Nim",col:string = red,tx:float = 0.08) =
+proc flyNimDemo*(astring:string = " Fly Nim",col:string = red,tx:float = 0.04) =
 
       ## flyNim
       ## 
@@ -68,7 +68,7 @@ proc flyNimDemo*(astring:string = "Fly Nim",col:string = red,tx:float = 0.08) =
                            
         else:
               print(astring,truetomato,centered = true)
-              hlineln(sn - x,salmon)
+              hlineln(sn - x - 1,salmon)
         sleepy(tx)
         curup(1) 
         
@@ -276,7 +276,7 @@ proc cxYourNimDemo*() =
     # 
     # best viewed on a full width terminal
     # 
-    for y in 0.. 30:
+    for y in 0.. 9:
       cleanScreen()  
       curdn(10)
       for x in 0.. 4:
@@ -320,11 +320,11 @@ proc bigPanelDemo*() =
         printBigLetters("+",xpos = xpos + 20,fun = true)
         printBigNumber(0123456789,xpos = xpos + 29,fun = true)
         decho(10)
-        printBigLetters(repeat("_",18),fgr = randcol(),xpos = 10,fun = true)
+        printBigLetters(repeat("_",15),fgr = randcol(),xpos = 10,fun = true)
         decho(8)
-        printBigLetters("CX - COLOR",xpos = 40 ,fun=true)
+        printBigLetters("CX-COLOR",xpos = 40 ,fun=true)
         decho(5)
-        printBigLetters(repeat("_",18),fgr = randcol(),xpos = 10,fun = true)
+        printBigLetters(repeat("_",15),fgr = randcol(),xpos = 10,fun = true)
         decho(8)
 
       
