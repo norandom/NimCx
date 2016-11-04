@@ -11,7 +11,7 @@
 ##
 ##     ProjectStart: 2015-06-20
 ##   
-##     Latest      : 2016-10-22
+##     Latest      : 2016-11-04
 ##
 ##     Compiler    : Nim >= 0.15.2
 ##
@@ -23,9 +23,9 @@
 ##
 ##                   for easy colored display in a linux terminal , 
 ##                   
-##                   date handling,printing and much more.
+##                   date handling,printing and many utility functions.
 ##
-##                   some procs may mirror functionality of stdlib moduls 
+##                   Some procs may mirror functionality of stdlib moduls 
 ##
 ##
 ##     Usage       : import cx
@@ -98,7 +98,7 @@
 ##
 ##     Optional    : xclip  
 ##                 
-##                   unicode font libraries 
+##                   unicode font libraries as needed 
 ##
 ##     Plans       : move some of the non core procs to a new module cxutils.nim
 ##   
@@ -1120,31 +1120,12 @@ template colPaletteLen*(coltype:string): auto =
          colPaletteIndexer(ts).len  
 
 
-
-template randCol*(coltype:string): auto =
-         ## ::
-         ##   randCol
-         ##   
-         ##   returns a random color based on a palette
-         ##   
-         ##   palettes are filters into colnames
-         ##   
-         ##   coltype examples : "red","blue","medium","dark","light","pastel" etc..
-         ##   
-         ##   
-         var ts = newseq[string]()         
-         for x in 0.. <colorNames.len:
-            if colorNames[x][0].startswith(coltype) or colorNames[x][0].contains(coltype):
-              ts.add(colorNames[x][1])
-         var rxColt = colPaletteIndexer(ts)   
-         ts[rxColt.randomChoice()]
- 
  
 template colPalette*(coltype:string,n:int): auto =
          ## ::
          ##   colPalette
          ## 
-         ##   returns a color from the palette which can be used in print statements
+         ##   returns a specific color from the palette which can be used in print statements
          ##   
          ##   if n > larger than palette length the first palette entry will be used
          ##   
@@ -1169,7 +1150,7 @@ template colorsPalette*(coltype:string): auto =
          ##    
          ## .. code-block:: nim
          ##    import cx
-         ##    let z = "The big money waits in the bank"  
+         ##    let z = "The big money waits in the bank" 
          ##    println(z,colPalette("pastel",getrandomint(0,colPaletteLen("pastel") - 1)),black)
          ##    rainbow2(z & "\n",centered = false,colorset = colorsPalette("medium"))
          ##    rainbow2("what's up ?\n",centered = true,colorset = colorsPalette("light"))
@@ -1195,7 +1176,7 @@ template colorsPalette*(coltype:string): auto =
 template colPaletteName*(coltype:string,n:int): auto =
          ## ::
          ##
-         ## returns the actual name of the palette entry 
+         ## returns the actual name of the palette entry n
          ## eg. "mediumslateblue"
          ## 
          ##
@@ -1211,45 +1192,39 @@ template colPaletteName*(coltype:string,n:int): auto =
          if m > colPaletteLen(coltype): m = 0
          ts[m] 
  
- 
+
+
+template randCol*(coltype:string): auto =
+         ## ::
+         ##   randCol
+         ##   
+         ##   returns a random color based on a palette
+         ##   
+         ##   palettes are filters into colorNames
+         ##   
+         ##   coltype examples : "red","blue","medium","dark","light","pastel" etc..
+         ##   
+         ## .. code-block:: nimble
+         ##    loopy(0..5,println("Random blue shades",randcol("blue")))
+         ##
+         ##   
+         var ts = newseq[string]()         
+         for x in 0.. <colorNames.len:
+            if colorNames[x][0].startswith(coltype) or colorNames[x][0].contains(coltype):
+              ts.add(colorNames[x][1])
+         var rxColt = colPaletteIndexer(ts)   
+         ts[rxColt.randomChoice()]
+  
 template randCol*: string = colorNames[rxCol.randomChoice()][1]
    ## randCol
    ##
-   ## get a randomcolor from colorNames
+   ## get a randomcolor from colorNames , no filter is applied 
    ##
    ## .. code-block:: nim
    ##    # print a string 6 times in a random color selected from colorNames
    ##    loopy(0..5,printLn("Hello Random Color",randCol()))
    ##
    ##
-# 
-# # subsets of colorNames
-# #
-# # more colorsets may be added in the future  currently used in rainbow2
-# #
-# #
-# let pastelSet* = @[
-#       ("pastelbeige",pastelbeige),
-#       ("pastelblue",pastelblue),
-#       ("pastelgreen",pastelgreen),
-#       ("pastelorange",pastelorange),
-#       ("pastelpink",pastelpink),
-#       ("pastelwhite",pastelwhite),
-#       ("pastelyellow",pastelyellow),
-#       ("pastelyellowgreen",pastelyellowgreen)]
-# 
-# let rxPastelCol* = toSeq(pastelSet.low.. pastelSet.high) # index into pastelSet
-# 
-# template randPastelCol*: string = colorNames[rxPastelCol.randomChoice()][1]
-#    ## randPastelCol
-#    ##
-#    ## get a random pastel color from colorNames
-#    ##
-# 
-#        
-
-
-
 
 
 let cards* = @[
@@ -2958,10 +2933,6 @@ proc createSeqDate*(fromDate:string,days:int = 1):seq[string] =
          aDate = plusDays(aDate,1)  
      result = aresult    
          
-            
-     
-
-
 
 proc newdate():string =   
   var year = getRandomInt(1900,2099)
@@ -3532,7 +3503,7 @@ proc getWanIp*():string =
       z = zcli.getContent(url = "http://my-ip.heroku.com")
       z = z.replace(sub = "{",by = " ").replace(sub = "}",by = " ").replace(sub = "\"ip\":"," ").replace(sub = '"' ,' ').strip()
    except:
-       print("Ip checking failed. See if heroku is still here",red)
+       print("Ip checking failed. See if heroku is still here or just to slow to respond",red)
        print("Check Heroku Status : https://status.heroku.com",red)
        try:
          opendefaultbrowser("https://status.heroku.com")
@@ -3812,42 +3783,47 @@ proc ff2*(zz:float , n:int = 3):string =
   ##  
   ##       
   
-  var sc = 0
-  var nz = ""
-  var zok = ""
-  var zrs = ""
-  var zs = split($zz,".")
-  var zrv = reverseme(zs[0])
- 
-  for x in 0 .. <zrv.len: 
-     zrs = zrs & $zrv[x]
- 
-  for x in 0.. <zrs.len:
-    if sc == 2:
-        nz = "," & $zrs[x] & nz
-        sc = 0
-    else:
-        nz = $zrs[x] & nz
-        inc sc     
-     
-  for x in 0.. <zs[1].len:     # after comma part
-    if x < n:
-      zok = zok & zs[1][x]
-
-  
-  if zok == "0" or zok.len < n:  # pad 0 up to n
-     while zok.len < n :
-         zok = zok & "0"
-  
-  if n > 0:  #if comma part to be shown we add it to nz
-        nz = nz & "." & zok
+  if zz < 1.0 == true:   #  number less than 1 so no 1000 seps needed
+    result = ff(zz,n)
+    
+  else: 
         
-  if nz.startswith(",") == true:
-     nz = strip(nz,true,false,{','})
-  elif nz.startswith("-,") == true:
-     nz = nz.replace("-,","-")
-     
-  result = nz
+        var sc = 0
+        var nz = ""
+        var zok = ""
+        var zrs = ""
+        var zs = split($zz,".")
+        var zrv = reverseme(zs[0])
+      
+        for x in 0 .. <zrv.len: 
+          zrs = zrs & $zrv[x]
+      
+        for x in 0.. <zrs.len:
+          if sc == 2:
+              nz = "," & $zrs[x] & nz
+              sc = 0
+          else:
+              nz = $zrs[x] & nz
+              inc sc     
+          
+        for x in 0.. <zs[1].len:     # after comma part
+          if x < n:
+            zok = zok & zs[1][x]
+
+        
+        if zok == "0" or zok.len < n:  # pad 0 up to n
+          while zok.len < n :
+              zok = zok & "0"
+        
+        if n > 0:  #if comma part to be shown we add it to nz
+              nz = nz & "." & zok
+              
+        if nz.startswith(",") == true:
+          nz = strip(nz,true,false,{','})
+        elif nz.startswith("-,") == true:
+          nz = nz.replace("-,","-")
+          
+        result = nz
 
 
 proc ff2*(zz:int , n:int = 0):string =
@@ -4112,6 +4088,25 @@ proc checkNimCi*(title:string) =
           printLnBiCol("TestResult: " & unquote($x["test_result"]),":",yellowgreen,brightyellow)
         echo()
    
+proc getCpuCores*():auto = 
+      ## getCpuCores
+      ## 
+      ## returns number of cpu cores
+      ## 
+      let (cores,error) = execCmdEx("nproc")
+      if error != 0:
+         printLnBiCol("Error : Code " & $error & ". System CPU cores not established",":",red)
+      cores
+          
+
+proc showCpuCores*() =
+  ## showCpuCores
+  ## 
+  ## makes a system call to check on cpu cores in the current system
+  ## 
+  printLnBiCol("System CPU cores : " & $getCpuCores())
+
+
  
 template benchmark*(benchmarkName: string, code: typed) =
   ## benchmark
@@ -5302,6 +5297,7 @@ proc doInfo*() =
   printBiCol("OS                            : "& hostOS,sep,yellowgreen,lightgrey)
   printBiCol(" | CPU: "& hostCPU,sep,yellowgreen,lightgrey)
   printLnBiCol(" | cpuEndian: "& $cpuEndian,sep,yellowgreen,lightgrey)
+  printlnBiCol("CPU Cores                     : " & $getCpuCores())
   let pd = getpid()
   printLnBiCol("Current pid                   : " & $pd,sep,yellowgreen,lightgrey)
 
