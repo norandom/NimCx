@@ -11,9 +11,9 @@
 ##
 ##     ProjectStart: 2015-06-20
 ##   
-##     Latest      : 2016-11-04
+##     Latest      : 2016-11-06
 ##
-##     Compiler    : Nim >= 0.15.2
+##     Compiler    : Nim >= 0.15.3
 ##
 ##     OS          : Linux
 ##
@@ -34,7 +34,7 @@
 ##
 ##     Docs        : http://qqtop.github.io/cx.html
 ##
-##     Tested      : OpenSuse 13.2 , OpenSuse Leap42.1 , Ubuntu 16.04 LTS 
+##     Tested      : OpenSuse 13.2 , OpenSuse Tumbleweed , Ubuntu 16.04 LTS 
 ##       
 ##                   Terminal set encoding to UTF-8  
 ##
@@ -110,9 +110,7 @@
 import os,osproc,macros,posix,terminal,math,stats,times,tables,json,sets
 import sequtils,parseutils,httpclient,rawsockets,browsers,intsets, algorithm
 import strutils except toLower,toUpper
-import unicode 
-import typeinfo
-import typetraits
+import unicode ,typeinfo, typetraits ,hashes
 
 #import nimprof       # needs compile with: nim c --profiler:on --stackTrace:on  -d:memProfiler cx
 
@@ -777,12 +775,41 @@ const colon =
   ,"      "]
 
 
+const plussign =
+ @["      "
+  ,"  ██  "
+  ,"██████"
+  ,"  ██  "
+  ,"      "]
+
+
+
+const equalsign =
+ @["      "
+  ,"██████"
+  ,"      "
+  ,"██████"
+  ,"      "]
+ 
+ 
+
+const minussign =
+ @["      "
+  ,"      "
+  ,"██████"
+  ,"      "
+  ,"      "] 
+ 
+
+
 const clrb =
  @["      "
   ,"      "
   ,"      "
   ,"      "
   ,"      "]
+
+
 
 const numberlen = 4
 
@@ -1718,14 +1745,13 @@ proc checkColor*(colname: string): bool =
      ## checkColor
      ##
      ## returns true if colname is a known color name in colorNames
-     ##
+     ## string and 
      ##
      result = false
      for x in  colorNames:
-         if x[0] == colname:
-            result = true
-               
-
+          if x[0] == colname or x[1] == colname:
+             result = true
+     
 
 converter colconv*(cx:string) : string =
      # converter so we can use the same terminal color names for
@@ -1935,14 +1961,13 @@ proc print*[T](astring:T,fgr:string = termwhite ,bgr:BackgroundColor ,xpos:int =
         case fgr
           of clrainbow: rainbow(spaces(1) & $astring,npos)
           else: 
-              
               setBackGroundColor(bgr)
               write(stdout,fgr & $astring)
 
     # reset to white/black only if any changes
     if fgr != $fgWhite or bgr != bgBlack:
-      setForeGroundColor(fgWhite)
-      setBackGroundColor(bgBlack)
+       setForeGroundColor(fgWhite)
+       setBackGroundColor(bgBlack)
       
      
 
@@ -2082,7 +2107,7 @@ proc hline*(n:int = tw,col:string = white,xpos:int = 1) =
      ##    hline(30,green,xpos=xpos)
      ##
 
-     print(repeat("_",n),col)
+     print(repeat("_",n),col,xpos = xpos)
 
 
 
@@ -3015,6 +3040,10 @@ proc printBigNumber*(xnumber:string|int,fgr:string = yellowgreen ,bgr:string = b
         of "9": printseq.add(number9)
         of ":": printseq.add(colon)
         of " ": printseq.add(clrb)
+        of "+": printseq.add(plussign)
+        of "-": printseq.add(minussign)
+        of "=": printseq.add(equalsign)
+        
         else: discard
 
     for x in 0.. numberlen:
@@ -3568,13 +3597,8 @@ proc localIp*():string=
    # returns current machine ip
    # 
 
-   let z = tupletostr(execCmdEx("ip route | grep src"))
-   let zz = z.split("src")
-   let zzz = zz[1].split(", 0")  # keep space after comma  !!
-   # need to strip 3 times to avoid spaces and newlines etc.
-   result =  strip(zzz[0],true,true,{' '})
-   result =  strip(result,false,true,{'\x0D', '\x0A'})
-   result =  strip(result,true,true,{' '})
+   result =  execCmdEx("ip route | grep src").output.split("src")[1].strip()
+  
    
 
 proc getHosts*(dm:string):seq[string] =
@@ -3642,6 +3666,28 @@ proc showHosts*(dm:string) =
     else:
        for x in z:
          printLn(x)
+
+
+
+template quickList*[T](c:int,d:T,cw:int = 7 ,dw:int = 15) =
+      ## quickList
+      ## 
+      ## a simple template which allows listing of 2 columns in format
+      ## 
+      ## count data
+      ## 
+      ## cw and dw are column width adjuster 
+      ## 
+      ## .. code-block:: nim
+      ##    import cx      
+      ##    var z = createSeqFloat(1000000,4)
+      ##    for x in 0.. <z.len:
+      ##        quicklist(x,ff2(z[x] * 100000,4),dw = 22)
+
+      let fms1 = ">" & $cw
+      let fms2 = ">" & $dw
+      echo fmtx([fms1,"",fms2],c,spaces(1),d)
+
 
 
 proc reverseMe*[T](xs: openarray[T]): seq[T] =
@@ -4034,6 +4080,33 @@ proc getRandomPoint*(minx:int = -500 ,maxx:int = 500 ,miny:int = -500 ,maxy:int 
 # Misc. routines
 
  
+proc checkHash*[T](kata:string,hsx:T)  =
+  ## checkHash
+  ## 
+  ## checks hash of a string and print status
+  ## 
+  if hash(kata) == hsx:
+        printlnBiCol("Hash Status : ok")
+  else:
+        printlnBiCol("Hash Status : fail",":",red)
+
+  
+proc createHash*(kata:string):auto = 
+    ## createHash
+    ## 
+    ## returns hash of a string
+    ##  
+    ## Example
+    ##  
+    ## .. code-block:: nim
+    ##    var zz = readLineFromStdin("Hash a string  : ")
+    ##    # var zz = readPasswordFromStdin("Hash a string  : ")   # to do not show input string
+    ##    var ahash = createHash(zz)
+    ##    echo ahash
+    ##    checkHash(zz, ahash)
+    ##    
+    ##    
+    result = hash(kata)   
 
 proc memCheck*(stats:bool = false) =
   ## memCheck
@@ -5250,8 +5323,8 @@ proc doInfo*() =
   # this only makes sense for non executable files
   #printLnBiCol("Last access time to file      : " & filename & " " & $(fromSeconds(int(getLastAccessTime(filename)))),sep,yellowgreen,lightgrey)
   printLnBiCol("Last modificaton time of file : " & filename & " " & $(fromSeconds(int(modTime))),sep,yellowgreen,lightgrey)
-  printLnBiCol("Local TimeZone                : " & $(getTzName()),sep,yellowgreen,lightgrey)
-  printLnBiCol("Offset from UTC  in secs      : " & $(getTimeZone()),sep,yellowgreen,lightgrey)
+  #printLnBiCol("Local TimeZone                : " & $(getTzName()),sep,yellowgreen,lightgrey)
+  #printLnBiCol("Offset from UTC  in secs      : " & $(getTimeZone()),sep,yellowgreen,lightgrey)
   printLnBiCol("Now                           : " & getDateStr() & " " & getClockStr(),sep,yellowgreen,lightgrey)
   printLnBiCol("Local Time                    : " & $getLocalTime(getTime()),sep,yellowgreen,lightgrey)
   printLnBiCol("GMT                           : " & $getGMTime(getTime()),sep,yellowgreen,lightgrey)
