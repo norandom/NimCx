@@ -11,7 +11,7 @@
 ##
 ##     ProjectStart: 2015-06-20
 ##   
-##     Latest      : 2016-12-20
+##     Latest      : 2017-01-12
 ##
 ##     Compiler    : Nim >= 0.15.3
 ##
@@ -21,10 +21,10 @@
 ##
 ##                   cx.nim is a collection of simple procs and templates
 ##
-##                   for easy colored display in a linux terminal , 
+##                   for easy colored display in a linux terminal and also contains
 ##                   
-##                   date handling,printing and many utility functions.
-##
+##                   a wide selection of utility functions . 
+##                   
 ##                   Some procs may mirror functionality of stdlib moduls 
 ##
 ##
@@ -91,7 +91,7 @@
 ##                   after compiler updates .
 ##                   
 ##
-##     Required    : random installed via nimble
+##     Required    : random by Blaxspirit installed via nimble
 ##
 ##     Installation: nimble install https://github.com/qqtop/NimCx.git
 ##
@@ -102,23 +102,33 @@
 ##
 ##     Plans       : move some of the non core procs to a new module cxutils.nim
 ##   
-##                   
+##                   to avoid library bload.
 ##
 ##
 ##
-
-import os,osproc,macros,posix,terminal,math,stats,times,tables,json,sets
-import sequtils,parseutils,httpclient,rawsockets,browsers,intsets, algorithm
+import os, times, parseutils, parseopt, hashes, tables, sets
+import osproc,macros,posix,terminal,math,stats,json
+import sequtils,httpclient,rawsockets,browsers,intsets, algorithm
 import strutils except toLower,toUpper
-import unicode ,typeinfo, typetraits
+import unicode ,typeinfo, typetraits 
 
 #import nimprof       # needs compile with: nim c --profiler:on --stackTrace:on  -d:memProfiler cx
 
 # imports based on modules available via nimble
 import "random-0.5.3/random"
-
 export strutils,sequtils,times,unicode
 export terminal.Style,terminal.getch  # make terminal style constants available in the calling prog
+
+#const someGcc = defined(gcc) or defined(llvm_gcc) or defined(clang)  # idea for backend info ex nimforum
+var someGcc = "" 
+if defined(gcc) : someGcc = "gcc"
+# below needs to be tested    
+#[elif defined(llvm_gcc):  someGcc = "llvm_gcc"
+elif defined(clang): someGcc = "clang"
+elif defined(cpp) : someGcc = "c++ target"
+elif defined(objc): someGcc = "Objective C target"
+elif defined(js): someGcc = "JavaScript target"]#
+else: someGcc = "undefined"    
 
 
 when defined(macosx):
@@ -130,7 +140,6 @@ when defined(windows):
 
 when defined(posix):
   {.hint    : "\x1b[38;2;154;205;50m \u2691 Delicious Os flavour detected .... CX loves Linux ! \u2691".}
-
 
 const CXLIBVERSION* = "0.9.9"
 
@@ -1301,8 +1310,6 @@ when defined(Linux):
         ## getTerminalHeight
         ##
         ## get linux terminal height in rows
-        ## a terminalheight function now incorporated in Nim dev of 2016-12-06
-        ## which is slightly slower than the one presented here
         ##
 
         type WinSize = object
@@ -1375,9 +1382,6 @@ template lowerCase*(s:string):string = unicode.toLower(s)
   ## 
   ## lower cases a string
   ## 
-
-
-
 
 template currentLine*: int = instantiationInfo().line
    ## currentLine
@@ -2460,8 +2464,8 @@ proc cecho*(col:string,ggg: varargs[string, `$`] = @[""] )  =
        of clrainbow :
                 for x in ggg:  rainbow(x)
        else:
-            write(stdout,col)
-            write(stdout,ggg)
+         write(stdout,col)
+         write(stdout,ggg)
          
       write(stdout,termwhite)
 
@@ -2749,40 +2753,18 @@ proc compareDates*(startDate,endDate:string) : int =
           result = -2
 
 
-proc dayOfWeekJulianA*(day, month, year: int): WeekDay =
-  #
-  # may be part of times.nim later
-  # This is for the Julian calendar
-  # Day & month start from one.
-  # original code from coffeepot
-  # but seems to be off for dates after 2100-03-01 which should be a monday
-  # but it returned a tuesday ..
-  #
-  let
-    a = (14 - month) div 12
-    y = year - a
-    m = month + (12 * a) - 2
-  var d  = (5 + day + y + (y div 4) + (31 * m) div 12) mod 7
-  # The value of d is 0 for a Sunday, 1 for a Monday, 2 for a Tuesday, etc. so we must correct
-  # for the WeekDay type.
-  result = d.WeekDay
-
-
 proc dayOfWeekJulian*(datestr:string): string =
    ## dayOfWeekJulian
    ##
    ## returns the day of the week of a date given in format yyyy-MM-dd as string
    ##
-   ## valid for dates up to 2099-12-31
-   ##
    ## actually starts to fail with 2100-03-01 which shud be a monday but this proc says tuesday
+   ## 
+   ## due to shortcomings in the julian calendar .
    ##
-   ##
-   if parseInt(year(datestr)) < 2100:
-     let dw = dayofweekjulianA(parseInt(day(datestr)),parseInt(month(datestr)),parseInt(year(datestr)))
-     result = $dw
-   else:
-     result = "Not defined for years > 2099"
+   ## 
+   result = $(getdayofweekjulian(parseInt(day(datestr)),parseInt(month(datestr)),parseInt(year(datestr))))
+   
 
 
 proc fx(nx:TimeInfo):string =
@@ -2848,7 +2830,6 @@ proc getFirstMondayYear*(ayear:string):string =
        var datestr= ayear & "-01-0" & $x
        if validdate(datestr) == true:
           if dayofweekjulian(datestr) == "Monday": result = datestr
-
 
 
 proc getFirstMondayYearMonth*(aym:string):string =
@@ -3541,6 +3522,26 @@ proc getWanIp*():string =
        except:
          discard
    result = z
+   
+   
+proc getWanIp2*():string =
+            ## getWanIp2
+            ## 
+            ## another get wan ip function calling dyndns
+            ## 
+            ## 
+            ## .. code-block:: nim
+            ##    printlnbicol(getwanip2())
+            ## 
+            ## Note : maybe slower so only use if getWanIp does not work , needs curl and awk
+            ## 
+            ## 
+            let (outp, errC) = execCMDEx("""curl -s http://checkip.dyndns.org/ | awk -F'[a-zA-Z<>/ :]+' '{printf "External IP: %s\n", $2}'""")
+            if errC == 0:
+                result =  $outp
+            else:
+                result = "External IP errorcode : " & $errC & ". IP not established"
+
 
 
 proc showWanIp*() =
@@ -3708,6 +3709,7 @@ proc reverseMe*[T](xs: openarray[T]): seq[T] =
   for i, x in xs:
     result[^i-1] = x # or: result[xs.high-i] = x
 
+
 proc reverseText*(text:string):string = 
   ## reverseText
   ## 
@@ -3741,6 +3743,41 @@ proc reverseString*(text:string):string =
 
 # init the MersenneTwister
 var rng* = initMersenneTwister(urandom(2500))
+
+
+proc uniform*(a,b: float) : float =
+      ## uniform
+      ## 
+      ## returns a random float uniformly distributed between a and  b
+      ## 
+      ## ..code-block:: nim
+      ##   import cx,stats
+      ##   import "random-0.5.3/random"
+      ##   proc quickTest() =
+      ##        var ps : Runningstat
+      ##        var  n = 100_000_000
+      ##        printlnBicol("Each test loops : " & $n & " times\n\n")
+      ##
+      ##        for x in 0.. <n: ps.push(uniform(0.00,100.00))
+      ##        println("uniform",salmon) 
+      ##        showStats(ps) 
+      ##        ps.clear 
+      ##        for x in 0.. <n: ps.push(getRandomFloat() * 100)
+      ##        curup(15) 
+      ##        println("getRandomFloat * 100",salmon,xpos = 30)
+      ##        showStats(ps,xpos = 30) 
+      ##    
+      ##        ps.clear 
+      ##        for x in 0.. <n: ps.push(getRandomInt(0,100))
+      ##        curup(15) 
+      ##        println("getRandomInt",salmon,xpos = 60)
+      ##        showStats(ps,xpos = 60) 
+      ##      
+      ##   quickTest() 
+      ##   doFinish()
+      ##   
+      ##    
+      result = a + (b - a) * rng.random()
 
 
 proc getRandomInt*(mi:int = 0,ma:int = int.high):int =
@@ -4082,6 +4119,33 @@ proc getRandomPoint*(minx:int = -500 ,maxx:int = 500 ,miny:int = -500 ,maxy:int 
 # Misc. routines
 
  
+proc checkHash*[T](kata:string,hsx:T)  =
+  ## checkHash
+  ## 
+  ## checks hash of a string and print status
+  ## 
+  if hash(kata) == hsx:
+        printlnBiCol("Hash Status : ok")
+  else:
+        printlnBiCol("Hash Status : fail",":",red)
+
+  
+proc createHash*(kata:string):auto = 
+    ## createHash
+    ## 
+    ## returns hash of a string
+    ##  
+    ## Example
+    ##  
+    ## .. code-block:: nim
+    ##    var zz = readLineFromStdin("Hash a string  : ")
+    ##    # var zz = readPasswordFromStdin("Hash a string  : ")   # to do not show input string
+    ##    var ahash = createHash(zz)
+    ##    echo ahash
+    ##    checkHash(zz, ahash)
+    ##    
+    ##    
+    result = hash(kata)   
 
 proc memCheck*(stats:bool = false) =
   ## memCheck
@@ -4093,13 +4157,13 @@ proc memCheck*(stats:bool = false) =
   echo()
   printLn("MemCheck            ",yellowgreen,styled = {styleUnderscore},substr = "MemCheck            ")
   echo()
-  println("Status    : Current ",salmon)
-  println(yellowgreen & "Mem: " &  lightsteelblue & "Used : " & white & ff2(getOccupiedMem()) & lightsteelblue & "  Free : " & white & ff2(getFreeMem()) & lightsteelblue & "  Total : " & white & ff2(getTotalMem() ))
+  printlnBiCol("Status    : Current ",":",salmon)
+  println(yellowgreen & "Mem " &  lightsteelblue & "Used  : " & white & ff2(getOccupiedMem()) & lightsteelblue & "  Free : " & white & ff2(getFreeMem()) & lightsteelblue & "  Total : " & white & ff2(getTotalMem() ))
   if stats == true:
     echo GC_getStatistics()
   GC_fullCollect()
-  println("Status    : GC_FullCollect executed",salmon)
-  println(yellowgreen & "Mem: " &  lightsteelblue & "Used : " & white & ff2(getOccupiedMem()) & lightsteelblue & "  Free : " & white & ff2(getFreeMem()) & lightsteelblue & "  Total : " & white & ff2(getTotalMem() ))
+  printlnBiCol("Status    : GC_FullCollect executed",":",salmon,pink)
+  println(yellowgreen & "Mem " &  lightsteelblue & "Used  : " & white & ff2(getOccupiedMem()) & lightsteelblue & "  Free : " & white & ff2(getFreeMem()) & lightsteelblue & "  Total : " & white & ff2(getTotalMem() ))
   if stats == true:
      echo GC_getStatistics()
  
@@ -4409,7 +4473,6 @@ template loopy*[T](ite:T,st:typed) =
      for x in ite: st
 
 
-
          
 proc showPalette*(coltype:string = "white") = 
     ## ::
@@ -4534,7 +4597,7 @@ proc spellFloat*(n:float64,sep:string = ".",sepname:string = " dot "):string =
   result = ok   
     
 
-proc showStats*(x:Runningstat,n:int = 3) =
+proc showStats*(x:Runningstat,n:int = 3,xpos:int = 1) =
      ## showStats
      ##
      ## quickly display runningStat data
@@ -4552,19 +4615,19 @@ proc showStats*(x:Runningstat,n:int = 3) =
      ##    doFinish()
      ##
      var sep = ":"
-     printLnBiCol("Sum     : " & ff(x.sum,n),sep,yellowgreen,white)
-     printLnBiCol("Mean    : " & ff(x.mean,n),sep,yellowgreen,white)
-     printLnBiCol("Var     : " & ff(x.variance,n),sep,yellowgreen,white)
-     printLnBiCol("Var  S  : " & ff(x.varianceS,n),sep,yellowgreen,white)
-     printLnBiCol("Kurt    : " & ff(x.kurtosis,n),sep,yellowgreen,white)
-     printLnBiCol("Kurt S  : " & ff(x.kurtosisS,n),sep,yellowgreen,white)
-     printLnBiCol("Skew    : " & ff(x.skewness,n),sep,yellowgreen,white)
-     printLnBiCol("Skew S  : " & ff(x.skewnessS,n),sep,yellowgreen,white)
-     printLnBiCol("Std     : " & ff(x.standardDeviation,n),sep,yellowgreen,white)
-     printLnBiCol("Std  S  : " & ff(x.standardDeviationS,n),sep,yellowgreen,white)
-     printLnBiCol("Min     : " & ff(x.min,n),sep,yellowgreen,white)
-     printLnBiCol("Max     : " & ff(x.max,n),sep,yellowgreen,white)
-     println("S --> sample",peru)
+     printLnBiCol("Sum     : " & ff(x.sum,n),sep,yellowgreen,white,xpos = xpos)
+     printLnBiCol("Mean    : " & ff(x.mean,n),sep,yellowgreen,white,xpos = xpos)
+     printLnBiCol("Var     : " & ff(x.variance,n),sep,yellowgreen,white,xpos = xpos)
+     printLnBiCol("Var  S  : " & ff(x.varianceS,n),sep,yellowgreen,white,xpos = xpos)
+     printLnBiCol("Kurt    : " & ff(x.kurtosis,n),sep,yellowgreen,white,xpos = xpos)
+     printLnBiCol("Kurt S  : " & ff(x.kurtosisS,n),sep,yellowgreen,white,xpos = xpos)
+     printLnBiCol("Skew    : " & ff(x.skewness,n),sep,yellowgreen,white,xpos = xpos)
+     printLnBiCol("Skew S  : " & ff(x.skewnessS,n),sep,yellowgreen,white,xpos = xpos)
+     printLnBiCol("Std     : " & ff(x.standardDeviation,n),sep,yellowgreen,white,xpos = xpos)
+     printLnBiCol("Std  S  : " & ff(x.standardDeviationS,n),sep,yellowgreen,white,xpos = xpos)
+     printLnBiCol("Min     : " & ff(x.min,n),sep,yellowgreen,white,xpos = xpos)
+     printLnBiCol("Max     : " & ff(x.max,n),sep,yellowgreen,white,xpos = xpos)
+     println("S --> sample\n",peru,xpos = xpos)
 
 proc showRegression*(x, y: openArray[float | int]) =
      ## showRegression
@@ -4775,9 +4838,15 @@ proc checkClip*(sel:string = "primary"):string  =
              rx = rx & " " & r[x]
      else:
          rx = "xclip returned errorcode : " & $errC & ". Clipboard not accessed correctly"
-
      result = rx
        
+proc toClip*[T](s:T ) = 
+     # toClip
+     #
+     # send a string to the Clipboard using xclip
+     #
+     discard execCmd("echo $1 | xclip " % $s)
+     
 
 # Unicode random word creators
 
@@ -5365,6 +5434,7 @@ proc infoLine*() =
     print("cx : ",peru)
     print(CXLIBVERSION,brightblack)
     print(" | ",brightblack)
+    print($someGcc & " | ",brightblack)
     qqTop()
 
 
