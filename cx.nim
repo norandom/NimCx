@@ -111,10 +111,12 @@ import strutils except toLower,toUpper
 import unicode ,typeinfo, typetraits,segfaults 
 
 # library can be profiled with
-# import nimprof       # needs compile with: nim c --profiler:on --stackTrace:on  -d:memProfiler cx
+# import nimprof    
+# needs compile with: nim c --profiler:on --stackTrace:on  -d:memProfiler cx
 
 # imports based on modules available via nimble
 import "random-0.5.3/random"
+    
 export strutils,sequtils,times,unicode
 export terminal.Style,terminal.getch  # make terminal style constants available in the calling prog
 
