@@ -11,9 +11,9 @@
 ##
 ##     ProjectStart: 2015-06-20
 ##   
-##     Latest      : 2017-01-12
+##     Latest      : 2017-02-09
 ##
-##     Compiler    : Nim >= 0.15.3
+##     Compiler    : Nim >= 0.16.0
 ##
 ##     OS          : Linux
 ##
@@ -21,7 +21,7 @@
 ##
 ##                   cx.nim is a collection of simple procs and templates
 ##
-##                   for easy colored display in a linux terminal and also contains
+##                   for easy colored display in a linux terminal and contains
 ##                   
 ##                   a wide selection of utility functions . 
 ##                   
@@ -38,15 +38,17 @@
 ##       
 ##                   Terminal set encoding to UTF-8  
 ##
-##                   with var. terminal font : monospace size 9.0 - 15  tested
+##                   tested with terminal font : monospace size 9.0 - 15  
 ##
-##                   xterm,bash,st terminals support truecolor ok
+##                   xterm,bash,st,QTerminal terminals support truecolor and tested ok
 ##
 ##                   some ubuntu based gnome-terminals may not be able to display all colors
 ##
 ##                   as they are not correctly linked , see ubuntuu forum questions.
 ##
-##                   run this awk script to see if your terminal supports truecolor
+##                   terminator may not show all colors
+##
+##                   you may run this awk script to see if your terminal supports truecolor
 ##
 ##                   script from : https://gist.github.com/XVilka/8346728
 ##
@@ -76,7 +78,7 @@
 ##
 ##     Programming : qqTop
 ##
-##     Note        : may be improved at any time
+##     Note        : this library may be improved or slimmed down as stdlib improves at any time
 ##
 ##                   mileage may vary depending on the available
 ##
@@ -84,11 +86,9 @@
 ##
 ##                   terminal x-axis position start with 1
 ##
-##                   proc fmtx a formatting utility has been added
+##                   proc fmtx a simple formatting utility has been added
 ##
-##                   to remove dependency on strfmt , which breaks sometimes
-##
-##                   after compiler updates .
+##                   to remove sole dependency on strfmt , which used to breaks after compiler updates .
 ##                   
 ##
 ##     Required    : random by Blaxspirit installed via nimble
@@ -100,9 +100,7 @@
 ##                 
 ##                   unicode font libraries as needed 
 ##
-##     Plans       : move some of the non core procs to a new module cxutils.nim
-##   
-##                   to avoid library bload.
+##     Plans       : move some of the non core procs to a new module cxutils.nim to avoid bload.
 ##
 ##
 ##
@@ -110,9 +108,10 @@ import os, times, parseutils, parseopt, hashes, tables, sets
 import osproc,macros,posix,terminal,math,stats,json
 import sequtils,httpclient,rawsockets,browsers,intsets, algorithm
 import strutils except toLower,toUpper
-import unicode ,typeinfo, typetraits 
+import unicode ,typeinfo, typetraits,segfaults 
 
-#import nimprof       # needs compile with: nim c --profiler:on --stackTrace:on  -d:memProfiler cx
+# library can be profiled with
+# import nimprof       # needs compile with: nim c --profiler:on --stackTrace:on  -d:memProfiler cx
 
 # imports based on modules available via nimble
 import "random-0.5.3/random"
@@ -1166,7 +1165,7 @@ template colPalette*(coltype:string,n:int): auto =
          ##   if n > larger than palette length the first palette entry will be used
          ##   
          ## .. code-block:: nim
-         ##     println("something blue ", colPalette("blue",5)   # gets the fifth entry of the bluepalette
+         ##     printLn("something blue ", colPalette("blue",5)   # gets the fifth entry of the bluepalette
          ##
          
          var ts = newseq[string]()         
@@ -1187,7 +1186,7 @@ template colorsPalette*(coltype:string): auto =
          ## .. code-block:: nim
          ##    import cx
          ##    let z = "The big money waits in the bank" 
-         ##    println(z,colPalette("pastel",getrandomint(0,colPaletteLen("pastel") - 1)),black)
+         ##    printLn(z,colPalette("pastel",getrandomint(0,colPaletteLen("pastel") - 1)),black)
          ##    rainbow2(z & "\n",centered = false,colorset = colorsPalette("medium"))
          ##    rainbow2("what's up ?\n",centered = true,colorset = colorsPalette("light"))
          ##    doFinish()
@@ -1201,9 +1200,9 @@ template colorsPalette*(coltype:string): auto =
               pal.add((colorNames[colx][0],colorNames[colx][1]))
               
          if pal.len < 1:
-           println("Error : colorsPalette",red)
-           println("Desired filter may not be available",red)
-           println("        Try:  medium , dark, light, blue, yellow etc.",red)  
+           printLn("Error : colorsPalette",red)
+           printLn("Desired filter may not be available",red)
+           printLn("        Try:  medium , dark, light, blue, yellow etc.",red)  
            doFinish()   
          pal
   
@@ -1220,7 +1219,7 @@ template colPaletteName*(coltype:string,n:int): auto =
          # build the custom palette ts       
          for colx in 0.. <colorNames.len:
             if colorNames[colx][0].startswith(coltype) or colorNames[colx][0].contains(coltype):
-              ts.add(colorNames[colx][0])
+               ts.add(colorNames[colx][0])
          
          # simple error handling to avoid indexerrors n ltoo large we try 0
          # this fails too something will error out
@@ -1241,7 +1240,7 @@ template randCol*(coltype:string): auto =
          ##   coltype examples : "red","blue","medium","dark","light","pastel" etc..
          ##   
          ## .. code-block:: nimble
-         ##    loopy(0..5,println("Random blue shades",randcol("blue")))
+         ##    loopy(0..5,printLn("Random blue shades",randcol("blue")))
          ##
          ##   
          var ts = newseq[string]()         
@@ -1612,8 +1611,8 @@ proc fmtengine[T](a:string,astring:T):string =
                try:
                   okstring = ff2(parseFloat(okstring),parseInt(df))       
                except ValueError:   
-                  println("Error , invalid format string dedected.",red)
-                  println("Showing exception thrown : ",peru)
+                  printLn("Error , invalid format string dedected.",red)
+                  printLn("Showing exception thrown : ",peru)
                   echo()
                   raise            
 
@@ -1674,7 +1673,7 @@ proc fmtx*[T](fmts:openarray[string],fstrings:varargs[T, `$`]):string =
      ##    echo fmtx(["","<18",":",">15","","",">8.2"],salmon,"nice something",steelblue,123,spaces(5),yellow,456.12345676)
      ##    ruler()
      ##    echo fmtx([">22"],"nice something"inc c )
-     ##    printlnBiCol(fmtx(["",">15.3f"],"Result : ",123.456789))  # formats the float to a string with precision 3 the f is not necessary
+     ##    printLnBiCol(fmtx(["",">15.3f"],"Result : ",123.456789))  # formats the float to a string with precision 3 the f is not necessary
      ##    echo fmtx([">22.3"],234.43324234)  # this formats float and aligns last char to pos 22
      ##    echo fmtx(["22.3"],234.43324234)   # this formats float but ignores position as no align operator given
      ##
@@ -2014,11 +2013,11 @@ proc printLn*[T](astring:T,fgr:string = termwhite , bgr:string = bblack,xpos:int
     ##    # or use it as a replacement of echo
     ##    printLn(red & "What's up ? " & green & "Grub's up ! "
     ##    printLn("No need to reset the original color")
-    ##    println("Nim does it again",peru,centered = true ,styled = {styleDim,styleUnderscore},substr = "i")
+    ##    printLn("Nim does it again",peru,centered = true ,styled = {styleDim,styleUnderscore},substr = "i")
     ##
     ##    # To achieve colored text with styleReverse try:
     ##    setBackgroundColor(bgRed)
-    ##    println("The End never comes on time ! ",lime,styled = {styleReverse})
+    ##    printLn("The End never comes on time ! ",lime,styled = {styleReverse})
     ##
 
     print($(astring) & "\L",fgr,bgr,xpos,fitLine,centered,styled,substr)
@@ -2057,7 +2056,7 @@ proc printLn*[T](astring:T,fgr:string = termwhite , bgr:BackgroundColor,xpos:int
     ##    # or use it as a replacement of echo
     ##    printLn(red & "What's up ? " & green & "Grub's up ! "
     ##    printLn("No need to reset the original color")
-    ##    println("Nim does it again",peru,centered = true ,styled = {styleDim,styleUnderscore},substr = "i")
+    ##    printLn("Nim does it again",peru,centered = true ,styled = {styleDim,styleUnderscore},substr = "i")
     ##
 
     #print($(astring) & "\L",fgr,bgr,xpos,fitLine,centered,styled,substr)
@@ -2080,7 +2079,7 @@ proc rainbow*[T](s : T,xpos:int = 0,fitLine:bool = false,centered:bool = false) 
     ##    # equivalent output
     ##    rainbow("what's up ?",centered = true)
     ##    echo()
-    ##    println("what's up ?",clrainbow,centered = true)
+    ##    printLn("what's up ?",clrainbow,centered = true)
     ##
     ##
     ##
@@ -2360,7 +2359,7 @@ proc printLnBiCol*[T](s:T,sep:string = ":", colLeft:string = yellowgreen, colRig
      ##
      ## same as printBiCol but issues a new line
      ##
-     ## default seperator = ":"  if not found we execute println with available params
+     ## default seperator = ":"  if not found we execute printLn with available params
      ##
      ## .. code-block:: nim
      ##    import cx,strutils,strfmt
@@ -2388,8 +2387,8 @@ proc printLnBiCol*[T](s:T,sep:string = ":", colLeft:string = yellowgreen, colRig
      else:
           # when the separator is not found
           nosepflag = true
-          # no separator so we just execute println with left color
-          println(zz,fgr=colLeft,xpos=xpos,centered=centered,styled = styled)
+          # no separator so we just execute printLn with left color
+          printLn(zz,fgr=colLeft,xpos=xpos,centered=centered,styled = styled)
 
      if nosepflag == false:
 
@@ -2510,7 +2509,7 @@ macro dotColors*(): untyped =
   ## 
   ## another way to show all colors
   ##  
-  result = parseStmt"""for x in colornames : println(widedot & x[0],x[1])"""
+  result = parseStmt"""for x in colornames : printLn(widedot & x[0],x[1])"""
 
 
 
@@ -2548,7 +2547,7 @@ proc dotyLn*(d:int,fgr:string = white, bgr:string = black,xpos:int = 1) =
      ## .. code-block:: nimble
      ##      import cx
      ##      loopy(0.. 100,loopy(1.. tw div 2, dotyLn(1,randcol(),xpos = random(tw - 1))))
-     ##      printlnBiCol("coloredSnow","d",greenyellow,salmon)
+     ##      printLnBiCol("coloredSnow","d",greenyellow,salmon)
 
      ##
      ## color clrainbow is not supported and will be in white
@@ -2699,7 +2698,7 @@ proc intervalsecs*(startDate,endDate:string) : float =
           var f     = "yyyy-MM-dd"
           result = toSeconds(toTime(endDate.parse(f)))  - toSeconds(toTime(startDate.parse(f)))
       else:
-          println("Error: " &  startDate & "/" & endDate & " --> Format yyyy-MM-dd required",red)
+          printLn("Error: " &  startDate & "/" & endDate & " --> Format yyyy-MM-dd required",red)
           #result = -0.0
 
 proc intervalmins*(startDate,endDate:string) : float =
@@ -3261,11 +3260,11 @@ proc slimC(x:string):T7 =
 
 proc prsn(x:int,fgr:string = termwhite,bgr:string = termblack,xpos:int = 0) =
      # print routine for slim numbers
-     for x in slimN(x).zx: println(x,fgr = fgr,bgr = bgr,xpos = xpos)
+     for x in slimN(x).zx: printLn(x,fgr = fgr,bgr = bgr,xpos = xpos)
 
 proc prsc(x:string,fgr:string = termwhite,bgr:string = termblack,xpos:int = 0) =
      # print routine for slim chars
-     for x in slimc(x).zx: println($x,fgr = fgr,bgr = bgr,xpos = xpos)
+     for x in slimc(x).zx: printLn($x,fgr = fgr,bgr = bgr,xpos = xpos)
 
 
 proc printSlim* (ss:string = "", frg:string = termwhite,bgr:string = termblack,xpos:int = 0,align:string = "left") =
@@ -3515,8 +3514,8 @@ proc getWanIp*():string =
       z = zcli.getContent(url = "http://my-ip.heroku.com")
       z = z.replace(sub = "{",by = " ").replace(sub = "}",by = " ").replace(sub = "\"ip\":"," ").replace(sub = '"' ,' ').strip()
    except:
-       print("Ip checking failed. See if heroku is still here or just to slow to respond",red)
-       print("Check Heroku Status : https://status.heroku.com",red)
+       printLn("Ip checking failed. See if heroku is still here or just to slow to respond",red)
+       printLn("Check Heroku Status : https://status.heroku.com",red)
        try:
          opendefaultbrowser("https://status.heroku.com")
        except:
@@ -3531,7 +3530,7 @@ proc getWanIp2*():string =
             ## 
             ## 
             ## .. code-block:: nim
-            ##    printlnbicol(getwanip2())
+            ##    printLnBiCol(getwanip2())
             ## 
             ## Note : maybe slower so only use if getWanIp does not work , needs curl and awk
             ## 
@@ -3702,7 +3701,7 @@ proc reverseMe*[T](xs: openarray[T]): seq[T] =
   ##
   ##    var z = @["nice","bad","abc","zztop","reverser"]
   ##    printLn(z,lime)
-  ##    println(z.reverseMe,red)
+  ##    printLn(z.reverseMe,red)
   ##
 
   result = newSeq[T](xs.len)
@@ -3756,21 +3755,21 @@ proc uniform*(a,b: float) : float =
       ##   proc quickTest() =
       ##        var ps : Runningstat
       ##        var  n = 100_000_000
-      ##        printlnBicol("Each test loops : " & $n & " times\n\n")
+      ##        printLnBiCol("Each test loops : " & $n & " times\n\n")
       ##
       ##        for x in 0.. <n: ps.push(uniform(0.00,100.00))
-      ##        println("uniform",salmon) 
+      ##        printLn("uniform",salmon) 
       ##        showStats(ps) 
       ##        ps.clear 
       ##        for x in 0.. <n: ps.push(getRandomFloat() * 100)
       ##        curup(15) 
-      ##        println("getRandomFloat * 100",salmon,xpos = 30)
+      ##        printLn("getRandomFloat * 100",salmon,xpos = 30)
       ##        showStats(ps,xpos = 30) 
       ##    
       ##        ps.clear 
       ##        for x in 0.. <n: ps.push(getRandomInt(0,100))
       ##        curup(15) 
-      ##        println("getRandomInt",salmon,xpos = 60)
+      ##        printLn("getRandomInt",salmon,xpos = 60)
       ##        showStats(ps,xpos = 60) 
       ##      
       ##   quickTest() 
@@ -3864,7 +3863,7 @@ proc ff2*(zz:float , n:int = 3):string =
   ##    for x in 1.. 2000:
   ##       # generate some positve and negative random float
   ##       var z = getrandomfloat() * 2345243.132310 * getRandomSignF()
-  ##       printlnBiCol(fmtx(["",">6","",">20"],"NZ ",$x," : ",ff2(z)))
+  ##       printLnBiCol(fmtx(["",">6","",">20"],"NZ ",$x," : ",ff2(z)))
   ##  
   ##       
   
@@ -3932,7 +3931,7 @@ proc ff2*(zz:int , n:int = 0):string =
   ##    for x in 1.. 20:
   ##       # generate some positve and negative random integer
   ##       var z = getrandomInt(50000,100000000) * getRandomSignI()
-  ##       printlnBiCol(fmtx(["",">6","",">20.0"],"NIM ",$x," : ",z))
+  ##       printLnBiCol(fmtx(["",">6","",">20.0"],"NIM ",$x," : ",z))
   ##       
   ##       
   
@@ -4125,9 +4124,9 @@ proc checkHash*[T](kata:string,hsx:T)  =
   ## checks hash of a string and print status
   ## 
   if hash(kata) == hsx:
-        printlnBiCol("Hash Status : ok")
+        printLnBiCol("Hash Status : ok")
   else:
-        printlnBiCol("Hash Status : fail",":",red)
+        printLnBiCol("Hash Status : fail",":",red)
 
   
 proc createHash*(kata:string):auto = 
@@ -4157,13 +4156,13 @@ proc memCheck*(stats:bool = false) =
   echo()
   printLn("MemCheck            ",yellowgreen,styled = {styleUnderscore},substr = "MemCheck            ")
   echo()
-  printlnBiCol("Status    : Current ",":",salmon)
-  println(yellowgreen & "Mem " &  lightsteelblue & "Used  : " & white & ff2(getOccupiedMem()) & lightsteelblue & "  Free : " & white & ff2(getFreeMem()) & lightsteelblue & "  Total : " & white & ff2(getTotalMem() ))
+  printLnBiCol("Status    : Current ",":",salmon)
+  printLn(yellowgreen & "Mem " &  lightsteelblue & "Used  : " & white & ff2(getOccupiedMem()) & lightsteelblue & "  Free : " & white & ff2(getFreeMem()) & lightsteelblue & "  Total : " & white & ff2(getTotalMem() ))
   if stats == true:
     echo GC_getStatistics()
   GC_fullCollect()
-  printlnBiCol("Status    : GC_FullCollect executed",":",salmon,pink)
-  println(yellowgreen & "Mem " &  lightsteelblue & "Used  : " & white & ff2(getOccupiedMem()) & lightsteelblue & "  Free : " & white & ff2(getFreeMem()) & lightsteelblue & "  Total : " & white & ff2(getTotalMem() ))
+  printLnBiCol("Status    : GC_FullCollect executed",":",salmon,pink)
+  printLn(yellowgreen & "Mem " &  lightsteelblue & "Used  : " & white & ff2(getOccupiedMem()) & lightsteelblue & "  Free : " & white & ff2(getFreeMem()) & lightsteelblue & "  Total : " & white & ff2(getTotalMem() ))
   if stats == true:
      echo GC_getStatistics()
  
@@ -4188,7 +4187,7 @@ proc checkNimCi*(title:string) =
   var zcli = newHttpClient()
   var url = zcli.getContent("https://136-60803270-gh.circle-artifacts.com/0/home/ubuntu/nim-ci/output/nimble_install_report.json")
   var z:JsonNode  = parseJson(url)
-  println("\nResults for last nim-ci evaluation : \n",salmon)
+  printLn("\nResults for last nim-ci evaluation : \n",salmon)
   for x in z.items():
     if find(x["title"].getstr.toLower(),title.toLower()) != -1:  
         printLnBiCol("Title     : " & unquote($x["title"]),":",yellowgreen,skyblue)
@@ -4270,19 +4269,19 @@ proc showBench*() =
       echo()
       var tit = " BenchMark        Timing " & spaces(25)
       printLn(tit,chartreuse,styled = {styleUnderScore},substr = tit)
-      println(dodgerblue & " [" & salmon & x.bname & dodgerblue & "]" & spaces(7) & cornflowerblue & "Epoch Time : " & white & x.epoch & " secs")
-      println(dodgerblue & " [" & salmon & x.bname & dodgerblue & "]" & spaces(7) & cornflowerblue & "Cpu   Time : " & white & x.cpu & " secs")    
+      printLn(dodgerblue & " [" & salmon & x.bname & dodgerblue & "]" & spaces(7) & cornflowerblue & "Epoch Time : " & white & x.epoch & " secs")
+      printLn(dodgerblue & " [" & salmon & x.bname & dodgerblue & "]" & spaces(7) & cornflowerblue & "Cpu   Time : " & white & x.cpu & " secs")    
     echo()
     benchmarkresults = @[]
-    println("Benchmark results end. Results cleared.",goldenrod)
+    printLn("Benchmark results end. Results cleared.",goldenrod)
  else:
     printLn("Benchmark results emtpy.Nothing to show",red)   
 
 proc `$`*[T](some:typedesc[T]): string = name(T)
 proc typetest*[T](x:T): T =
   # used to determine the field types in the temp sqllite table used for sorting
-  printlnBicol("Type     : " & $type(x))
-  printlnBiCol("Value    : " & $x)
+  printLnBiCol("Type     : " & $type(x))
+  printLnBiCol("Value    : " & $x)
 
 
 proc sortMe*[T](xs:var seq[T],order = Ascending): seq[T] =
@@ -4294,8 +4293,8 @@ proc sortMe*[T](xs:var seq[T],order = Ascending): seq[T] =
      ##
      ## .. code-block:: nim
      ##    var z = createSeqFloat()
-     ##    println(sortMe(z),salmon)
-     ##    println(sortMe(z,Descending),peru)
+     ##    printLn(sortMe(z),salmon)
+     ##    printLn(sortMe(z,Descending),peru)
      ##
      ##
      xs.sort(proc(x,y:T):int = cmp(x,y),order = order)
@@ -4378,11 +4377,11 @@ proc ruler* (xpos:int=0,xposE:int=0,ypos:int = 0,fgr:string = termwhite,bgr:stri
             else: curup(ypos + 2)
 
             for x in 0.. ypos:
-                  if x == 0: println(".",lime,bgr,xpos = xpos + 3)
+                  if x == 0: printLn(".",lime,bgr,xpos = xpos + 3)
                   elif x mod 2 == 0:
                          print(x,fgr,bgr,xpos = xpos)
-                         println(".",fgr,bgr,xpos = xpos + 3)
-                  else: println(".",truetomato,bgr,xpos = xpos + 3)
+                         printLn(".",fgr,bgr,xpos = xpos + 3)
+                  else: printLn(".",truetomato,bgr,xpos = xpos + 3)
      decho(3)
 
 
@@ -4484,8 +4483,8 @@ proc showPalette*(coltype:string = "white") =
     echo()
     let z = colPaletteLen(coltype)
     for x in 0.. <z:
-          println(fmtx([">3",">4"],$x,rightarrow) & " ABCD 12345678909   " & colPaletteName(coltype,x) , colPalette(coltype,x))
-    printlnbicol("\n" & coltype & "Palette items count   : " & $z)  
+          printLn(fmtx([">3",">4"],$x,rightarrow) & " ABCD 12345678909   " & colPaletteName(coltype,x) , colPalette(coltype,x))
+    printLnBiCol("\n" & coltype & "Palette items count   : " & $z)  
     echo()  
     
 
@@ -4580,9 +4579,9 @@ proc spellFloat*(n:float64,sep:string = ".",sepname:string = " dot "):string =
   ## default sepname = " dot "
   ## 
   ## .. code-block:: nim
-  ##  println spellFloat(0.00)
-  ##  println spellFloat(234)
-  ##  println spellFloat(-2311.345)
+  ##  printLn spellFloat(0.00)
+  ##  printLn spellFloat(234)
+  ##  printLn spellFloat(-2311.345)
   ## 
   var ok = ""
   if n == 0.00:
@@ -4627,7 +4626,7 @@ proc showStats*(x:Runningstat,n:int = 3,xpos:int = 1) =
      printLnBiCol("Std  S  : " & ff(x.standardDeviationS,n),sep,yellowgreen,white,xpos = xpos)
      printLnBiCol("Min     : " & ff(x.min,n),sep,yellowgreen,white,xpos = xpos)
      printLnBiCol("Max     : " & ff(x.max,n),sep,yellowgreen,white,xpos = xpos)
-     println("S --> sample\n",peru,xpos = xpos)
+     printLn("S --> sample\n",peru,xpos = xpos)
 
 proc showRegression*(x, y: openArray[float | int]) =
      ## showRegression
@@ -4689,11 +4688,9 @@ proc remDir*(dirname:string) =
 
      if dirname == "/home" or dirname == "/" :
         printLn("Directory " & dirname & " removal not allowed !",brightred)
-
      else:
 
         if existsDir(dirname):
-
             try:
                 removeDir(dirname)
                 printLn("Directory " & dirname & " deleted ok",yellowgreen)
@@ -4725,7 +4722,7 @@ proc dayOfYear*() : range[0..365] = getLocalTime(getTime()).yearday + 1
     ##     var afile = "cx.nim"
     ##     var mday = getLastModificationTime(afile).dayofyear
     ##     var today = dayofyear
-    ##     printlnBiCol("Last Modified on day  : " & $mday)
+    ##     printLnBiCol("Last Modified on day  : " & $mday)
     ##     printLnBiCol("Day of Current year   : " & $today)
     ##
     ##
@@ -4745,7 +4742,7 @@ proc dayOfYear*(tt:Time) : range[0..365] = getLocalTime(tt).yearday + 1
     ##     var afile = "cx.nim"
     ##     var mday  = getLastModificationTime(afile).dayofyear
     ##     var today = dayofyear
-    ##     printlnBiCol("Last Modified on day  : " & $mday)
+    ##     printLnBiCol("Last Modified on day  : " & $mday)
     ##     printLnBiCol("Day of Current year   : " & $today)
     ##
     ##
@@ -4761,57 +4758,57 @@ proc doNimUp*(xpos = 5, rev:bool = true) =
       decho(2)
       if rev == true:
           
-          println("        $$$$               ".reversed,randcol(),xpos = xpos)
-          println("       $$  $               ".reversed,randcol(),xpos = xpos)
-          println("       $   $$              ".reversed,randcol(),xpos = xpos)
-          println("       $   $$              ".reversed,randcol(),xpos = xpos)
-          println("       $$   $$             ".reversed,randcol(),xpos = xpos)
-          println("        $    $$            ".reversed,randcol(),xpos = xpos)
-          println("        $$    $$$          ".reversed,randcol(),xpos = xpos)
-          println("         $$     $$         ".reversed,randcol(),xpos = xpos)
-          println("         $$      $$        ".reversed,randcol(),xpos = xpos)
-          println("          $       $$       ".reversed,randcol(),xpos = xpos)
-          println("    $$$$$$$        $$      ".reversed,randcol(),xpos = xpos)
-          println("  $$$               $$$$$  ".reversed,randcol(),xpos = xpos)
-          println(" $$    $$$$            $$$ ".reversed,randcol(),xpos = xpos)
-          println(" $   $$$  $$$            $$".reversed,randcol(),xpos = xpos)
-          println(" $$        $$$            $".reversed,randcol(),xpos = xpos)
-          println("  $$    $$$$$$            $".reversed,randcol(),xpos = xpos)
-          println("  $$$$$$$    $$           $".reversed,randcol(),xpos = xpos)
-          println("  $$       $$$$           $".reversed,randcol(),xpos = xpos)
-          println("   $$$$$$$$$  $$         $$".reversed,randcol(),xpos = xpos)
-          println("    $        $$$$     $$$$ ".reversed,randcol(),xpos = xpos)
-          println("    $$    $$$$$$    $$$$$$ ".reversed,randcol(),xpos = xpos)
-          println("     $$$$$$    $$  $$      ".reversed,randcol(),xpos = xpos)
-          println("       $     $$$ $$$       ".reversed,randcol(),xpos = xpos)
-          println("        $$$$$$$$$$         ".reversed,randcol(),xpos = xpos)
+          printLn("        $$$$               ".reversed,randcol(),xpos = xpos)
+          printLn("       $$  $               ".reversed,randcol(),xpos = xpos)
+          printLn("       $   $$              ".reversed,randcol(),xpos = xpos)
+          printLn("       $   $$              ".reversed,randcol(),xpos = xpos)
+          printLn("       $$   $$             ".reversed,randcol(),xpos = xpos)
+          printLn("        $    $$            ".reversed,randcol(),xpos = xpos)
+          printLn("        $$    $$$          ".reversed,randcol(),xpos = xpos)
+          printLn("         $$     $$         ".reversed,randcol(),xpos = xpos)
+          printLn("         $$      $$        ".reversed,randcol(),xpos = xpos)
+          printLn("          $       $$       ".reversed,randcol(),xpos = xpos)
+          printLn("    $$$$$$$        $$      ".reversed,randcol(),xpos = xpos)
+          printLn("  $$$               $$$$$  ".reversed,randcol(),xpos = xpos)
+          printLn(" $$    $$$$            $$$ ".reversed,randcol(),xpos = xpos)
+          printLn(" $   $$$  $$$            $$".reversed,randcol(),xpos = xpos)
+          printLn(" $$        $$$            $".reversed,randcol(),xpos = xpos)
+          printLn("  $$    $$$$$$            $".reversed,randcol(),xpos = xpos)
+          printLn("  $$$$$$$    $$           $".reversed,randcol(),xpos = xpos)
+          printLn("  $$       $$$$           $".reversed,randcol(),xpos = xpos)
+          printLn("   $$$$$$$$$  $$         $$".reversed,randcol(),xpos = xpos)
+          printLn("    $        $$$$     $$$$ ".reversed,randcol(),xpos = xpos)
+          printLn("    $$    $$$$$$    $$$$$$ ".reversed,randcol(),xpos = xpos)
+          printLn("     $$$$$$    $$  $$      ".reversed,randcol(),xpos = xpos)
+          printLn("       $     $$$ $$$       ".reversed,randcol(),xpos = xpos)
+          printLn("        $$$$$$$$$$         ".reversed,randcol(),xpos = xpos)
 
       else:
         
-          println("        $$$$               ",randcol(),xpos=60)
-          println("       $$  $               ",randcol(),xpos=60)
-          println("       $   $$              ",randcol(),xpos=60)
-          println("       $   $$              ",randcol(),xpos=60)
-          println("       $$   $$             ",randcol(),xpos=60)
-          println("        $    $$            ",randcol(),xpos=60)
-          println("        $$    $$$          ",randcol(),xpos=60)
-          println("         $$     $$         ",randcol(),xpos=60)
-          println("         $$      $$        ",randcol(),xpos=60)
-          println("          $       $$       ",randcol(),xpos=60)
-          println("    $$$$$$$        $$      ",randcol(),xpos=60)
-          println("  $$$               $$$$$  ",randcol(),xpos=60)
-          println(" $$    $$$$            $$$ ",randcol(),xpos=60)
-          println(" $   $$$  $$$            $$",randcol(),xpos=60)
-          println(" $$        $$$            $",randcol(),xpos=60)
-          println("  $$    $$$$$$            $",randcol(),xpos=60)
-          println("  $$$$$$$    $$           $",randcol(),xpos=60)
-          println("  $$       $$$$           $",randcol(),xpos=60)
-          println("   $$$$$$$$$  $$         $$",randcol(),xpos=60)
-          println("    $        $$$$     $$$$ ",randcol(),xpos=60)
-          println("    $$    $$$$$$    $$$$$$ ",randcol(),xpos=60)
-          println("     $$$$$$    $$  $$      ",randcol(),xpos=60)
-          println("       $     $$$ $$$       ",randcol(),xpos=60)
-          println("        $$$$$$$$$$         ",randcol(),xpos=60)
+          printLn("        $$$$               ",randcol(),xpos=60)
+          printLn("       $$  $               ",randcol(),xpos=60)
+          printLn("       $   $$              ",randcol(),xpos=60)
+          printLn("       $   $$              ",randcol(),xpos=60)
+          printLn("       $$   $$             ",randcol(),xpos=60)
+          printLn("        $    $$            ",randcol(),xpos=60)
+          printLn("        $$    $$$          ",randcol(),xpos=60)
+          printLn("         $$     $$         ",randcol(),xpos=60)
+          printLn("         $$      $$        ",randcol(),xpos=60)
+          printLn("          $       $$       ",randcol(),xpos=60)
+          printLn("    $$$$$$$        $$      ",randcol(),xpos=60)
+          printLn("  $$$               $$$$$  ",randcol(),xpos=60)
+          printLn(" $$    $$$$            $$$ ",randcol(),xpos=60)
+          printLn(" $   $$$  $$$            $$",randcol(),xpos=60)
+          printLn(" $$        $$$            $",randcol(),xpos=60)
+          printLn("  $$    $$$$$$            $",randcol(),xpos=60)
+          printLn("  $$$$$$$    $$           $",randcol(),xpos=60)
+          printLn("  $$       $$$$           $",randcol(),xpos=60)
+          printLn("   $$$$$$$$$  $$         $$",randcol(),xpos=60)
+          printLn("    $        $$$$     $$$$ ",randcol(),xpos=60)
+          printLn("    $$    $$$$$$    $$$$$$ ",randcol(),xpos=60)
+          printLn("     $$$$$$    $$  $$      ",randcol(),xpos=60)
+          printLn("       $     $$$ $$$       ",randcol(),xpos=60)
+          printLn("        $$$$$$$$$$         ",randcol(),xpos=60)
 
       curup(15)
       printBigLetters("NIM",fgr=randcol(),xpos = xpos + 33)
@@ -5414,10 +5411,10 @@ proc doInfo*() =
   printBiCol("OS                            : "& hostOS,sep,yellowgreen,lightgrey)
   printBiCol(" | CPU: "& hostCPU,sep,yellowgreen,lightgrey)
   printLnBiCol(" | cpuEndian: "& $cpuEndian,sep,yellowgreen,lightgrey)
-  printlnBiCol("CPU Cores                     : " & $getCpuCores())
+  printLnBiCol("CPU Cores                     : " & $getCpuCores())
   let pd = getpid()
   printLnBiCol("Current pid                   : " & $pd,sep,yellowgreen,lightgrey)
-
+  printLnBiCol("Module Name                   : " & currentSourcePath().splitfile().name )
 
 
 proc infoLine*() =
@@ -5450,10 +5447,13 @@ proc doFinish*() =
     decho(2)
     infoLine()
     printLn(" - " & year(getDateStr()),brightblack)
-    print(fmtx(["<14"],"Elapsed     : "),yellowgreen)
+    printBiCol("Compiled    : " & CompileDate &  spaces(1) & CompileTime & "  *  ",":",yellowgreen,brightblack)
+    print(fmtx(["<14"],"Elapsed : "),yellowgreen)
     printLn(fmtx(["<",">5"],ff(epochtime() - cx.start,3),"secs"),goldenrod)
+    
     echo()
     quit(0)
+
 
 proc handler*() {.noconv.} =
     ## handler

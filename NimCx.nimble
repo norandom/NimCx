@@ -1,12 +1,13 @@
-[Package]
-name          = "NimCx"
+# Package
+
+
 version       = "0.9.9"
 author        = "qqTop"
-description   = "Color your Nim. Utilities for a happy terminal."
+description   = "Color and utilities library for a happy linux terminal."
 license       = "MIT"
 
+# Dependencies
 
-[Deps]
-Requires: "nim >= 0.14.2"
-Requires: "https://github.com/BlaXpirit/nim-random"
+requires "nim >= 0.16.0"
+requires "https://github.com/BlaXpirit/nim-random"
 
