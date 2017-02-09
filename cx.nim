@@ -116,7 +116,7 @@ import unicode ,typeinfo, typetraits,segfaults
 
 # imports based on modules available via nimble
 import "random-0.5.3/random"
-    
+
 export strutils,sequtils,times,unicode
 export terminal.Style,terminal.getch  # make terminal style constants available in the calling prog
 
@@ -5374,9 +5374,9 @@ proc doInfo*() =
   printLnBiCol("Environment Info              : " & getEnv("HOME"),sep,yellowgreen,lightgrey)
   printLnBiCol("File exists                   : " & $(existsFile filename),sep,yellowgreen,lightgrey)
   printLnBiCol("Dir exists                    : " & $(existsDir "/"),sep,yellowgreen,lightgrey)
-  printLnBiCol("AppDir                        : " & getAppDir(),sep,yellowgreen,lightgrey)
+  printLnBiCol("AppDir                        : " & os.getAppDir(),sep,yellowgreen,lightgrey)
   printLnBiCol("App File Name                 : " & getAppFilename(),sep,yellowgreen,lightgrey)
-  printLnBiCol("User home  dir                : " & getHomeDir(),sep,yellowgreen,lightgrey)
+  printLnBiCol("User home  dir                : " & os.getHomeDir(),sep,yellowgreen,lightgrey)
   printLnBiCol("Config Dir                    : " & getConfigDir(),sep,yellowgreen,lightgrey)
   printLnBiCol("Current Dir                   : " & getCurrentDir(),sep,yellowgreen,lightgrey)
   let fi = getFileInfo(filename)
