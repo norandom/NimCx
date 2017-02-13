@@ -11,9 +11,9 @@
 ##
 ##     ProjectStart: 2015-06-20
 ##   
-##     Latest      : 2017-02-09
+##     Latest      : 2017-01-12
 ##
-##     Compiler    : Nim >= 0.16.0
+##     Compiler    : Nim >= 0.15.3
 ##
 ##     OS          : Linux
 ##
@@ -21,7 +21,7 @@
 ##
 ##                   cx.nim is a collection of simple procs and templates
 ##
-##                   for easy colored display in a linux terminal and contains
+##                   for easy colored display in a linux terminal and also contains
 ##                   
 ##                   a wide selection of utility functions . 
 ##                   
@@ -38,17 +38,15 @@
 ##       
 ##                   Terminal set encoding to UTF-8  
 ##
-##                   tested with terminal font : monospace size 9.0 - 15  
+##                   with var. terminal font : monospace size 9.0 - 15  tested
 ##
-##                   xterm,bash,st,QTerminal terminals support truecolor and tested ok
+##                   xterm,bash,st terminals support truecolor ok
 ##
 ##                   some ubuntu based gnome-terminals may not be able to display all colors
 ##
 ##                   as they are not correctly linked , see ubuntuu forum questions.
 ##
-##                   terminator may not show all colors
-##
-##                   you may run this awk script to see if your terminal supports truecolor
+##                   run this awk script to see if your terminal supports truecolor
 ##
 ##                   script from : https://gist.github.com/XVilka/8346728
 ##
@@ -78,7 +76,7 @@
 ##
 ##     Programming : qqTop
 ##
-##     Note        : this library may be improved or slimmed down as stdlib improves at any time
+##     Note        : may be improved at any time
 ##
 ##                   mileage may vary depending on the available
 ##
@@ -86,9 +84,11 @@
 ##
 ##                   terminal x-axis position start with 1
 ##
-##                   proc fmtx a simple formatting utility has been added
+##                   proc fmtx a formatting utility has been added
 ##
-##                   to remove sole dependency on strfmt , which used to breaks after compiler updates .
+##                   to remove dependency on strfmt , which breaks sometimes
+##
+##                   after compiler updates .
 ##                   
 ##
 ##     Required    : random by Blaxspirit installed via nimble
@@ -100,7 +100,9 @@
 ##                 
 ##                   unicode font libraries as needed 
 ##
-##     Plans       : move some of the non core procs to a new module cxutils.nim to avoid bload.
+##     Plans       : move some of the non core procs to a new module cxutils.nim
+##   
+##                   to avoid library bload.
 ##
 ##
 ##
@@ -108,15 +110,12 @@ import os, times, parseutils, parseopt, hashes, tables, sets
 import osproc,macros,posix,terminal,math,stats,json
 import sequtils,httpclient,rawsockets,browsers,intsets, algorithm
 import strutils except toLower,toUpper
-import unicode ,typeinfo, typetraits,segfaults 
+import unicode ,typeinfo, typetraits 
 
-# library can be profiled with
-# import nimprof    
-# needs compile with: nim c --profiler:on --stackTrace:on  -d:memProfiler cx
+#import nimprof       # needs compile with: nim c --profiler:on --stackTrace:on  -d:memProfiler cx
 
 # imports based on modules available via nimble
 import "random-0.5.3/random"
-
 export strutils,sequtils,times,unicode
 export terminal.Style,terminal.getch  # make terminal style constants available in the calling prog
 
@@ -1221,7 +1220,7 @@ template colPaletteName*(coltype:string,n:int): auto =
          # build the custom palette ts       
          for colx in 0.. <colorNames.len:
             if colorNames[colx][0].startswith(coltype) or colorNames[colx][0].contains(coltype):
-               ts.add(colorNames[colx][0])
+              ts.add(colorNames[colx][0])
          
          # simple error handling to avoid indexerrors n ltoo large we try 0
          # this fails too something will error out
@@ -3358,7 +3357,7 @@ proc superHeader*(bstring:string) =
       printLn(pdl,yellowgreen)
       print(framechar & " ",yellowgreen)
       print(astring)
-      printLn(" " & framechar,yellowgreen)
+      printLn(" " & spaces(mddl - 20) & framechar,yellowgreen)
       printLn(pdl,yellowgreen)
       echo()
 
@@ -3515,13 +3514,15 @@ proc getWanIp*():string =
    try:
       z = zcli.getContent(url = "http://my-ip.heroku.com")
       z = z.replace(sub = "{",by = " ").replace(sub = "}",by = " ").replace(sub = "\"ip\":"," ").replace(sub = '"' ,' ').strip()
-   except:
-       printLn("Ip checking failed. See if heroku is still here or just to slow to respond",red)
+   except OSError:
+       printLn("Ip checking failed. See if Heroku is still here or just to slow to respond",red)
        printLn("Check Heroku Status : https://status.heroku.com",red)
+       printLn("Is your internet still working ?",lightseagreen)
        try:
-         opendefaultbrowser("https://status.heroku.com")
-       except:
-         discard
+           opendefaultbrowser("https://status.heroku.com")
+       except  OSError:
+            discard
+       discard  
    result = z
    
    
@@ -3570,10 +3571,13 @@ proc getIpInfo*(ip:string):JsonNode =
      ##   echo jj["city"].getstr
      ##
      ##
+    
      var zcli = newHttpClient()
      if ip != "":
-        result = parseJson(zcli.getContent("http://ip-api.com/json/" & ip))
-
+        try: 
+          result = parseJson(zcli.getContent("http://ip-api.com/json/" & ip))
+        except OSError:
+            discard
 
 
 proc showIpInfo*(ip:string) =
@@ -3587,13 +3591,16 @@ proc showIpInfo*(ip:string) =
       ##    showIpInfo("208.80.152.201")
       ##    showIpInfo(getHosts("bbc.com")[0])
       ##
-      var jj:JsonNode = getIpInfo(ip)
-      decho(2)
-      printLn("Ip-Info for " & ip,lightsteelblue)
-      dlineln(40,col = yellow)
-      for x in jj.mpairs() :
-          echo fmtx(["<15","",""],$x.key ," : " ,unquote($x.val))
-      printLnBiCol(fmtx(["<15","",""],"Source"," : ","ip-api.com"),":",yellowgreen,salmon)
+      try:
+        var jj:JsonNode = getIpInfo(ip)
+        decho(2)
+        printLn("Ip-Info for " & ip,lightsteelblue)
+        dlineln(40,col = yellow)
+        for x in jj.mpairs() :
+            echo fmtx(["<15","",""],$x.key ," : " ,unquote($x.val))
+        printLnBiCol(fmtx(["<15","",""],"Source"," : ","ip-api.com"),":",yellowgreen,salmon)
+      except:
+          printLnBiCol("IpInfo   : unavailable",":",lightgreen,red)  
 
 proc localIp*():string=
    # localIp
@@ -4690,9 +4697,11 @@ proc remDir*(dirname:string) =
 
      if dirname == "/home" or dirname == "/" :
         printLn("Directory " & dirname & " removal not allowed !",brightred)
+
      else:
 
         if existsDir(dirname):
+
             try:
                 removeDir(dirname)
                 printLn("Directory " & dirname & " deleted ok",yellowgreen)
@@ -5374,9 +5383,9 @@ proc doInfo*() =
   printLnBiCol("Environment Info              : " & getEnv("HOME"),sep,yellowgreen,lightgrey)
   printLnBiCol("File exists                   : " & $(existsFile filename),sep,yellowgreen,lightgrey)
   printLnBiCol("Dir exists                    : " & $(existsDir "/"),sep,yellowgreen,lightgrey)
-  printLnBiCol("AppDir                        : " & os.getAppDir(),sep,yellowgreen,lightgrey)
+  printLnBiCol("AppDir                        : " & getAppDir(),sep,yellowgreen,lightgrey)
   printLnBiCol("App File Name                 : " & getAppFilename(),sep,yellowgreen,lightgrey)
-  printLnBiCol("User home  dir                : " & os.getHomeDir(),sep,yellowgreen,lightgrey)
+  printLnBiCol("User home  dir                : " & getHomeDir(),sep,yellowgreen,lightgrey)
   printLnBiCol("Config Dir                    : " & getConfigDir(),sep,yellowgreen,lightgrey)
   printLnBiCol("Current Dir                   : " & getCurrentDir(),sep,yellowgreen,lightgrey)
   let fi = getFileInfo(filename)
@@ -5416,7 +5425,7 @@ proc doInfo*() =
   printLnBiCol("CPU Cores                     : " & $getCpuCores())
   let pd = getpid()
   printLnBiCol("Current pid                   : " & $pd,sep,yellowgreen,lightgrey)
-  printLnBiCol("Module Name                   : " & currentSourcePath().splitfile().name )
+
 
 
 proc infoLine*() =
@@ -5449,13 +5458,10 @@ proc doFinish*() =
     decho(2)
     infoLine()
     printLn(" - " & year(getDateStr()),brightblack)
-    printBiCol("Compiled    : " & CompileDate &  spaces(1) & CompileTime & "  *  ",":",yellowgreen,brightblack)
-    print(fmtx(["<14"],"Elapsed : "),yellowgreen)
+    print(fmtx(["<14"],"Elapsed     : "),yellowgreen)
     printLn(fmtx(["<",">5"],ff(epochtime() - cx.start,3),"secs"),goldenrod)
-    
     echo()
     quit(0)
-
 
 proc handler*() {.noconv.} =
     ## handler
@@ -5521,6 +5527,11 @@ when isMainModule:
   printLn(kitty,lime,black,centered=true)
   decho(2)
   doInfo()
-  showIpInfo(getWanIp())
+  var zw = getWanIp()
+  if zw.contains("not"):
+         printLn("Please check your internet connection .",red)
+  else: 
+     showIpInfo(zw)
+
   memCheck()
   doFinish()
