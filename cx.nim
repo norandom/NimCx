@@ -3355,9 +3355,8 @@ proc superHeader*(bstring:string) =
       # really want a terminal color checker to avoid invisible lines
       echo()
       printLn(pdl,yellowgreen)
-      print(framechar & " ",yellowgreen)
-      print(astring)
-      printLn(" " & spaces(mddl - 20) & framechar,yellowgreen)
+      print(spaces(1))
+      printLn(astring,dodgerblue)
       printLn(pdl,yellowgreen)
       echo()
 
@@ -4170,6 +4169,7 @@ proc memCheck*(stats:bool = false) =
   if stats == true:
     echo GC_getStatistics()
   GC_fullCollect()
+  sleepy(0.5)
   printLnBiCol("Status    : GC_FullCollect executed",":",salmon,pink)
   printLn(yellowgreen & "Mem " &  lightsteelblue & "Used  : " & white & ff2(getOccupiedMem()) & lightsteelblue & "  Free : " & white & ff2(getFreeMem()) & lightsteelblue & "  Total : " & white & ff2(getTotalMem() ))
   if stats == true:
@@ -5533,5 +5533,5 @@ when isMainModule:
   else: 
      showIpInfo(zw)
 
-  memCheck()
+  #memCheck(true)
   doFinish()
