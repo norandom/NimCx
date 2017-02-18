@@ -1557,7 +1557,7 @@ proc getRandomSignF*():float =
     if s == 0:
        result = -1.0   
     else :
-       result = 1
+       result = 1.0
 
 
 proc fmtengine[T](a:string,astring:T):string =
@@ -1670,17 +1670,20 @@ proc fmtx*[T](fmts:openarray[string],fstrings:varargs[T, `$`]):string =
      ## Examples :
      ##
      ## .. code-block:: nim
-     ##    echo fmtx(["","","<8.3",""," High : ","<8","","","","","","","",""],lime,"OPen : ",unquote("1234.5986"),yellow,"",3456.67,red,showRune("FFEC"),white," Change:",unquote("-1.34 - 0.45%"),"  Range : ",lime,@[123,456,789])
+     ##    echo fmtx(["","","<8.3",""," High : ","<8","","","","","","","",""],lime,"Open : ",unquote("1234.5986"),yellow,"",3456.67,red,showRune("FFEC"),white," Change:",unquote("-1.34 - 0.45%"),"  Range : ",lime,@[123,456,789])
      ##    echo fmtx(["","<18",":",">15","","",">8.2"],salmon,"nice something",steelblue,123,spaces(5),yellow,456.12345676)
+     ##    echo()
      ##    ruler()
-     ##    echo fmtx([">22"],"nice something"inc c )
-     ##    printLnBiCol(fmtx(["",">15.3f"],"Result : ",123.456789))  # formats the float to a string with precision 3 the f is not necessary
+     ##    for x in 0.. 10: printlnBiCol(fmtx([">22",">10"],"nice something :",x ))
+     ##    echo()
+     ##    printLnBiCol(fmtx(["",">15.3f"],"Result : ",123.456789),":",lime,red)  # formats the float to a string with precision 3 the f is not necessary
+     ##    echo()
      ##    echo fmtx([">22.3"],234.43324234)  # this formats float and aligns last char to pos 22
      ##    echo fmtx(["22.3"],234.43324234)   # this formats float but ignores position as no align operator given
      ##
 
      var okresult = ""
-     # if formatstrings count not same as vararg count we bail out
+     # if formatstrings count not same as vararg count we bail out some error about fmts will be shown
      doassert(fmts.len == fstrings.len)
      # now iterate and generate the desired output
      for cc in 0.. <fmts.len:
