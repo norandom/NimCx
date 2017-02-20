@@ -2286,7 +2286,7 @@ proc printRainbow*(s : string,styled:set[Style] = {}) =
        print($astr[x],colorNames[c][1],styled = styled)
 
 
-proc printLnRainbow*[T](s : T,styled:set[Style]) =
+proc printLnRainbow*[T](s : T,styled:set[Style] = {}) =
     ## printLnRainbow
     ##
     ##
