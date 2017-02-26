@@ -1873,7 +1873,11 @@ proc print*[T](astring:T,fgr:string = termwhite ,bgr:string = bblack,xpos:int = 
       
         case fgr
           of clrainbow: rainbow(" " & $astring,npos)
-          else: write(stdout,fgr & colconv(bgr) & $astring)
+          else:
+            try:
+               write(stdout,fgr & colconv(bgr) & $(astring))
+            except:
+               echo $(astring)
 
     # reset to white/black only if any changes
     if fgr != $fgWhite or bgr != $bgBlack:
@@ -1971,7 +1975,10 @@ proc print*[T](astring:T,fgr:string = termwhite ,bgr:BackgroundColor ,xpos:int =
           of clrainbow: rainbow(spaces(1) & $astring,npos)
           else: 
               setBackGroundColor(bgr)
-              write(stdout,fgr & $astring)
+              try:
+                write(stdout,fgr & $astring)
+              except:
+                echo astring
 
     # reset to white/black only if any changes
     if fgr != $fgWhite or bgr != bgBlack:
@@ -2023,7 +2030,6 @@ proc printLn*[T](astring:T,fgr:string = termwhite , bgr:string = bblack,xpos:int
     ##    setBackgroundColor(bgRed)
     ##    printLn("The End never comes on time ! ",lime,styled = {styleReverse})
     ##
-
     print($(astring) & "\L",fgr,bgr,xpos,fitLine,centered,styled,substr)
    
 
@@ -2063,12 +2069,8 @@ proc printLn*[T](astring:T,fgr:string = termwhite , bgr:BackgroundColor,xpos:int
     ##    printLn("Nim does it again",peru,centered = true ,styled = {styleDim,styleUnderscore},substr = "i")
     ##
 
-    #print($(astring) & "\L",fgr,bgr,xpos,fitLine,centered,styled,substr)
-    print($(astring),fgr,bgr,xpos,fitLine,centered,styled,substr)
-    echo()
+    print($(astring) & "\L",fgr,bgr,xpos,fitLine,centered,styled,substr)
     print cleareol
-
-
 
 
 proc rainbow*[T](s : T,xpos:int = 0,fitLine:bool = false,centered:bool = false) =
