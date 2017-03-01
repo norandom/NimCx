@@ -21,13 +21,13 @@ Installation :
 
 
 ```
-    nimble install https://github.com/qqtop/NimCx.git
+    nimble install nimcx
 
 ```
 
 
 
-Documentation for cx.nim : http://qqtop.github.io/cx.html
+Documentation for cx.nim :  https://qqtop.github.io/cx.html
 
 
 Example usage of print procs 

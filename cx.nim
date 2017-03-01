@@ -32,7 +32,7 @@
 ##
 ##     Project     : https://github.com/qqtop/NimCx
 ##
-##     Docs        : http://qqtop.github.io/cx.html
+##     Docs        : https://qqtop.github.io/cx.html
 ##
 ##     Tested      : OpenSuse 13.2 , OpenSuse Tumbleweed , Ubuntu 16.04 LTS 
 ##       
