@@ -11,9 +11,9 @@
 ##
 ##     ProjectStart: 2015-06-20
 ##   
-##     Latest      : 2017-01-12
+##     Latest      : 2017-03-01
 ##
-##     Compiler    : Nim >= 0.15.3
+##     Compiler    : Nim >= 0.16
 ##
 ##     OS          : Linux
 ##
@@ -30,9 +30,9 @@
 ##
 ##     Usage       : import cx
 ##
-##     Project     : https://github.com/qqtop/NimCx
+##     Project     : 'NimCx <https://github.com/qqtop/NimCx>`_
 ##
-##     Docs        : http://qqtop.github.io/cx.html
+##     Docs        : 'NimCx-Documentation <http://qqtop.github.io/cx.html>'_
 ##
 ##     Tested      : OpenSuse 13.2 , OpenSuse Tumbleweed , Ubuntu 16.04 LTS 
 ##       
@@ -116,6 +116,7 @@ import unicode ,typeinfo, typetraits
 
 # imports based on modules available via nimble
 import "random-0.5.3/random"
+
 export strutils,sequtils,times,unicode
 export terminal.Style,terminal.getch  # make terminal style constants available in the calling prog
 
@@ -5464,7 +5465,8 @@ proc doFinish*() =
     infoLine()
     printLn(" - " & year(getDateStr()),brightblack)
     print(fmtx(["<14"],"Elapsed     : "),yellowgreen)
-    printLn(fmtx(["<",">5"],ff(epochtime() - cx.start,3),"secs"),goldenrod)
+    print(fmtx(["<",">5"],ff(epochtime() - cx.start,3)," secs"),goldenrod)
+    printLnBiCol(" Compiled on: " & $CompileDate & " at " & $CompileTime)
     echo()
     quit(0)
 
