@@ -30,9 +30,9 @@
 ##
 ##     Usage       : import cx
 ##
-##     Project     : `NimCx <https://github.com/qqtop/NimCx>`_
+##     Project     : https://github.com/qqtop/NimCx
 ##
-##     Docs        : `NimCx-Documentation <http://qqtop.github.io/cx.html>`_
+##     Docs        : http://qqtop.github.io/cx.html
 ##
 ##     Tested      : OpenSuse 13.2 , OpenSuse Tumbleweed , Ubuntu 16.04 LTS 
 ##       
