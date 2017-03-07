@@ -11,7 +11,7 @@
 ##
 ##     ProjectStart: 2015-06-20
 ##   
-##     Latest      : 2017-03-01
+##     Latest      : 2017-03-03
 ##
 ##     Compiler    : Nim >= 0.16
 ##
@@ -1353,12 +1353,11 @@ proc styledEchoProcessArg(color: ForegroundColor) = setForegroundColor color
 proc styledEchoProcessArg(color: BackgroundColor) = setBackgroundColor color
 
 
-
 # macros
 
 macro styledEchoPrint*(m: varargs[untyped]): typed =
-  ## lifted from terminal.nim and removed new line
-  ## used in print
+  ## partially lifted from an earler macro in terminal.nim and removed new line
+  ## currently used in print
   ##
   let m = callsite()
   result = newNimNode(nnkStmtList)
@@ -1384,11 +1383,12 @@ template lowerCase*(s:string):string = unicode.toLower(s)
   ## lower cases a string
   ## 
 
-template currentLine*: int = instantiationInfo().line
+template currentLine* = 
    ## currentLine
    ## 
-   ## simple template to return line number ,usefull for debugging 
-   
+   ## simple template to return line number , usefull for debugging 
+   var z = instantiationInfo().line
+   printLnBiCol("Line -> " & $z,"->",peru,red)
 
 template randPastelCol*: string = pastelSet[rxPastelCol.randomChoice()][1]
    ## randPastelCol
@@ -1863,13 +1863,14 @@ proc print*[T](astring:T,fgr:string = termwhite ,bgr:string = bblack,xpos:int = 
                   writestyled(rx[x],{})
                   if x != rx.high:
                     case fgr
-                      of clrainbow   : printRainbow(substr,styled)
-                      else: styledEchoPrint(fgr,styled,substr,termwhite)
+                      of clrainbow : printRainbow(substr,styled) 
+                      else: styledEchoPrint(fgr,styled,substr,termwhite)  #orig
+                    
           else:
                case fgr
-                    of clrainbow   : printRainbow($s,styled)
-                    else: styledEchoPrint(fgr,styled,s,termwhite)
-
+                    of clrainbow : printRainbow($s,styled)
+                    else: styledEchoPrint(fgr,styled,s,termwhite)  #orig
+                    
     else:
       
         case fgr
@@ -1894,6 +1895,8 @@ proc print*[T](astring:T,fgr:string = termwhite ,bgr:BackgroundColor ,xpos:int =
     ##   print
     ## 
     ##   this is the newer print which uses terminal Backgroundcolor to cover all situations
+    ##
+    ##   basically similar to terminal.nim styledWriteLine with more functionality
     ##   
     ##   fgr / bgr  fore and background colors can be set
     ##  
@@ -5081,6 +5084,39 @@ proc katakana*():seq[string] =
     for j in parsehexint("30A0") .. parsehexint("30FF"):
         kat.add($Rune(j))
     result = kat
+
+proc cjk*():seq[string] =
+    var chzh = newSeq[string]()
+    for j in parsehexint("3400").. parsehexint("4DB5"):
+        chzh.add($Rune(j))
+    result = chzh    
+
+
+
+proc tableRune*[T](z:T,fgr:string = white) = 
+    ## tableRune
+    ##
+    ## simple table routine with 10 cols for displaying various unicode sets
+    ## fgr allows color display and fgr = "rand" displays in random color
+    ##
+    ## .. code-block:: nim
+    ##      tableRune(katakana(),yellowgreen)
+    ##      tableRune(hiragana(),truetomato)
+    ##      tableRune(cjk(),"rand")
+    var c = 0
+    for x in 0.. <z.len:
+      inc c
+      if c < 11 :
+        
+          if fgr == "rand":
+                print(z[x] & spaces(2) & " , ",randcol()) 
+          else:
+                print(z[x] & spaces(2) & " , ",fgr)     
+      else:
+            c = 0
+            echo()
+    decho(2)
+
 
 
 
