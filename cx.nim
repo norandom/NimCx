@@ -5028,9 +5028,8 @@ proc newKatakana*(minwl:int=3,maxwl:int = 10 ):string =
         let nwl = maxws.randomChoice()
         let chc = toSeq(parsehexint("30A0") .. parsehexint("30FF"))
         while nw.len < nwl:
-           var x = chc.randomChoice()
-           nw = nw & $Rune(x)
-
+             var x = chc.randomChoice()
+             nw = nw & $Rune(x)
         result = nw
 
     else:
@@ -5044,8 +5043,7 @@ proc iching*():seq[string] =
     ##
     ## returns a seq containing iching unicode chars
     var ich = newSeq[string]()
-    for j in 119552..119638:
-           ich.add($Rune(j))
+    for j in 119552..119638: ich.add($Rune(j))
     result = ich
 
 
@@ -5057,8 +5055,7 @@ proc apl*():seq[string] =
     ##
     var adx = newSeq[string]()
     # s U+30A0–U+30FF.
-    for j in parsehexint("2300") .. parsehexint("23FF"):
-        adx.add($Rune(j))
+    for j in parsehexint("2300") .. parsehexint("23FF"): adx.add($Rune(j))
     result = adx
 
 
@@ -5069,11 +5066,10 @@ proc hiragana*():seq[string] =
     ## returns a seq containing hiragana unicode chars
     var hir = newSeq[string]()
     # 12353..12436 hiragana
-    for j in 12353..12436:
-           hir.add($Rune(j))
+    for j in 12353..12436: hir.add($Rune(j)) 
     result = hir
-
-
+    
+   
 proc katakana*():seq[string] =
     ## full width katakana
     ##
@@ -5081,32 +5077,47 @@ proc katakana*():seq[string] =
     ##
     var kat = newSeq[string]()
     # s U+30A0–U+30FF.
-    for j in parsehexint("30A0") .. parsehexint("30FF"):
-        kat.add($Rune(j))
+    for j in parsehexint("30A0") .. parsehexint("30FF"): kat.add($Rune(j))
+    for j in parsehexint("31F0") .. parsehexint("31FF"): kat.add($Rune(j))  # Katakana Phonetic Extensions
     result = kat
 
+
+
 proc cjk*():seq[string] =
+    ## full cjk unicode range returned in a seq
+    ##
     var chzh = newSeq[string]()
-    for j in parsehexint("3400").. parsehexint("4DB5"):
-        chzh.add($Rune(j))
+    #for j in parsehexint("3400").. parsehexint("4DB5"): chzh.add($Rune(j))   # chars
+    for j in parsehexint("2E80") .. parsehexint("2EFF"): chzh.add($Rune(j))   # CJK Radicals Supplement
+    for j in parsehexint("2F00") .. parsehexint("2FDF"): chzh.add($Rune(j))   # Kangxi Radicals
+    for j in parsehexint("2FF0") .. parsehexint("2FFF"): chzh.add($Rune(j))   # Ideographic Description Characters
+    for j in parsehexint("3000") .. parsehexint("303F"): chzh.add($Rune(j))   # CJK Symbols and Punctuation
+    for j in parsehexint("31C0") .. parsehexint("31EF"): chzh.add($Rune(j))   # CJK Strokes
+    for j in parsehexint("3200") .. parsehexint("32FF"): chzh.add($Rune(j))   # Enclosed CJK Letters and Months
+    for j in parsehexint("3300") .. parsehexint("33FF"): chzh.add($Rune(j))   # CJK Compatibility
+    for j in parsehexint("3400") .. parsehexint("4DBF"): chzh.add($Rune(j))   # CJK Unified Ideographs Extension A
+    for j in parsehexint("4E00") .. parsehexint("9FBF"): chzh.add($Rune(j))   # CJK Unified Ideographs
+    #for j in parsehexint("F900") .. parsehexint("FAFF"): chzh.add($Rune(j))   # CJK Compatibility Ideographs
+    for j in parsehexint("FF00") .. parsehexint("FF60"): chzh.add($Rune(j))   # Fullwidth Forms of Roman Letters
+
     result = chzh    
 
 
-
-proc tableRune*[T](z:T,fgr:string = white) = 
+proc tableRune*[T](z:T,fgr:string = white,cols = 18) = 
     ## tableRune
     ##
-    ## simple table routine with 10 cols for displaying various unicode sets
+    ## simple table routine with 15 cols for displaying various unicode sets
     ## fgr allows color display and fgr = "rand" displays in random color
     ##
     ## .. code-block:: nim
+    ##      tableRune(cjk(),"rand")
     ##      tableRune(katakana(),yellowgreen)
     ##      tableRune(hiragana(),truetomato)
-    ##      tableRune(cjk(),"rand")
+    ##      
     var c = 0
     for x in 0.. <z.len:
       inc c
-      if c < 11 :
+      if c < cols + 1 :
         
           if fgr == "rand":
                 print(z[x] & spaces(2) & " , ",randcol()) 
