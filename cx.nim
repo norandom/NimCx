@@ -5232,15 +5232,11 @@ proc drawBox*(hy:int = 1, wx:int = 1 , hsec:int = 1 ,vsec:int = 1,frCol:string =
 
      var h = hy
      var w = wx
-     if h > th:
-       h = th
-     if w > tw:
-       w = tw
-
+     if h > th: h = th
+     if w > tw: w = tw
      curSetx(xpos)
      # top
      if blink == true:
-       
            print($Rune(parsehexint("250C")),cornerCol,styled = {styleBlink},substr = $Rune(parsehexint("250C")))
      else:
            print($Rune(parsehexint("250C")),cornerCol,styled = {},substr = $Rune(parsehexint("250C")))
@@ -5585,7 +5581,6 @@ when isMainModule:
   if zw.contains("not"):
          printLn("Please check your internet connection .",red)
   else: 
-     showIpInfo(zw)
-
-  #memCheck(true)
+       showIpInfo(zw)
+ 
   doFinish()
