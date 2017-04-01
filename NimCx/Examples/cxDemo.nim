@@ -1,4 +1,4 @@
-import cx,strutils,strfmt,times,math
+import cx,cxutils,strutils,strfmt,times,math
 import "random-0.5.3/random"
 
 ## small rough demos repository for var. procs in cx.nim
@@ -47,7 +47,7 @@ proc futureIsNimDemo*(posx:int = 0) =
 
 
 
-proc flyNimDemo*(astring:string = " Fly Nim",col:string = red,tx:float = 0.04) =
+proc flyNimDemo*(astring:string = "  Fly Nim",col:string = red,tx:float = 0.04) =
 
       ## flyNim
       ## 
@@ -372,26 +372,26 @@ proc rulerDemo*(xpos:int = 0,ypos:int = 12) =
     var ahcol1 = randcol()
     for nxpos in countup(0,tw-3): 
       cleanscreen() 
-      ruler(fgr=ahcol1) # top
+      showRuler(fgr=ahcol1) # top
       decho(3)
-      ruler(xpos = nxpos   ,ypos = ypos,fgr = avcol1,vert = true)   # left
+      showRuler(xpos = nxpos   ,ypos = ypos,fgr = avcol1,vert = true)   # left
       curup(ypos)
-      ruler(xpos = tw - 3 ,ypos = ypos,fgr = avcol1,vert = true)   # right
+      showRuler(xpos = tw - 3 ,ypos = ypos,fgr = avcol1,vert = true)   # right
       curup(3)
-      ruler(fgr=ahcol1) # bottom
+      showRuler(fgr=ahcol1) # bottom
       curup(ypos + 3)
       sleepy(0.03)
       
       
     for nxpos in countdown(tw - 3 , 0): 
       cleanscreen() 
-      ruler(fgr=ahcol1) # top
+      showRuler(fgr=ahcol1) # top
       decho(3)
-      ruler(xpos = nxpos   ,ypos = ypos,fgr = avcol1,vert = true)   # left
+      showRuler(xpos = nxpos   ,ypos = ypos,fgr = avcol1,vert = true)   # left
       curup(ypos)
-      ruler(xpos = tw - 3 ,ypos = ypos,fgr = avcol1,vert = true)   # right
+      showRuler(xpos = tw - 3 ,ypos = ypos,fgr = avcol1,vert = true)   # right
       curup(3)
-      ruler(fgr=ahcol1) # bottom
+      showRuler(fgr=ahcol1) # bottom
       curup(ypos + 3)
       sleepy(0.03)
       

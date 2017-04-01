@@ -6,7 +6,7 @@
 ## best run in a large console window
 
 
-import cx,cxDemo,strutils,sequtils,times,random,unicode
+import cx,cxDemo,strutils,sequtils,times,random,unicode,cxutils
 
 superHeader("Testing print and echo procs from cx.nim and run demos")
 

@@ -9,7 +9,7 @@ Color and Utilities for the Linux Terminal
 
 
 
-| Code           | Demos            | Tests            |
+| Code           | Demoslib         | Tests            |
 |----------------|------------------|------------------|
 | cx.nim         | cxDemo.nim       | cxTest.nim       |
 

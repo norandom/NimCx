@@ -11,7 +11,7 @@
 ##
 ##     ProjectStart: 2015-06-20
 ##   
-##     Latest      : 2017-03-03
+##     Latest      : 2017-03-31
 ##
 ##     Compiler    : Nim >= 0.16
 ##
@@ -100,7 +100,7 @@
 ##                 
 ##                   unicode font libraries as needed 
 ##
-##     Plans       : move some of the non core procs to a new module cxutils.nim
+##     Plans       : started to move some of the non core procs to module cxutils.nim
 ##   
 ##                   to avoid library bload.
 ##
@@ -110,7 +110,7 @@ import os, times, parseutils, parseopt, hashes, tables, sets
 import osproc,macros,posix,terminal,math,stats,json
 import sequtils,httpclient,rawsockets,browsers,intsets, algorithm
 import strutils except toLower,toUpper
-import unicode ,typeinfo, typetraits 
+import unicode ,typeinfo, typetraits ,cpuinfo
 
 #import nimprof       # needs compile with: nim c --profiler:on --stackTrace:on  -d:memProfiler cx
 
@@ -140,7 +140,7 @@ when defined(windows):
   {.fatal   : "CX does not support Windows at this stage and never will !".}
 
 when defined(posix):
-  {.hint    : "\x1b[38;2;154;205;50m \u2691 Delicious Os flavour detected .... CX loves Linux ! \u2691".}
+  {.hint    : "\x1b[38;2;154;205;50m \u2691 Delicious Os flavour detected .... NimCx loves Linux ! \u2691".}
 
 const CXLIBVERSION* = "0.9.9"
 
@@ -277,10 +277,8 @@ const
       pastelbeige*          =  "\x1b[38;2;241;226;204m"
       pastelwhite*          =  "\x1b[38;2;204;204;204m"
 
-
       # other colors of interest
       truetomato*           =   "\x1b[38;2;255;100;0m"
-
 
       # colors lifted from colors.nim and massaged into rgb escape seqs
 
@@ -1401,104 +1399,6 @@ template randPastelCol*: string = pastelSet[rxPastelCol.randomChoice()][1]
    ##
    ##
 
-template msgg*(code: typed): typed =
-      ## msgX templates
-      ## convenience templates for colored text output
-      ## the assumption is that the terminal is white text and black background
-      ## naming of the templates is like msg+color so msgy => yellow
-      ## use like : msgg() do : echo "How nice, it's in green"
-      ## these templates have by large been superceded by various print and echo procs
-      ## but are useful in some circumstances where a statement needs to be passed.
-      ##
-      ##
-      ## .. code-block:: nim
-      ##  msgy() do: echo "yellow"
-      ##
-      ##
-
-      setForeGroundColor(fgGreen)
-      code
-      setForeGroundColor(fgWhite)
-
-
-template msggb*(code: typed): typed   =
-      setForeGroundColor(fgGreen,true)
-      code
-      setForeGroundColor(fgWhite)
-
-
-template msgy*(code: typed): typed =
-      setForeGroundColor(fgYellow)
-      code
-      setForeGroundColor(fgWhite)
-
-
-template msgyb*(code: typed): typed =
-      setForeGroundColor(fgYellow,true)
-      code
-      setForeGroundColor(fgWhite)
-
-template msgr*(code: typed): typed =
-      setForeGroundColor(fgRed)
-      code
-      setForeGroundColor(fgWhite)
-
-template msgrb*(code: typed): typed =
-      setForeGroundColor(fgRed,true)
-      code
-      setForeGroundColor(fgWhite)
-
-template msgc*(code: typed): typed =
-      setForeGroundColor(fgCyan)
-      code
-      setForeGroundColor(fgWhite)
-
-template msgcb*(code: typed): typed =
-      setForeGroundColor(fgCyan,true)
-      code
-      setForeGroundColor(fgWhite)
-
-template msgw*(code: typed): typed =
-      setForeGroundColor(fgWhite)
-      code
-      setForeGroundColor(fgWhite)
-
-template msgwb*(code: typed): typed =
-      setForeGroundColor(fgWhite,true)
-      code
-      setForeGroundColor(fgWhite)
-
-template msgb*(code: typed): typed =
-      setForeGroundColor(fgBlack,true)
-      code
-      setForeGroundColor(fgWhite)
-
-template msgbb*(code: typed): typed =
-      # invisible on black background
-      setForeGroundColor(fgBlack)
-      code
-      setForeGroundColor(fgWhite)
-
-template msgbl*(code: typed): typed =
-      setForeGroundColor(fgBlue)
-      code
-      setForeGroundColor(fgWhite)
-
-template msgblb*(code: typed): typed =
-      setForeGroundColor(fgBlue,true)
-      code
-      setForeGroundColor(fgWhite)
-
-template msgm*(code: typed): typed =
-      setForeGroundColor(fgMagenta)
-      code
-      setForeGroundColor(fgWhite)
-
-template msgmb*(code: typed): typed =
-      setForeGroundColor(fgMagenta,true)
-      code
-      setForeGroundColor(fgWhite)
-
 template hdx*(code:typed,frm:string = "+",width:int = tw,nxpos:int = 0):typed =
    ## hdx
    ##
@@ -2001,7 +1901,6 @@ proc printLn*[T](astring:T,fgr:string = termwhite , bgr:string = bblack,xpos:int
     ## 
     ##   original with bgr:string
     ##   
-    ##   similar to echo but with additional settings
     ##  
     ##   foregroundcolor
     ##   backgroundcolor
@@ -2043,7 +1942,6 @@ proc printLn*[T](astring:T,fgr:string = termwhite , bgr:BackgroundColor,xpos:int
     ## 
     ##   with bgr:setBackGroundColor
     ##
-    ##   similar to echo but with additional settings
     ##
     ##   foregroundcolor
     ##   backgroundcolor
@@ -2170,8 +2068,7 @@ proc dlineLn*(n:int = tw,lt:string = "-",col:string = termwhite) =
      ##    dlineLn(30,"/+/")
      ##    dlineLn(60,col = salmon)
      ##
-     if lt.len <= n:
-         print(repeat(lt,n div lt.len),col)
+     if lt.len <= n: print(repeat(lt,n div lt.len),col)
      writeLine(stdout,"")
 
 
@@ -2420,15 +2317,15 @@ proc printLnBiCol*[T](s:T,sep:string = ":", colLeft:string = yellowgreen, colRig
 
 
 
-proc printHl*(s:string,substr:string,col:string = termwhite) =
-      ## printHl
+proc printHL*(s:string,substr:string,col:string = termwhite) =
+      ## printHL
       ##
       ## print and highlight all appearances of a substring 
       ##
       ## with a certain color
       ##
       ## .. code-block:: nim
-      ##    printHl("HELLO THIS IS A TEST","T",green)
+      ##    printHL("HELLO THIS IS A TEST","T",green)
       ##
       ## this would highlight all T in green
       ##
@@ -2440,20 +2337,20 @@ proc printHl*(s:string,substr:string,col:string = termwhite) =
              print(substr,col)
 
 
-proc printLnHl*(s:string,substr:string,col:string = termwhite) =
-      ## printLnHl
+proc printLnHL*(s:string,substr:string,col:string = termwhite) =
+      ## printLnHL
       ##
       ## print and highlight all appearances of a char or substring of a string
       ##
       ## with a certain color and issue a new line
       ##
       ## .. code-block:: nim
-      ##    printLnHl("HELLO THIS IS A TEST","T",yellowgreen)
+      ##    printLnHL("HELLO THIS IS A TEST","T",yellowgreen)
       ##
       ## this would highlight all T in yellowgreen
       ##
 
-      printHl($(s) & "\L",substr,col)
+      printHL($(s) & "\L",substr,col)
 
 
 proc cecho*(col:string,ggg: varargs[string, `$`] = @[""] )  =
@@ -3445,47 +3342,6 @@ proc superHeader*(bstring:string,strcol:string,frmcol:string) =
         # finished drawing
 
 
-proc superHeaderA*(bb:string = "",strcol:string = white,frmcol:string = green,anim:bool = true,animcount:int = 1) =
-      ## superHeaderA
-      ##
-      ## attempt of an animated superheader , some defaults are given
-      ##
-      ## parameters for animated superheaderA :
-      ##
-      ## headerstring, txt color, frame color, left/right animation : true/false ,animcount
-      ##
-      ## Example :
-      ##
-      ## .. code-block:: nim
-      ##    import cx
-      ##    cleanScreen()
-      ##    let bb = "NIM the system language for the future, which extends to as far as you need !!"
-      ##    superHeaderA(bb,white,red,true,1)
-      ##    clearup(3)
-      ##    superheader("Ok That's it for Now !",salmon,yellowgreen)
-      ##    doFinish()
-
-      for am in 0..<animcount:
-          for x in 0.. <1:
-            cleanScreen()
-            for zz in 0.. bb.len:
-                  cleanScreen()
-                  superheader($bb[0.. zz],strcol,frmcol)
-                  sleep(500)
-                  curup(80)
-            if anim == true:
-                for zz in countdown(bb.len,-1,1):
-                      superheader($bb[0.. zz],strcol,frmcol)
-                      sleep(100)
-                      cleanScreen()
-            else:
-                cleanScreen()
-            sleep(500)
-
-      echo()
-
-
-
 proc tupleToStr*(xs: tuple): string =
      ## tupleToStr
      ##
@@ -4025,113 +3881,6 @@ proc createSeqFloat*(n:BiggestInt = 10,prec:int = 3) : seq[float] =
      result = z
 
 
-
-
-proc getRandomPointInCircle*(radius:float) : seq[float] =
-    ## getRandomPointInCircle
-    ##
-    ## based on answers found in
-    ##
-    ## http://stackoverflow.com/questions/5837572/generate-a-random-point-within-a-circle-uniformly
-    ##
-    ##
-    ##
-    ## .. code-block:: nim
-    ##    import cx,math,strfmt
-    ##    # get randompoints in a circle
-    ##    var crad:float = 1
-    ##    for x in 0.. 100:
-    ##       var k = getRandomPointInCircle(crad)
-    ##       assert k[0] <= crad and k[1] <= crad
-    ##       printLnBiCol(fmtx([">25","<6",">25"],$k[0]," :",$k[1])))
-    ##    doFinish()
-    ##
-    ##
-
-    let t = 2 * math.Pi * getRandomFloat()
-    let u = getRandomFloat() + getRandomFloat()
-    var r = 0.00
-    if u > 1 :
-      r = 2-u
-    else:
-      r = u
-    var z = newSeq[float]()
-    z.add(radius * r * math.cos(t))
-    z.add(radius * r * math.sin(t))
-    return z
-
-
-
-proc getRandomPoint*(minx:float = -500.0,maxx:float = 500.0,miny:float = -500.0,maxy:float = 500.0) : RpointFloat =
-    ## getRandomPoint
-    ##
-    ## generate a random x,y float point pair and return it as RpointFloat
-    ## 
-    ## minx  min x  value
-    ## maxx  max x  value
-    ## miny  min y  value
-    ## maxy  max y  value
-    ##
-    ## .. code-block:: nim
-    ##    for x in 0.. 10:
-    ##    var n = getRandomPoint(-500.00,200.0,-100.0,300.00)
-    ##    printLnBiCol(fmtx([">4",">5","",">6",">5"],"x:",$n.x,spaces(7),"y:",$n.y),spaces(7))
-    ## 
-
-    var point : RpointFloat
-    var rx:    float
-    var ry:    float
-      
-      
-    if minx < 0.0:   rx = minx - 1.0 
-    else        :    rx = minx + 1.0  
-    if maxy < 0.0:   rx = maxx - 1.0 
-    else        :    rx = maxx + 1.0 
-        
-    if miny < 0.0:   ry = miny - 1.0 
-    else        :    ry = miny + 1.0  
-    if maxy < 0.0:   ry = maxy - 1.0 
-    else        :    ry = maxy + 1.0 
-              
-        
-    var mpl = abs(maxx) * 1000     
-    
-    while rx < minx or rx > maxx:
-       rx =  getRandomSignF() * mpl * getRandomFloat() 
-       
-       
-    mpl = abs(maxy) * 1000   
-    while ry < miny or ry > maxy:  
-          ry =  getRandomSignF() * mpl * getRandomFloat()
-        
-    point.x = rx
-    point.y = ry  
-    result =  point
-      
-  
-proc getRandomPoint*(minx:int = -500 ,maxx:int = 500 ,miny:int = -500 ,maxy:int = 500 ) : RpointInt =
-    ## getRandomPoint 
-    ##
-    ## generate a random x,y int point pair and return it as RpointInt
-    ## 
-    ## min    x or y value
-    ## max    x or y value
-    ##
-    ## .. code-block:: nim
-    ##    for x in 0.. 10:
-    ##    var n = getRandomPoint(-500,500,-500,200)
-    ##    printLnBiCol(fmtx([">4",">5","",">6",">5"],"x:",$n.x,spaces(7),"y:",$n.y),spaces(7))
-    ## 
-  
-    var point : RpointInt
-        
-    point.x =  getRandomSignI() * getRandomInt(minx,maxx) 
-    point.y =  getRandomSignI() * getRandomInt(miny,maxy)
-          
-    result =  point
-
-
-
 # Misc. routines
 
  
@@ -4163,80 +3912,6 @@ proc createHash*(kata:string):auto =
     ##    
     result = hash(kata)   
 
-proc memCheck*(stats:bool = false) =
-  ## memCheck
-  ## 
-  ## memCheck shows memory before and after a GC_FullCollect run
-  ## 
-  ## set stats to true for full GC_getStatistics
-  ## 
-  echo()
-  printLn("MemCheck            ",yellowgreen,styled = {styleUnderscore},substr = "MemCheck            ")
-  echo()
-  printLnBiCol("Status    : Current ",":",salmon)
-  printLn(yellowgreen & "Mem " &  lightsteelblue & "Used  : " & white & ff2(getOccupiedMem()) & lightsteelblue & "  Free : " & white & ff2(getFreeMem()) & lightsteelblue & "  Total : " & white & ff2(getTotalMem() ))
-  if stats == true:
-    echo GC_getStatistics()
-  GC_fullCollect()
-  sleepy(0.5)
-  printLnBiCol("Status    : GC_FullCollect executed",":",salmon,pink)
-  printLn(yellowgreen & "Mem " &  lightsteelblue & "Used  : " & white & ff2(getOccupiedMem()) & lightsteelblue & "  Free : " & white & ff2(getFreeMem()) & lightsteelblue & "  Total : " & white & ff2(getTotalMem() ))
-  if stats == true:
-     echo GC_getStatistics()
- 
-
-
-proc checkNimCi*(title:string) =
-  ## checkNimCi
-  ## 
-  ## checks nim-ci for recent ok or failed nimble packages install test
-  ## 
-  ## use full title for exact output or partial title for all matches found.
-  ## 
-  ## 
-  ## Note : needs compilation with -d:ssl  and result may not be up to date 
-  ##        for reference only in case such a system is actually taken live.
-  ##
-  ## 
-  ## .. code-block:: nim
-  ##    checkNimCi("nimFinLib")  
-  ##    
-  
-  var zcli = newHttpClient()
-  var url = zcli.getContent("https://136-60803270-gh.circle-artifacts.com/0/home/ubuntu/nim-ci/output/nimble_install_report.json")
-  var z:JsonNode  = parseJson(url)
-  printLn("\nResults for last nim-ci evaluation : \n",salmon)
-  for x in z.items():
-    if find(x["title"].getstr.toLower(),title.toLower()) != -1:  
-        printLnBiCol("Title     : " & unquote($x["title"]),":",yellowgreen,skyblue)
-        printLnBiCol("Url       : " & unquote($x["url"]))
-        printLnBiCol("Version   : " &  unquote($x["version"]))
-        if unquote($x["test_result"]) == "FAIL":
-          printLnBiCol("TestResult: " & unquote($x["test_result"]),":",yellowgreen,red)
-        else:
-          printLnBiCol("TestResult: " & unquote($x["test_result"]),":",yellowgreen,brightyellow)
-        echo()
-   
-proc getCpuCores*():auto = 
-      ## getCpuCores
-      ## 
-      ## returns number of cpu cores
-      ## 
-      let (cores,error) = execCmdEx("nproc")
-      if error != 0:
-         printLnBiCol("Error : Code " & $error & ". System CPU cores not established",":",red)
-      cores
-          
-
-proc showCpuCores*() =
-  ## showCpuCores
-  ## 
-  ## makes a system call to check on cpu cores in the current system
-  ## 
-  printLnBiCol("System CPU cores : " & $getCpuCores())
-
-
- 
 template benchmark*(benchmarkName: string, code: typed) =
   ## benchmark
   ## 
@@ -4317,103 +3992,6 @@ proc sortMe*[T](xs:var seq[T],order = Ascending): seq[T] =
      ##
      xs.sort(proc(x,y:T):int = cmp(x,y),order = order)
      result = xs
-
-template getCard* :auto =
-    ## getCard
-    ##
-    ## gets a random card from the Cards seq
-    ##
-    ## .. code-block:: nim
-    ##    import cx
-    ##    print(getCard(),randCol(),xpos = centerX())  # get card and print in random color at xpos
-    ##    doFinish()
-    ##
-    cards[rxCards.randomChoice()]
-
-
-
-proc ruler* (xpos:int=0,xposE:int=0,ypos:int = 0,fgr:string = termwhite,bgr:string = termblack , vert:bool = false) =
-     ## ruler
-     ##
-     ## simple terminal ruler indicating dot x positions to give a feedback
-     ##
-     ## available for horizontal --> vert = false
-     ##           for vertical   --> vert = true
-     ##
-     ## see cxDemo and cxTest for more usage examples
-     ##
-     ## .. code-block::nim
-     ##   # this will show a full terminal width ruler
-     ##   ruler(fgr=pastelblue)
-     ##   decho(3)
-     ##   # this will show a specified position only
-     ##   ruler(xpos =22,xposE = 55,fgr=pastelgreen)
-     ##   decho(3)
-     ##   # this will show a full terminal width ruler starting at a certain position
-     ##   ruler(xpos = 75,fgr=pastelblue)
-     echo()
-     var fflag:bool = false
-     var npos  = xpos
-     var nposE = xposE
-     if xpos ==  0: npos  = 1
-     if xposE == 0: nposE = tw - 1
-
-     if vert == false :  # horizontalruler
-
-          for x in npos.. nposE:
-
-            if x == 1:
-                curup(1)
-                print(".",lime,bgr,xpos = 1)
-                curdn(1)
-                print(x,fgr,bgr,xpos = 1)
-                curup(1)
-                fflag = true
-
-            elif x mod 5 > 0 and fflag == false:
-                curup(1)
-                print(".",goldenrod,bgr,xpos = x)
-                curdn(1)
-
-            elif x mod 5 == 0:
-                if fflag == false:
-                  curup(1)
-                print(".",lime,bgr,xpos = x)
-                curdn(1)
-                print(x,fgr,bgr,xpos = x)
-                curup(1)
-                fflag = true
-
-            else:
-                fflag = true
-                print(".",truetomato,bgr,xpos = x)
-
-
-     else : # vertical ruler
-
-            if  ypos >= th : curset()
-            else: curup(ypos + 2)
-
-            for x in 0.. ypos:
-                  if x == 0: printLn(".",lime,bgr,xpos = xpos + 3)
-                  elif x mod 2 == 0:
-                         print(x,fgr,bgr,xpos = xpos)
-                         printLn(".",fgr,bgr,xpos = xpos + 3)
-                  else: printLn(".",truetomato,bgr,xpos = xpos + 3)
-     decho(3)
-
-
-
-proc centerMark*(showpos :bool = false) =
-     ## centerMark
-     ##
-     ## draws a red dot in the middle of the screen xpos only
-     ## and also can show pos
-     ##
-     centerPos(".")
-     print(".",truetomato)
-     if showpos == true:  print "x" & $(tw/2)
-
 
 
 
@@ -4505,9 +4083,6 @@ proc showPalette*(coltype:string = "white") =
     printLnBiCol("\n" & coltype & "Palette items count   : " & $z)  
     echo()  
     
-
-
-
 
 proc shift*[T](x: var seq[T], zz: Natural = 0): T =
      ## shift takes a seq and returns the first , and deletes it from the seq
@@ -4766,73 +4341,6 @@ proc dayOfYear*(tt:Time) : range[0..365] = getLocalTime(tt).yearday + 1
     ##     printLnBiCol("Day of Current year   : " & $today)
     ##
     ##
-
-
-proc doNimUp*(xpos = 5, rev:bool = true) = 
-      ## doNimUp
-      ## 
-      ## A Nim dumbs up logo 
-      ## 
-      ## 
-      cleanScreen()
-      decho(2)
-      if rev == true:
-          
-          printLn("        $$$$               ".reversed,randcol(),xpos = xpos)
-          printLn("       $$  $               ".reversed,randcol(),xpos = xpos)
-          printLn("       $   $$              ".reversed,randcol(),xpos = xpos)
-          printLn("       $   $$              ".reversed,randcol(),xpos = xpos)
-          printLn("       $$   $$             ".reversed,randcol(),xpos = xpos)
-          printLn("        $    $$            ".reversed,randcol(),xpos = xpos)
-          printLn("        $$    $$$          ".reversed,randcol(),xpos = xpos)
-          printLn("         $$     $$         ".reversed,randcol(),xpos = xpos)
-          printLn("         $$      $$        ".reversed,randcol(),xpos = xpos)
-          printLn("          $       $$       ".reversed,randcol(),xpos = xpos)
-          printLn("    $$$$$$$        $$      ".reversed,randcol(),xpos = xpos)
-          printLn("  $$$               $$$$$  ".reversed,randcol(),xpos = xpos)
-          printLn(" $$    $$$$            $$$ ".reversed,randcol(),xpos = xpos)
-          printLn(" $   $$$  $$$            $$".reversed,randcol(),xpos = xpos)
-          printLn(" $$        $$$            $".reversed,randcol(),xpos = xpos)
-          printLn("  $$    $$$$$$            $".reversed,randcol(),xpos = xpos)
-          printLn("  $$$$$$$    $$           $".reversed,randcol(),xpos = xpos)
-          printLn("  $$       $$$$           $".reversed,randcol(),xpos = xpos)
-          printLn("   $$$$$$$$$  $$         $$".reversed,randcol(),xpos = xpos)
-          printLn("    $        $$$$     $$$$ ".reversed,randcol(),xpos = xpos)
-          printLn("    $$    $$$$$$    $$$$$$ ".reversed,randcol(),xpos = xpos)
-          printLn("     $$$$$$    $$  $$      ".reversed,randcol(),xpos = xpos)
-          printLn("       $     $$$ $$$       ".reversed,randcol(),xpos = xpos)
-          printLn("        $$$$$$$$$$         ".reversed,randcol(),xpos = xpos)
-
-      else:
-        
-          printLn("        $$$$               ",randcol(),xpos=60)
-          printLn("       $$  $               ",randcol(),xpos=60)
-          printLn("       $   $$              ",randcol(),xpos=60)
-          printLn("       $   $$              ",randcol(),xpos=60)
-          printLn("       $$   $$             ",randcol(),xpos=60)
-          printLn("        $    $$            ",randcol(),xpos=60)
-          printLn("        $$    $$$          ",randcol(),xpos=60)
-          printLn("         $$     $$         ",randcol(),xpos=60)
-          printLn("         $$      $$        ",randcol(),xpos=60)
-          printLn("          $       $$       ",randcol(),xpos=60)
-          printLn("    $$$$$$$        $$      ",randcol(),xpos=60)
-          printLn("  $$$               $$$$$  ",randcol(),xpos=60)
-          printLn(" $$    $$$$            $$$ ",randcol(),xpos=60)
-          printLn(" $   $$$  $$$            $$",randcol(),xpos=60)
-          printLn(" $$        $$$            $",randcol(),xpos=60)
-          printLn("  $$    $$$$$$            $",randcol(),xpos=60)
-          printLn("  $$$$$$$    $$           $",randcol(),xpos=60)
-          printLn("  $$       $$$$           $",randcol(),xpos=60)
-          printLn("   $$$$$$$$$  $$         $$",randcol(),xpos=60)
-          printLn("    $        $$$$     $$$$ ",randcol(),xpos=60)
-          printLn("    $$    $$$$$$    $$$$$$ ",randcol(),xpos=60)
-          printLn("     $$$$$$    $$  $$      ",randcol(),xpos=60)
-          printLn("       $     $$$ $$$       ",randcol(),xpos=60)
-          printLn("        $$$$$$$$$$         ",randcol(),xpos=60)
-
-      curup(15)
-      printBigLetters("NIM",fgr=randcol(),xpos = xpos + 33)
-      curdn(15)
 
 
  
@@ -5467,11 +4975,11 @@ proc doInfo*() =
         printLnBiCol("Code specifics                : generic" ,sep,yellowgreen,lightgrey)
 
   printLnBiCol("Nim Version                   : " & $NimMajor & "." & $NimMinor & "." & $NimPatch,sep,yellowgreen,lightgrey)
-  printLnBiCol("Processor count               : " & $countProcessors(),sep,yellowgreen,lightgrey)
+  printLnBiCol("Processor count               : " & $cpuInfo.countProcessors(),sep,yellowgreen,lightgrey)
   printBiCol("OS                            : "& hostOS,sep,yellowgreen,lightgrey)
   printBiCol(" | CPU: "& hostCPU,sep,yellowgreen,lightgrey)
   printLnBiCol(" | cpuEndian: "& $cpuEndian,sep,yellowgreen,lightgrey)
-  printLnBiCol("CPU Cores                     : " & $getCpuCores())
+  printLnBiCol("CPU Cores                     : " & $cpuInfo.countProcessors())
   let pd = getpid()
   printLnBiCol("Current pid                   : " & $pd,sep,yellowgreen,lightgrey)
 
@@ -5493,6 +5001,18 @@ proc infoLine*() =
     print(" | ",brightblack)
     print($someGcc & " | ",brightblack)
     qqTop()
+
+
+proc doByeBye*() =
+  ## doByeBye
+  ##
+  ## a simple end program routine do give some feedback when exiting
+  ##  
+  decho(2)  
+  print("Exiting now !  ",lime)
+  printLn("Bye-Bye from " & extractFileName(getAppFilename()),red)
+  printLn(yellowgreen & "Mem -> " &  lightsteelblue & "Used : " & white & ff2(getOccupiedMem()) & lightsteelblue & "  Free : " & white & ff2(getFreeMem()) & lightsteelblue & "  Total : " & white & ff2(getTotalMem() ))
+  doFinish()
 
 
 proc doFinish*() =

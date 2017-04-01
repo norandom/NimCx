@@ -37,13 +37,6 @@ for x in 1.. 10:
    sierpCarpetDemo(2,100)
    curup(9)
    sierpCarpetDemo(2,120)
-   
-   
-#    if x  == 1000:
-#          printBigLetters($x & ":1000" ,randcol(),xpos = 38)
-#    else:
-#          printBigLetters($x & ":1000" ,yellowgreen,xpos = 38)
    sleepy(0.001)
    
 
-#doFinish()
