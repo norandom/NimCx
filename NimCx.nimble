@@ -9,5 +9,5 @@ license       = "MIT"
 [Deps]
 
 Requires : "nim >= 0.16.0"
-Requires : "https://github.com/BlaXpirit/nim-random"
+Requires : alea
 
