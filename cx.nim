@@ -91,7 +91,7 @@
 ##                   after compiler updates .
 ##                   
 ##
-##     Required    : random by Blaxspirit installed via nimble
+##     Required    : alea installed via nimble
 ##
 ##     Installation: nimble install https://github.com/qqtop/NimCx.git
 ##
@@ -108,14 +108,13 @@
 ##
 import os, times, parseutils, parseopt, hashes, tables, sets
 import osproc,macros,posix,terminal,math,stats,json
+import random/urandom, random/mersenne
 import sequtils,httpclient,rawsockets,browsers,intsets, algorithm
 import strutils except toLower,toUpper
 import unicode ,typeinfo, typetraits ,cpuinfo
-
 #import nimprof       # needs compile with: nim c --profiler:on --stackTrace:on  -d:memProfiler cx
-
-# imports based on modules available via nimble
-import "random-0.5.3/random"
+#imports based on modules available via nimble
+import alea   
 
 export strutils,sequtils,times,unicode
 export terminal.Style,terminal.getch  # make terminal style constants available in the calling prog
@@ -131,7 +130,6 @@ elif defined(objc): someGcc = "Objective C target"
 elif defined(js): someGcc = "JavaScript target"]#
 else: someGcc = "undefined"    
 
-
 when defined(macosx):
   {.warning : " \u2691 CX is only tested on Linux ! Your mileage may vary".}
 
@@ -145,7 +143,14 @@ when defined(posix):
 const CXLIBVERSION* = "0.9.9"
 
 let start* = epochTime()  ##  simple execution timing with one line see doFinish()
+var rng = wrap(initMersenneTwister(urandom(2500)))
 
+
+type
+     NimCxCustomError* = object of Exception         
+
+     # to be used like so
+     # raise newException(NimCxCustomError, "didn't do stuff")
 
 proc getfg(fg:ForegroundColor):string =
     var gFG = ord(fg)
@@ -181,8 +186,6 @@ type
     Benchmarkres* = tuple[bname,cpu,epoch : string]
 # used to store all benchmarkresults   
 var benchmarkresults* =  newSeq[Benchmarkres]()
-
-
 
 const
 
@@ -1138,8 +1141,26 @@ let colorNames* = @[
       ("truetomato",truetomato)]
 
 
+proc rndSampleInt*(asq:seq[int]):int =
+     ## rndSampleint
+     ## returns an int random sample from an integer sequence
+     let c: Choice[int] = choice(asq)  
+     result = rng.sample(c)
+
 
 let rxCol* = toSeq(colorNames.low.. colorNames.high) ## index into colorNames
+
+
+proc getRndInt*(mi:int = 0 , ma:int = int.high):int =
+ ## getRndInt
+ ##
+ ## returns a random int between mi and ma
+ ##
+
+ let u = uniform(float(mi),float(ma))
+ result = int(rng.sample(u))   
+
+
 
 template colPaletteIndexer*(colx:seq[string]):auto =  toSeq(colx.low.. colx.high) 
 
@@ -1186,7 +1207,7 @@ template colorsPalette*(coltype:string): auto =
          ## .. code-block:: nim
          ##    import cx
          ##    let z = "The big money waits in the bank" 
-         ##    printLn(z,colPalette("pastel",getrandomint(0,colPaletteLen("pastel") - 1)),black)
+         ##    printLn(z,colPalette("pastel",getRndInt(0,colPaletteLen("pastel") - 1)),black)
          ##    rainbow2(z & "\n",centered = false,colorset = colorsPalette("medium"))
          ##    rainbow2("what's up ?\n",centered = true,colorset = colorsPalette("light"))
          ##    doFinish()
@@ -1247,10 +1268,10 @@ template randCol*(coltype:string): auto =
          for x in 0.. <colorNames.len:
             if colorNames[x][0].startswith(coltype) or colorNames[x][0].contains(coltype):
               ts.add(colorNames[x][1])
-         var rxColt = colPaletteIndexer(ts)   
-         ts[rxColt.randomChoice()]
+         var rxColt = colPaletteIndexer(ts) 
+         ts[rndSampleInt(rxColt)]
   
-template randCol*: string = colorNames[rxCol.randomChoice()][1]
+template randCol*: string = colorNames[rndSampleInt(rxCol)][1]
    ## randCol
    ##
    ## get a randomcolor from colorNames , no filter is applied 
@@ -1339,7 +1360,7 @@ proc hline*(n:int = tw,col:string = white,xpos:int = 1) ## forward declaration
 proc hlineLn*(n:int = tw,col:string = white,xpos:int = 1) ## forward declaration
 proc spellInteger*(n: int64): string ## forward declaration
 proc splitty*(txt:string,sep:string):seq[string] ## forward declaration
-proc getRandomInt*(mi:int = 0,ma:int = int.high):int {.inline.} ## forward declaration
+
 proc doFinish*()
 
 
@@ -1440,7 +1461,7 @@ proc getRandomSignI*(): int =
     ## 
     ## returns -1 or 1 integer  to have a random positive or negative multiplier
     ##  
-    var s = getRandomInt(0,1) 
+    var s = getRndInt(0,1) 
     if s == 0:
        result = -1
     else :
@@ -1454,7 +1475,7 @@ proc getRandomSignF*():float =
     ##  
   
   
-    var s = getRandomInt(0,1) 
+    var s = getRndInt(0,1) 
     if s == 0:
        result = -1.0   
     else :
@@ -1892,9 +1913,7 @@ proc print*[T](astring:T,fgr:string = termwhite ,bgr:BackgroundColor ,xpos:int =
      
 
 
-proc printLn*[T](astring:T,fgr:string = termwhite , bgr:string = bblack,xpos:int = 0,fitLine:bool = false,centered:bool = false,styled : set[Style]= {},substr:string = "") =
-
-    
+proc printLn*[T](astring:T,fgr:string = termwhite , bgr:string = bblack,xpos:int = 0,fitLine:bool = false,centered:bool = false,styled : set[Style]= {},substr:string = "") =  
     ## 
     ## ::
     ##   printLn
@@ -1997,7 +2016,7 @@ proc rainbow*[T](s : T,xpos:int = 0,fitLine:bool = false,centered:bool = false) 
     var a = toSeq(1.. <colorNames.len)
 
     for x in 0.. <astr.len:
-       c = a[randomInt(a.len)]
+       c = a[getRndInt(ma=a.len)]
        if centered == false:
           print(astr[x],colorNames[c][1],black,xpos = nxpos,fitLine)
        else:
@@ -2185,7 +2204,7 @@ proc printRainbow*(s : string,styled:set[Style] = {}) =
     var c = 0
     var a = toSeq(1.. <colorNames.len)
     for x in 0.. <astr.len:
-       c = a[randomInt(a.len)]
+       c = a[getRndInt(ma=a.len)]
        print($astr[x],colorNames[c][1],styled = styled)
 
 
@@ -2849,9 +2868,9 @@ proc createSeqDate*(fromDate:string,days:int = 1):seq[string] =
          
 
 proc newdate():string =   
-  var year = getRandomInt(1900,2099)
-  var month = getRandomInt(1,12)
-  var day = getRandomInt(1,31)
+  var year = getRndInt(1900,2099)
+  var month = getRndInt(1,12)
+  var day = getRndInt(1,31)
   var date = $year & "-" & $month & "-" & $day
   result = date
 
@@ -3373,11 +3392,13 @@ proc getWanIp*():string =
    ##
    ## problems ? check : https://status.heroku.com/
    
-   var zcli = newHttpClient(timeout = 1000)
+   var zcli = newHttpClient(timeout = 5000)
    var z = "Wan Ip not established. "
    try:
       z = zcli.getContent(url = "http://my-ip.heroku.com")
       z = z.replace(sub = "{",by = " ").replace(sub = "}",by = " ").replace(sub = "\"ip\":"," ").replace(sub = '"' ,' ').strip()
+   except HttpRequestError:
+       printLn("\nIp checking failed due to 404. Heroku does not provide Ip checking anymore !",red)
    except OSError:
        printLn("Ip checking failed. See if Heroku is still here or just to slow to respond",red)
        printLn("Check Heroku Status : https://status.heroku.com",red)
@@ -3614,7 +3635,7 @@ proc reverseString*(text:string):string =
 
 
 # init the MersenneTwister
-var rng* = initMersenneTwister(urandom(2500))
+#var rng* = initMersenneTwister(urandom(2500))
 
 
 proc uniform*(a,b: float) : float =
@@ -3640,9 +3661,9 @@ proc uniform*(a,b: float) : float =
       ##        showStats(ps,xpos = 30) 
       ##    
       ##        ps.clear 
-      ##        for x in 0.. <n: ps.push(getRandomInt(0,100))
+      ##        for x in 0.. <n: ps.push(getRndInt(0,100))
       ##        curup(15) 
-      ##        printLn("getRandomInt",salmon,xpos = 60)
+      ##        printLn("getRndInt",salmon,xpos = 60)
       ##        showStats(ps,xpos = 60) 
       ##      
       ##   quickTest() 
@@ -3651,33 +3672,7 @@ proc uniform*(a,b: float) : float =
       ##    
       result = a + (b - a) * rng.random()
 
-
-proc getRandomInt*(mi:int = 0,ma:int = int.high):int =
-    ## getRandomInt
-    ##
-    ## convenience proc so we do not need to import random in calling prog
-    ## 
-    ## get positive or negative random ints by using the random sign mulitplier
-    ##
-    ## .. code-block:: nim 
-    ##    echo  getRandomInt() * getRandomSignI()
-    ##
-    ##
-    ## .. code-block:: nim
-    ##    import cx,stats
-    ##    var ps : Runningstat
-    ##    loopy(0.. 1000000,ps.push(getRandomInt(0,10000)))
-    ##    showStats(ps)
-    ##    doFinish()
-    ##
-    ##
-
-    # we do this to avoid overflow error if a int exceeding int.high is specified
-    if ma >= int.high :
-       result = rng.randomInt(mi,int.high)
-    else:
-       result = rng.randomInt(mi,ma + 1)
-
+   
 
 proc createSeqInt*(n:int = 10,mi:int = 0,ma:int = 1000) : seq[int] {.inline.} =
     ## createSeqInt
@@ -3696,7 +3691,7 @@ proc createSeqInt*(n:int = 10,mi:int = 0,ma:int = 1000) : seq[int] {.inline.} =
     result = newSeq[int]()
     case  mi <= ma
       of true :
-                for x in 0.. <n: result.add(getRandomInt(mi,ma))
+                for x in 0.. <n: result.add(getRndInt(mi,ma))
       of false: print("Error : Wrong parameters for min , max ",red)
 
 
@@ -3803,7 +3798,7 @@ proc ff2*(zz:int , n:int = 0):string =
   ##    # int example
   ##    for x in 1.. 20:
   ##       # generate some positve and negative random integer
-  ##       var z = getrandomInt(50000,100000000) * getRandomSignI()
+  ##       var z = getRndInt(50000,100000000) * getRandomSignI()
   ##       printLnBiCol(fmtx(["",">6","",">20.0"],"NIM ",$x," : ",z))
   ##       
   ##       
@@ -3847,6 +3842,7 @@ proc getRandomFloat*():float =
      ##
      result = rng.random()  
 
+proc getRndFloat*():float = result = rng.random() 
 
 proc createSeqFloat*(n:BiggestInt = 10,prec:int = 3) : seq[float] =
      ## createSeqFloat
@@ -4373,198 +4369,31 @@ proc toClip*[T](s:T ) =
      discard execCmd("echo $1 | xclip " % $s)
      
 
-# Unicode random word creators
 
-proc newWordCJK*(minwl:int = 3 ,maxwl:int = 10):string =
-      ## newWordCJK
-      ##
-      ## creates a new random string consisting of n chars default = max 10
-      ##
-      ## with chars from the cjk unicode set
-      ##
-      ## http://unicode-table.com/en/#cjk-unified-ideographs
-      ##
-      ## requires unicode
-      ##
-      ## .. code-block:: nim
-      ##    # create a string of chinese or CJK chars
-      ##    # with max length 20 and show it in green
-      ##    msgg() do : echo newWordCJK(20,20)
-      # set the char set
-      let chc = toSeq(parsehexint("3400").. parsehexint("4DB5"))
-      var nw = ""
-      # words with length range 3 to maxwl
-      let maxws = toSeq(minwl.. maxwl)
-      # get a random length for a new word choosen from between 3 and maxwl
-      let nwl = maxws.randomChoice()
-      for x in 0.. <nwl:
-            nw = nw & $Rune(chc.randomChoice())
-      result = nw
-
-
-
-proc newWord*(minwl:int=3,maxwl:int = 10 ):string =
-    ## newWord
+proc tableRune*[T](z:T,fgr:string = white,cols = 18) = 
+    ## tableRune
     ##
-    ## creates a new lower case random word with chars from Letters set
+    ## simple table routine with 15 cols for displaying various unicode sets
+    ## fgr allows color display and fgr = "rand" displays in random color
     ##
-    ## default min word length minwl = 3
-    ##
-    ## default max word length maxwl = 10
-    ##
-
-    if minwl <= maxwl:
-        var nw = ""
-        # words with length range 3 to maxwl
-        let maxws = toSeq(minwl.. maxwl)
-        # get a random length for a new word
-        let nwl = maxws.randomChoice()
-        let chc = toSeq(33.. 126)
-        while nw.len < nwl:
-          var x = chc.randomChoice()
-          if char(x) in Letters:
-              nw = nw & $char(x)
-        result = normalize(nw)   # return in lower case , cleaned up
-
-    else:
-         cechoLn(red,"Error : minimum word length larger than maximum word length")
-         result = ""
-
-
-
-proc newWord2*(minwl:int=3,maxwl:int = 10 ):string =
-    ## newWord2
-    ##
-    ## creates a new lower case random word with chars from IdentChars set
-    ##
-    ## default min word length minwl = 3
-    ##
-    ## default max word length maxwl = 10
-    ##
-    if minwl <= maxwl:
-        var nw = ""
-        # words with length range 3 to maxwl
-        let maxws = toSeq(minwl.. maxwl)
-        # get a random length for a new word
-        let nwl = maxws.randomChoice()
-        let chc = toSeq(33.. 126)
-        while nw.len < nwl:
-          var x = chc.randomChoice()
-          if char(x) in IdentChars:
-              nw = nw & $char(x)
-        result = normalize(nw)   # return in lower case , cleaned up
-
-    else:
-         cechoLn(red,"Error : minimum word length larger than maximum word length")
-         result = ""
-
-
-proc newWord3*(minwl:int=3,maxwl:int = 10 ,nflag:bool = true):string =
-    ## newWord3
-    ##
-    ## creates a new lower case random word with chars from AllChars set if nflag = true
-    ##
-    ## creates a new anycase word with chars from AllChars set if nflag = false
-    ##
-    ## default min word length minwl = 3
-    ##
-    ## default max word length maxwl = 10
-    ##
-    if minwl <= maxwl:
-        var nw = ""
-        # words with length range 3 to maxwl
-        let maxws = toSeq(minwl.. maxwl)
-        # get a random length for a new word
-        let nwl = maxws.randomChoice()
-        let chc = toSeq(33.. 126)
-        while nw.len < nwl:
-          var x = chc.randomChoice()
-          if char(x) in AllChars:
-              nw = nw & $char(x)
-        if nflag == true:
-           result = normalize(nw)   # return in lower case , cleaned up
-        else :
-           result = nw
-
-    else:
-         cechoLn(red,"Error : minimum word length larger than maximum word length")
-         result = ""
-
-
-proc newHiragana*(minwl:int=3,maxwl:int = 10 ):string =
-    ## newHiragana
-    ##
-    ## creates a random hiragana word without meaning from the hiragana unicode set
-    ##
-    ## default min word length minwl = 3
-    ##
-    ## default max word length maxwl = 10
-    ##
-    if minwl <= maxwl:
-        var nw = ""
-        # words with length range 3 to maxwl
-        let maxws = toSeq(minwl.. maxwl)
-        # get a random length for a new word
-        let nwl = maxws.randomChoice()
-        let chc = toSeq(12353.. 12436)
-        while nw.len < nwl:
-           var x = chc.randomChoice()
-           nw = nw & $Rune(x)
-
-        result = nw
-
-    else:
-         cechoLn(red,"Error : minimum word length larger than maximum word length")
-         result = ""
-
-
-
-proc newKatakana*(minwl:int=3,maxwl:int = 10 ):string =
-    ## newKatakana
-    ##
-    ## creates a random katakana word without meaning from the katakana unicode set
-    ##
-    ## default min word length minwl = 3
-    ##
-    ## default max word length maxwl = 10
-    ##
-    if minwl <= maxwl:
-        var nw = ""
-        # words with length range 3 to maxwl
-        let maxws = toSeq(minwl.. maxwl)
-        # get a random length for a new word
-        let nwl = maxws.randomChoice()
-        let chc = toSeq(parsehexint("30A0") .. parsehexint("30FF"))
-        while nw.len < nwl:
-             var x = chc.randomChoice()
-             nw = nw & $Rune(x)
-        result = nw
-
-    else:
-         cechoLn(red,"Error : minimum word length larger than maximum word length")
-         result = ""
-
-
-
-proc iching*():seq[string] =
-    ## iching
-    ##
-    ## returns a seq containing iching unicode chars
-    var ich = newSeq[string]()
-    for j in 119552..119638: ich.add($Rune(j))
-    result = ich
-
-
-
-proc apl*():seq[string] =
-    ## apl
-    ##
-    ## returns a seq containing apl language symbols
-    ##
-    var adx = newSeq[string]()
-    # s U+30A0–U+30FF.
-    for j in parsehexint("2300") .. parsehexint("23FF"): adx.add($Rune(j))
-    result = adx
+    ## .. code-block:: nim
+    ##      tableRune(cjk(),"rand")
+    ##      tableRune(katakana(),yellowgreen)
+    ##      tableRune(hiragana(),truetomato)
+    ##      
+    var c = 0
+    for x in 0.. <z.len:
+      inc c
+      if c < cols + 1 :
+        
+          if fgr == "rand":
+                print(z[x] & spaces(2) & " , ",randcol()) 
+          else:
+                print(z[x] & spaces(2) & " , ",fgr)     
+      else:
+            c = 0
+            echo()
+    decho(2)
 
 
 
@@ -4611,31 +4440,26 @@ proc cjk*():seq[string] =
     result = chzh    
 
 
-proc tableRune*[T](z:T,fgr:string = white,cols = 18) = 
-    ## tableRune
-    ##
-    ## simple table routine with 15 cols for displaying various unicode sets
-    ## fgr allows color display and fgr = "rand" displays in random color
-    ##
-    ## .. code-block:: nim
-    ##      tableRune(cjk(),"rand")
-    ##      tableRune(katakana(),yellowgreen)
-    ##      tableRune(hiragana(),truetomato)
-    ##      
-    var c = 0
-    for x in 0.. <z.len:
-      inc c
-      if c < cols + 1 :
-        
-          if fgr == "rand":
-                print(z[x] & spaces(2) & " , ",randcol()) 
-          else:
-                print(z[x] & spaces(2) & " , ",fgr)     
-      else:
-            c = 0
-            echo()
-    decho(2)
 
+proc iching*():seq[string] =
+    ## iching
+    ##
+    ## returns a seq containing iching unicode chars
+    var ich = newSeq[string]()
+    for j in 119552..119638: ich.add($Rune(j))
+    result = ich
+
+
+
+proc apl*():seq[string] =
+    ## apl
+    ##
+    ## returns a seq containing apl language symbols
+    ##
+    var adx = newSeq[string]()
+    # s U+30A0–U+30FF.
+    for j in parsehexint("2300") .. parsehexint("23FF"): adx.add($Rune(j))
+    result = adx
 
 
 
@@ -4658,13 +4482,12 @@ proc rainbow2*[T](s : T,xpos:int = 1,fitLine:bool = false,centered:bool = false,
     # in case the passed in set contains nothing , maybe a unsuitable filter was used then
     # we use the original full colorNames seq
     var okcolorset = colorset
-    if okcolorset.len < 1:
-      okcolorset = colorNames
+    if okcolorset.len < 1:  okcolorset = colorNames
     
     var a = toSeq(0.. <okcolorset.len)
 
     if astr in emojis or astr in hiragana() or astr in katakana() or astr in iching():
-        c = a[randomInt(a.len)]
+        c = a[getRndInt(ma=a.len)]
          
         if centered == false:
             print(astr,colorset[c][1],black,xpos = nxpos,fitLine)
@@ -4680,7 +4503,7 @@ proc rainbow2*[T](s : T,xpos:int = 1,fitLine:bool = false,centered:bool = false,
     else :
 
           for x in 0.. <astr.len:
-            c = a[randomInt(a.len)]
+            c = a[getRndInt(ma=a.len)]
             
             if centered == false:
                 print(astr[x],okcolorset[c][1],black,xpos = nxpos,fitLine)
@@ -4691,6 +4514,7 @@ proc rainbow2*[T](s : T,xpos:int = 1,fitLine:bool = false,centered:bool = false,
                 print(astr[x],okcolorset[c][1],black,xpos=nxpos,fitLine)
 
             inc nxpos
+
 
 
 
@@ -4822,8 +4646,8 @@ proc randpos*():int =
     ##       sleepy(0.0015)
     ##
     curset()
-    let x = getRandomInt(0, tw - 1)
-    let y = getRandomInt(0, th - 1)
+    let x = getRndInt(0, tw - 1)
+    let y = getRndInt(0, th - 1)
     curdn(y)
     #print($x & "/" & $y,xpos = x)
     result = x
@@ -5099,7 +4923,7 @@ when isMainModule:
   doInfo()
   var zw = getWanIp()
   if zw.contains("not"):
-         printLn("Please check your internet connection .",red)
+         printLn("Please also check your internet connection .",pastelpink)
   else: 
        showIpInfo(zw)
  

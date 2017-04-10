@@ -32,9 +32,10 @@
 ##     Tested      : OpenSuse Tumbleweed , Ubuntu 16.04 LTS 
 ##       
 import os,cx,math,stats,cpuinfo
-import "random-0.5.3/random"
+import random/urandom, random/mersenne
+import alea
 
-
+var rng = wrap(initMersenneTwister(urandom(200)))
 
 proc memCheck*(stats:bool = false) =
   ## memCheck
@@ -161,10 +162,9 @@ proc getRandomPoint*(minx:int = -500 ,maxx:int = 500 ,miny:int = -500 ,maxy:int 
   
     var point : RpointInt
         
-    point.x =  getRandomSignI() * getRandomInt(minx,maxx) 
-    point.y =  getRandomSignI() * getRandomInt(miny,maxy)  
+    point.x =  getRandomSignI() * getRndInt(minx,maxx) 
+    point.y =  getRandomSignI() * getRndInt(miny,maxy)  
     result =  point
-
 
 
 template getCard* :auto =
@@ -177,7 +177,7 @@ template getCard* :auto =
     ##    print(getCard(),randCol(),xpos = centerX())  # get card and print in random color at xpos
     ##    doFinish()
     ##
-    cards[rxCards.randomChoice()]
+    cards[rndSampleInt(rxCards)]
 
 proc showRandomCard*(xpos:int = centerX()) = 
     ## showRandomCard
@@ -376,3 +376,171 @@ proc superHeaderA*(bb:string = "",strcol:string = white,frmcol:string = green,an
             sleep(500)
 
       echo()
+
+# Unicode random word creators
+
+proc newWordCJK*(minwl:int = 3 ,maxwl:int = 10):string =
+      ## newWordCJK
+      ##
+      ## creates a new random string consisting of n chars default = max 10
+      ##
+      ## with chars from the cjk unicode set
+      ##
+      ## http://unicode-table.com/en/#cjk-unified-ideographs
+      ##
+      ## requires unicode
+      ##
+      ## .. code-block:: nim
+      ##    # create a string of chinese or CJK chars
+      ##    # with max length 20 and show it in green
+      ##    msgg() do : echo newWordCJK(20,20)
+      # set the char set
+      result = ""
+      let c5 = toSeq(minwl.. maxwl)
+      let chc = toSeq(parsehexint("3400").. parsehexint("4DB5"))
+      for xx in 0.. <rndSampleInt(c5): result = result & $Rune(rndSampleint(chc))
+
+
+
+
+proc newWord*(minwl:int=3,maxwl:int = 10 ):string =
+    ## newWord
+    ##
+    ## creates a new lower case random word with chars from Letters set
+    ##
+    ## default min word length minwl = 3
+    ##
+    ## default max word length maxwl = 10
+    ##
+
+    if minwl <= maxwl:
+        var nw = ""
+        # words with length range 3 to maxwl
+        let maxws = toSeq(minwl.. maxwl)
+        # get a random length for a new word
+        let nwl = rndSampleint(maxws)
+        let chc = toSeq(33.. 126)
+        while nw.len < nwl:
+          var x = rndSampleint(chc)
+          if char(x) in Letters:
+              nw = nw & $char(x)
+        result = normalize(nw)   # return in lower case , cleaned up
+
+    else:
+         cechoLn(red,"Error : minimum word length larger than maximum word length")
+         result = ""
+
+
+
+proc newWord2*(minwl:int=3,maxwl:int = 10 ):string =
+    ## newWord2
+    ##
+    ## creates a new lower case random word with chars from IdentChars set
+    ##
+    ## default min word length minwl = 3
+    ##
+    ## default max word length maxwl = 10
+    ##
+    if minwl <= maxwl:
+        var nw = ""
+        # words with length range 3 to maxwl
+        let maxws = toSeq(minwl.. maxwl)
+        # get a random length for a new word
+        let nwl = rndSampleint(maxws)
+        let chc = toSeq(33.. 126)
+        while nw.len < nwl:
+          var x = rndSampleint(chc)
+          if char(x) in IdentChars:
+              nw = nw & $char(x)
+        result = normalize(nw)   # return in lower case , cleaned up
+
+    else:
+         cechoLn(red,"Error : minimum word length larger than maximum word length")
+         result = ""
+
+
+proc newWord3*(minwl:int=3,maxwl:int = 10 ,nflag:bool = true):string =
+    ## newWord3
+    ##
+    ## creates a new lower case random word with chars from AllChars set if nflag = true
+    ##
+    ## creates a new anycase word with chars from AllChars set if nflag = false
+    ##
+    ## default min word length minwl = 3
+    ##
+    ## default max word length maxwl = 10
+    ##
+    if minwl <= maxwl:
+        var nw = ""
+        # words with length range 3 to maxwl
+        let maxws = toSeq(minwl.. maxwl)
+        # get a random length for a new word
+        let nwl = rndSampleInt(maxws)
+        let chc = toSeq(33.. 126)
+        while nw.len < nwl:
+          var x = rndSampleInt(chc)
+          if char(x) in AllChars:
+              nw = nw & $char(x)
+        if nflag == true:
+           result = normalize(nw)   # return in lower case , cleaned up
+        else :
+           result = nw
+
+    else:
+         cechoLn(red,"Error : minimum word length larger than maximum word length")
+         result = ""
+
+
+proc newHiragana*(minwl:int=3,maxwl:int = 10 ):string =
+    ## newHiragana
+    ##
+    ## creates a random hiragana word without meaning from the hiragana unicode set
+    ##
+    ## default min word length minwl = 3
+    ##
+    ## default max word length maxwl = 10
+    ##
+    if minwl <= maxwl:
+        var nw = ""
+        # words with length range 3 to maxwl
+        let maxws = toSeq(minwl.. maxwl)
+        # get a random length for a new word
+        let nwl = rndSampleInt(maxws)
+        let chc = toSeq(12353.. 12436)
+        while nw.len < nwl:
+           var x = rndSampleint(chc)
+           nw = nw & $Rune(x)
+
+        result = nw
+
+    else:
+         cechoLn(red,"Error : minimum word length larger than maximum word length")
+         result = ""
+
+
+
+proc newKatakana*(minwl:int=3,maxwl:int = 10 ):string =
+    ## newKatakana
+    ##
+    ## creates a random katakana word without meaning from the katakana unicode set
+    ##
+    ## default min word length minwl = 3
+    ##
+    ## default max word length maxwl = 10
+    ##
+    if minwl <= maxwl:
+        var nw = ""
+        # words with length range 3 to maxwl
+        let maxws = toSeq(minwl.. maxwl)
+        # get a random length for a new word
+        let nwl = rndSampleint(maxws)
+        let chc = toSeq(parsehexint("30A0") .. parsehexint("30FF"))
+        while nw.len < nwl:
+             var x = rndSampleint(chc)
+             nw = nw & $Rune(x)
+        result = nw
+
+    else:
+         cechoLn(red,"Error : minimum word length larger than maximum word length")
+         result = ""
+
