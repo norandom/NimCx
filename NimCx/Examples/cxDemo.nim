@@ -1,5 +1,5 @@
 import cx,cxutils,strutils,strfmt,times,math
-import "random-0.5.3/random"
+
 
 ## small rough demos repository for var. procs in cx.nim
 ## this file is imported by cxTest.nim to actually run the demos
@@ -134,7 +134,7 @@ proc randomCardsDemo*() =
    decho(2)
    for z in 0.. <th - 3:
       for zz in 0.. <tw div 2 - 1:
-          print cards[rxCards.randomChoice()],randCol()
+          print cards[rndSampleint(rxCards)],randCol()
       writeLine(stdout,"") 
     
 
@@ -267,7 +267,7 @@ proc wideDotFieldDemo*()=
   ## draws random col widedots
   ## 
    
-  loopy(0.. 10,loopy(1.. tw div 2, dotyLn(1,randcol(),xpos = getRandomInt(0,tw - 1))))
+  loopy(0.. 10,loopy(1.. tw div 2, dotyLn(1,randcol(),xpos = getRndInt(0,tw - 1))))
   printlnBiCol("coloredSnow","d",greenyellow,salmon)
 
 
