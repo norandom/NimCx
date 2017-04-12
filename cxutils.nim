@@ -31,7 +31,7 @@
 ##
 ##     Tested      : OpenSuse Tumbleweed , Ubuntu 16.04 LTS 
 ##       
-import os,cx,math,stats,cpuinfo
+import os,osproc,cx,math,stats,cpuinfo,httpclient,browsers
 import random/urandom, random/mersenne
 import alea
 
@@ -543,4 +543,62 @@ proc newKatakana*(minwl:int=3,maxwl:int = 10 ):string =
     else:
          cechoLn(red,"Error : minimum word length larger than maximum word length")
          result = ""
+
+
+proc getWanIp*():string =
+   ## getWanIp
+   ##
+   ## deprecated as Herokou seems to have stopped this service in April 2017 ,
+   ##
+   ## will try to find replacement
+   ## 
+   ## get your wan ip from heroku  
+   ##
+   ## problems ? check : https://status.heroku.com/
+   
+   var zcli = newHttpClient(timeout = 5000)
+   var z = "Wan Ip not established. "
+   try:
+      z = zcli.getContent(url = "http://my-ip.heroku.com")
+      z = z.replace(sub = "{",by = " ").replace(sub = "}",by = " ").replace(sub = "\"ip\":"," ").replace(sub = '"' ,' ').strip()
+   except HttpRequestError:
+       printLn("\nIp checking failed due to 404. Heroku does not provide Ip checking anymore !",red)
+   except OSError:
+       printLn("Ip checking failed. See if Heroku is still here or just to slow to respond",red)
+       printLn("Check Heroku Status : https://status.heroku.com",red)
+       printLn("Is your internet still working ?",lightseagreen)
+       try:
+           opendefaultbrowser("https://status.heroku.com")
+       except  OSError:
+            discard
+       discard  
+   result = z
+   
+   
+proc getWanIp2*():string =
+            ## getWanIp2
+            ## 
+            ## another get wan ip function calling dyndns
+            ## 
+            ## 
+            ## .. code-block:: nim
+            ##    printLnBiCol(getwanip2())
+            ## 
+            ## Note : very slow so only use if getWanIp does not work , needs curl and awk
+            ## 
+            ## 
+            let (outp, errC) = execCMDEx("""curl -s http://checkip.dyndns.org/ | awk -F'[a-zA-Z<>/ :]+' '{printf "External IP: %s\n", $2}'""")
+            if errC == 0:
+                result =  $outp
+            else:
+                result = "External IP errorcode : " & $errC & ". IP not established"
+
+
+
+proc showWanIp*() =
+     ## showWanIp
+     ##
+     ## show your current wan ip  , this service cdurrently slow
+     ##
+     printBiCol("Current Wan Ip  : " & getWanIp(),":",yellowgreen,gray)
 

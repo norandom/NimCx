@@ -11,7 +11,7 @@
 ##
 ##     ProjectStart: 2015-06-20
 ##   
-##     Latest      : 2017-03-31
+##     Latest      : 2017-04-12
 ##
 ##     Compiler    : Nim >= 0.16
 ##
@@ -34,7 +34,7 @@
 ##
 ##     Docs        : https://qqtop.github.io/cx.html
 ##
-##     Tested      : OpenSuse 13.2 , OpenSuse Tumbleweed , Ubuntu 16.04 LTS 
+##     Tested      : OpenSuse Tumbleweed , Ubuntu 16.04 LTS 
 ##       
 ##                   Terminal set encoding to UTF-8  
 ##
@@ -69,6 +69,8 @@
 ##
 ##     Related     :
 ##
+##                  * see examples
+##
 ##                  * demo library: cxDemo.nim
 ##
 ##                  * tests       : cxTest.nim   (run some rough demos from cxDemo)
@@ -100,7 +102,7 @@
 ##                 
 ##                   unicode font libraries as needed 
 ##
-##     Plans       : started to move some of the non core procs to module cxutils.nim
+##     Plans       : move some of the non core procs to module cxutils.nim
 ##   
 ##                   to avoid library bload.
 ##
@@ -148,7 +150,6 @@ var rng = wrap(initMersenneTwister(urandom(2500)))
 
 type
      NimCxCustomError* = object of Exception         
-
      # to be used like so
      # raise newException(NimCxCustomError, "didn't do stuff")
 
@@ -437,7 +438,7 @@ const
   huge =  ["", "", "million", "billion", "trillion", "quadrillion",
            "quintillion", "sextillion", "septillion", "octillion", "nonillion","decillion"]
  
-
+# some handmade font...
 let a1 = "  ██   "
 let a2 = " ██ █  "
 let a3 = "██   █ "
@@ -457,7 +458,6 @@ let c2 = "██     "
 let c3 = "██     "
 let c4 = "██     "
 let c5 = " █████ "
-
 
 
 let d1 = "███ █  "
@@ -481,13 +481,11 @@ let f4 = "██     "
 let f5 = "██     "
 
 
-
 let g1 = " ████  "
 let g2 = "██     "
 let g3 = "██  ██ "
 let g4 = "██   █ "
 let g5 = " ████  "
-
 
 
 let h1 = "██   █ "
@@ -502,7 +500,6 @@ let i2 = "  ██   "
 let i3 = "  ██   "
 let i4 = "  ██   "
 let i5 = "  ██   "
-
 
 
 let j1 = "    ██ "
@@ -524,7 +521,6 @@ let l2 = "██     "
 let l3 = "██     "
 let l4 = "██     "
 let l5 = "██████ "
-
 
 
 let m1 = "██  ██ "
@@ -562,13 +558,11 @@ let q4 = "██ █ █ "
 let q5 = " ██ █  "
 
 
-
 let r1 = "███ █  "
 let r2 = "██   █ "
 let r3 = "███ █  "
 let r4 = "██   █ "
 let r5 = "██   █ "
-
 
 
 let s1 = "  █ ██ "
@@ -592,14 +586,11 @@ let u4 = "██   █ "
 let u5 = "██████ "
 
 
-
 let v1 = "██   █ "
 let v2 = "██   █ "
 let v3 = "██   █ "
 let v4 = " █  █  "
 let v5 = "  ██   "
-
-
 
 
 let w1 = "██   █ "
@@ -616,7 +607,6 @@ let x4 = "  █ █  "
 let x5 = "██   █ "
 
 
-
 let y1 = "██   █ "
 let y2 = "  █ █  "
 let y3 = "   █   "
@@ -630,7 +620,6 @@ let z2 = "    █  "
 let z3 = "   █   "
 let z4 = " █     "
 let z5 = "██████ "
-
 
 
 let hy1= "       "
@@ -653,12 +642,12 @@ let ul3 = "      "
 let ul4 = "      "
 let ul5 = "██████"
 
+
 let el1 = "      "
 let el2 = "██████"
 let el3 = "      "
 let el4 = "██████"
 let el5 = "      "
-
 
 
 let clb1 = spaces(6)
@@ -777,14 +766,12 @@ const number9 =
   ,"    ██"
   ,"██████"]
 
-
 const colon =
  @["      "
   ,"  ██  "
   ,"      "
   ,"  ██  "
   ,"      "]
-
 
 const plussign =
  @["      "
@@ -793,8 +780,6 @@ const plussign =
   ,"  ██  "
   ,"      "]
 
-
-
 const equalsign =
  @["      "
   ,"██████"
@@ -802,8 +787,6 @@ const equalsign =
   ,"██████"
   ,"      "]
  
- 
-
 const minussign =
  @["      "
   ,"      "
@@ -811,16 +794,12 @@ const minussign =
   ,"      "
   ,"      "] 
  
-
-
 const clrb =
  @["      "
   ,"      "
   ,"      "
   ,"      "
   ,"      "]
-
-
 
 const numberlen = 4
 
@@ -1213,8 +1192,7 @@ template colorsPalette*(coltype:string): auto =
          ##    doFinish()
          ##    
          ##    
-      
-         
+               
          var pal = newseq[(string,string)]()         
          for colx in 0.. <colorNames.len:
             if colorNames[colx][0].startswith(coltype) or colorNames[colx][0].contains(coltype):
@@ -1242,8 +1220,8 @@ template colPaletteName*(coltype:string,n:int): auto =
             if colorNames[colx][0].startswith(coltype) or colorNames[colx][0].contains(coltype):
               ts.add(colorNames[colx][0])
          
-         # simple error handling to avoid indexerrors n ltoo large we try 0
-         # this fails too something will error out
+         # simple error handling to avoid indexerrors if n too large we try 0
+         # if this fails too something will error out
          var m = n
          if m > colPaletteLen(coltype): m = 0
          ts[m] 
@@ -1308,9 +1286,9 @@ when defined(Linux):
     proc getTerminalWidth*() : int =
         ## getTerminalWidth
         ##
-        ## and get linux terminal width in columns
-        ## a terminalwith function now incorporated in Nim dev of 2016-09-02
-        ## which is slightly slower than the one presented here
+        ## get linux terminal width in columns
+        ## a terminalwidth function is now incorporated in Nim dev after 2016-09-02
+        ## which maybe is slightly slower than the one presented here
         ## 
        
         type WinSize = object
@@ -1355,11 +1333,11 @@ proc print*[T](astring:T,fgr:string = termwhite ,bgr:string = bblack,xpos:int = 
 proc printLn*[T](astring:T,fgr:string = termwhite , bgr:string = bblack,xpos:int = 0,fitLine:bool = false,centered:bool = false,styled : set[Style]= {},substr:string = "")
 proc printBiCol*[T](s:T,sep:string = ":",colLeft:string = yellowgreen ,colRight:string = termwhite,xpos:int = 0,centered:bool = false,styled : set[Style]= {}) ## forward declaration
 proc printLnBiCol*[T](s:T,sep:string = ":",colLeft:string = yellowgreen ,colRight:string = termwhite,xpos:int = 0,centered:bool = false,styled : set[Style]= {}) ## forward declaration
-proc printRainbow*(s : string,styled:set[Style] = {}) 
-proc hline*(n:int = tw,col:string = white,xpos:int = 1) ## forward declaration
+proc printRainbow*(s : string,styled:set[Style] = {})     ## forward declaration
+proc hline*(n:int = tw,col:string = white,xpos:int = 1)   ## forward declaration
 proc hlineLn*(n:int = tw,col:string = white,xpos:int = 1) ## forward declaration
-proc spellInteger*(n: int64): string ## forward declaration
-proc splitty*(txt:string,sep:string):seq[string] ## forward declaration
+proc spellInteger*(n: int64): string                      ## forward declaration
+proc splitty*(txt:string,sep:string):seq[string]          ## forward declaration
 
 proc doFinish*()
 
@@ -1473,8 +1451,7 @@ proc getRandomSignF*():float =
     ## 
     ## returns -1.0 or 1.0 float  to have a random positive or negative multiplier
     ##  
-  
-  
+   
     var s = getRndInt(0,1) 
     if s == 0:
        result = -1.0   
@@ -1483,7 +1460,7 @@ proc getRandomSignF*():float =
 
 
 proc fmtengine[T](a:string,astring:T):string =
-     ## fmtengine   used internally
+     ## fmtengine - used internally
      ## ::
      ##   simple string formater to right or left align within given param
      ##   also can take care of floating point precision
@@ -1553,8 +1530,7 @@ proc fmtengine[T](a:string,astring:T):string =
         for x in 0.. <parseInt(dg):  
           dps = dps & okstring[x]
         okstring = dps
-        
-        
+         
      result = okstring
 
 
@@ -1631,11 +1607,11 @@ proc showRune*(s:string) : string  =
 
 
 proc unquote*(s:string):string =
-    ## unquote
-    ##
-    ## remove any double quotes from a string
-    ##
-    result = replace(s,$'"',"")
+      ## unquote
+      ##
+      ## remove any double quotes from a string
+      ##
+      result = replace(s,$'"',"")
 
 
 
@@ -2055,7 +2031,6 @@ proc hlineLn*(n:int = tw,col:string = white,xpos:int = 1) =
      ##
      print(repeat("_",n),col,xpos = xpos)
      echo()
-
 
 
 
@@ -2613,7 +2588,6 @@ proc month*(aDate:string) : string =
 
 proc year*(aDate:string) : string = aDate.split("-")[0]
      ## Format yyyy
-
 
 
 proc intervalsecs*(startDate,endDate:string) : float =
@@ -3384,60 +3358,6 @@ proc tupleToStr*(xs: tuple): string =
 
 
 # Var. internet related procs
-
-proc getWanIp*():string =
-   ## getWanIp
-   ##
-   ## get your wan ip from heroku
-   ##
-   ## problems ? check : https://status.heroku.com/
-   
-   var zcli = newHttpClient(timeout = 5000)
-   var z = "Wan Ip not established. "
-   try:
-      z = zcli.getContent(url = "http://my-ip.heroku.com")
-      z = z.replace(sub = "{",by = " ").replace(sub = "}",by = " ").replace(sub = "\"ip\":"," ").replace(sub = '"' ,' ').strip()
-   except HttpRequestError:
-       printLn("\nIp checking failed due to 404. Heroku does not provide Ip checking anymore !",red)
-   except OSError:
-       printLn("Ip checking failed. See if Heroku is still here or just to slow to respond",red)
-       printLn("Check Heroku Status : https://status.heroku.com",red)
-       printLn("Is your internet still working ?",lightseagreen)
-       try:
-           opendefaultbrowser("https://status.heroku.com")
-       except  OSError:
-            discard
-       discard  
-   result = z
-   
-   
-proc getWanIp2*():string =
-            ## getWanIp2
-            ## 
-            ## another get wan ip function calling dyndns
-            ## 
-            ## 
-            ## .. code-block:: nim
-            ##    printLnBiCol(getwanip2())
-            ## 
-            ## Note : maybe slower so only use if getWanIp does not work , needs curl and awk
-            ## 
-            ## 
-            let (outp, errC) = execCMDEx("""curl -s http://checkip.dyndns.org/ | awk -F'[a-zA-Z<>/ :]+' '{printf "External IP: %s\n", $2}'""")
-            if errC == 0:
-                result =  $outp
-            else:
-                result = "External IP errorcode : " & $errC & ". IP not established"
-
-
-
-proc showWanIp*() =
-     ## showWanIp
-     ##
-     ## show your current wan ip
-     ##
-     printBiCol("Current Wan Ip  : " & getwanip(),":",yellowgreen,gray)
-
 
 proc getIpInfo*(ip:string):JsonNode =
      ## getIpInfo
@@ -4876,16 +4796,18 @@ proc handler*() {.noconv.} =
     eraseScreen()
     echo()
     hlineLn()
-    cechoLn(yellowgreen,"Thank you for using     : ",getAppFilename())
-    printLn(fmtx(["<","<11",">9"],"Last compilation on     : " , CompileDate , CompileTime),cyan)
+    cechoLn(yellowgreen,"Thank you for using        : " & getAppFilename())
+    hlineLn()
+    printLnBiCol(fmtx(["<","<11",">9"],"Last compilation on        : " , CompileDate , CompileTime),":",brightcyan)
+    printLnBiCol(fmtx(["<","<11",">9"],"Exit handler invocation at : " , getDateStr() , getClockStr()),":",pastelorange)
     hlineLn()
     printBiCol("Nim Version   : " & NimVersion)
     print(" | ",brightblack)
     printLnBiCol("cx Version     : " & CXLIBVERSION)
     print(fmtx(["<14"],"Elapsed       : "),yellow)
-    printLn(fmtx(["<",">5"],epochtime() - cx.start,"secs"),brightblack)
+    printLn(fmtx(["<",">5"],epochTime() - cx.start,"secs"),brightblack)
     echo()
-    rainbow(" Have a Nice Day !")  ## change or add custom messages as required
+    printLn(" Have a Nice Day !",clRainbow)  ## change or add custom messages as required
     decho(2)
     system.addQuitProc(resetAttributes)
     quit(0)
@@ -4894,7 +4816,6 @@ proc handler*() {.noconv.} =
 
 # putting decho here will put two blank lines before anyting else runs
 decho(2)
-
 # putting this here we can stop most programs which use this lib and get the
 # automatic exit messages , it may not work in tight loops involving execCMD or
 # waiting for readLine() inputs.
@@ -4921,10 +4842,4 @@ when isMainModule:
   printLn(kitty,lime,black,centered=true)
   decho(2)
   doInfo()
-  var zw = getWanIp()
-  if zw.contains("not"):
-         printLn("Please also check your internet connection .",pastelpink)
-  else: 
-       showIpInfo(zw)
- 
   doFinish()
