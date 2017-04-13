@@ -32,10 +32,10 @@
 ##     Tested      : OpenSuse Tumbleweed , Ubuntu 16.04 LTS 
 ##       
 import os,osproc,cx,math,stats,cpuinfo,httpclient,browsers
-import random/urandom, random/mersenne
-import alea
+#import random/urandom, random/mersenne
+#import alea
 
-var rng = wrap(initMersenneTwister(urandom(200)))
+#var rng = wrap(initMersenneTwister(urandom(200)))
 
 proc memCheck*(stats:bool = false) =
   ## memCheck
@@ -501,23 +501,18 @@ proc newHiragana*(minwl:int=3,maxwl:int = 10 ):string =
     ## default max word length maxwl = 10
     ##
     if minwl <= maxwl:
-        var nw = ""
-        # words with length range 3 to maxwl
-        let maxws = toSeq(minwl.. maxwl)
-        # get a random length for a new word
-        let nwl = rndSampleInt(maxws)
-        let chc = toSeq(12353.. 12436)
-        while nw.len < nwl:
-           var x = rndSampleint(chc)
-           nw = nw & $Rune(x)
-
-        result = nw
-
+        result = ""
+        var rhig = toSeq(12353.. 12436)  
+        var zz = rndSampleInt(toSeq(minwl.. maxwl))
+        while result.len < zz:
+              var hig = rndSampleint(rhig)  
+              result = result & $Rune(hig)
+       
     else:
          cechoLn(red,"Error : minimum word length larger than maximum word length")
          result = ""
 
-
+    
 
 proc newKatakana*(minwl:int=3,maxwl:int = 10 ):string =
     ## newKatakana
@@ -529,17 +524,10 @@ proc newKatakana*(minwl:int=3,maxwl:int = 10 ):string =
     ## default max word length maxwl = 10
     ##
     if minwl <= maxwl:
-        var nw = ""
-        # words with length range 3 to maxwl
-        let maxws = toSeq(minwl.. maxwl)
-        # get a random length for a new word
-        let nwl = rndSampleint(maxws)
-        let chc = toSeq(parsehexint("30A0") .. parsehexint("30FF"))
-        while nw.len < nwl:
-             var x = rndSampleint(chc)
-             nw = nw & $Rune(x)
-        result = nw
-
+        result  = ""
+        while result.len < rndSampleint(toSeq(minwl.. maxwl)):
+              result = result & $Rune(rndSampleint(toSeq(parsehexint("30A0") .. parsehexint("30FF"))))
+       
     else:
          cechoLn(red,"Error : minimum word length larger than maximum word length")
          result = ""

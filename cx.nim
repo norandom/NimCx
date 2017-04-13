@@ -113,6 +113,7 @@ import osproc,macros,posix,terminal,math,stats,json
 import random/urandom, random/mersenne
 import sequtils,httpclient,rawsockets,browsers,intsets, algorithm
 import strutils except toLower,toUpper
+import strmisc
 import unicode ,typeinfo, typetraits ,cpuinfo
 #import nimprof       # needs compile with: nim c --profiler:on --stackTrace:on  -d:memProfiler cx
 #imports based on modules available via nimble
@@ -1324,7 +1325,7 @@ when defined(Linux):
 
 
 # forward declarations
-proc ff*(zz:float,n:int64 = 5):string
+proc ff*(zz:float,n:int = 5):string
 proc ff2*(zz:float,n:int = 3):string
 proc ff2*(zz:int,n:int = 0):string
 converter colconv*(cx:string) : string
@@ -2848,7 +2849,7 @@ proc newdate():string =
   var date = $year & "-" & $month & "-" & $day
   result = date
 
-proc getRandomDate*():string = 
+proc getRndDate*():string = 
   ## getRandomDate
   ## 
   ## gets a randomdate between 1900-01-01 and 2099-12-31
@@ -3627,12 +3628,12 @@ proc sum*[T](aseq: seq[T]): T = foldl(aseq, a + b)
      ##
 
 
-proc ff*(zz:float,n:int64 = 5):string =
+proc ff*(zz:float,n:int = 5):string =
      ## ff
      ##
      ## formats a float to string with n decimals
      ##
-     result = $formatFloat(zz,ffDecimal,n)
+     result = $formatFloat(zz,ffDecimal,precision = n)
 
 
 
@@ -3659,43 +3660,13 @@ proc ff2*(zz:float , n:int = 3):string =
     result = ff(zz,n)
     
   else: 
-        
-        var sc = 0
-        var nz = ""
-        var zok = ""
-        var zrs = ""
-        var zs = split($zz,".")
-        var zrv = reverseme(zs[0])
-      
-        for x in 0 .. <zrv.len: 
-          zrs = zrs & $zrv[x]
-      
-        for x in 0.. <zrs.len:
-          if sc == 2:
-              nz = "," & $zrs[x] & nz
-              sc = 0
-          else:
-              nz = $zrs[x] & nz
-              inc sc     
-          
-        for x in 0.. <zs[1].len:     # after comma part
-          if x < n:
-            zok = zok & zs[1][x]
+        var c = rpartition($zz,".")
+        var cnew = ""
+        for d in c[2]:
+            if cnew.len < n:  cnew = cnew & d
 
-        
-        if zok == "0" or zok.len < n:  # pad 0 up to n
-          while zok.len < n :
-              zok = zok & "0"
-        
-        if n > 0:  #if comma part to be shown we add it to nz
-              nz = nz & "." & zok
-              
-        if nz.startswith(",") == true:
-          nz = strip(nz,true,false,{','})
-        elif nz.startswith("-,") == true:
-          nz = nz.replace("-,","-")
-          
-        result = nz
+        result = c[0] & c[1] & cnew
+
 
 
 proc ff2*(zz:int , n:int = 0):string =
@@ -3764,7 +3735,7 @@ proc getRandomFloat*():float =
 
 proc getRndFloat*():float = result = rng.random() 
 
-proc createSeqFloat*(n:BiggestInt = 10,prec:int = 3) : seq[float] =
+proc createSeqFloat*(n:int = 10,prec:int = 3) : seq[float] =
      ## createSeqFloat
      ##
      ## convenience proc to create an unsorted seq of random floats with
@@ -3790,14 +3761,26 @@ proc createSeqFloat*(n:BiggestInt = 10,prec:int = 3) : seq[float] =
      ##
      var ffnz = prec
      if ffnz > 16: ffnz = 16
-     var z = newSeq[float]()
-     for x in 0.. <n:
-          var af = ff(getRandomFloat(),ffnz)
-          z.add(parseFloat(af))
-     result = z
+     result = newSeq[float]()
+     for wd in 0 .. <n:
+       var x = 0   
+       while  x < prec:
+            var afloat = parseFloat(ff2(getRndFloat(),prec))
+            if ($afloat).len > prec + 2:
+               x = x - 1
+               if x < 0:
+                     x = 0
+            else:
+               inc x 
+               result.add(afloat)
+               
+            if result.len == n : break   
+         
+       if result.len == n : break
 
 
 # Misc. routines
+
 
  
 proc checkHash*[T](kata:string,hsx:T)  =
