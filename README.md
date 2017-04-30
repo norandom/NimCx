@@ -27,8 +27,8 @@ Installation :
 
 
 
-Documentation for cx.nim : [cx - Documentation] (https://qqtop.github.io/cx.html)
-
+Documentation for cx.nim : [cx - Documentation](https://qqtop.github.io/cx.html)
+                           
 
 Example usage of print procs 
 
