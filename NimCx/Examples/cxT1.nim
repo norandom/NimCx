@@ -1,4 +1,4 @@
-import cx,strutils
+import cx,strutils,cxutils
 
 # linux only
 

@@ -1,4 +1,4 @@
-import cx,strfmt,colors,strutils
+import cx,strfmt,colors,strutils,cxutils
 
 
 # the original colorNames from colors.nim 
