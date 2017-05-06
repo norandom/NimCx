@@ -11,7 +11,7 @@
 ##
 ##     ProjectStart: 2015-06-20
 ##   
-##     Latest      : 2017-04-12
+##     Latest      : 2017-05-06
 ##
 ##     Compiler    : Nim >= 0.16
 ##
@@ -93,7 +93,7 @@
 ##                   after compiler updates .
 ##                   
 ##
-##     Required    : alea installed via nimble
+##     Required    : 
 ##
 ##     Installation: nimble install https://github.com/qqtop/NimCx.git
 ##
@@ -109,14 +109,11 @@
 ##
 ##
 import os, times, parseutils, parseopt, hashes, tables, sets, strmisc
-import osproc,macros,posix,terminal,math,stats,json
-import random/urandom, random/mersenne
+import osproc,macros,posix,terminal,math,stats,json,random
 import sequtils,httpclient,rawsockets,browsers,intsets, algorithm
 import strutils except toLower,toUpper
 import unicode ,typeinfo, typetraits ,cpuinfo
 #import nimprof       # needs compile with: nim c --profiler:on --stackTrace:on  -d:memProfiler cx
-#imports based on modules available via nimble
-import alea   
 
 export strutils,sequtils,times,unicode
 export terminal.Style,terminal.getch  # make terminal style constants available in the calling prog
@@ -145,8 +142,7 @@ when defined(posix):
 const CXLIBVERSION* = "0.9.9"
 
 let start* = epochTime()  ##  simple execution timing with one line see doFinish()
-var rng* = wrap(initMersenneTwister(urandom(2500)))  ## init random number generator 
-
+randomize()  ## seed random number generator 
 
 type
      NimCxCustomError* = object of Exception         
@@ -1123,21 +1119,54 @@ let colorNames* = @[
 proc rndSampleInt*(asq:seq[int]):int =
      ## rndSampleint
      ## returns an int random sample from an integer sequence
-     let c: Choice[int] = choice(asq)  
-     result = rng.sample(c)
+     result = random(asq)
 
 
 let rxCol* = toSeq(colorNames.low.. colorNames.high) ## index into colorNames
 
 
+proc uniform*(a,b: float) : float =
+      ## uniform
+      ## 
+      ## returns a random float uniformly distributed between a and  b
+      ## 
+      ## ..code-block:: nim
+      ##   import cx,stats
+      ##   import "random-0.5.3/random"
+      ##   proc quickTest() =
+      ##        var ps : Runningstat
+      ##        var  n = 100_000_000
+      ##        printLnBiCol("Each test loops : " & $n & " times\n\n")
+      ##
+      ##        for x in 0.. <n: ps.push(uniform(0.00,100.00))
+      ##        printLn("uniform",salmon) 
+      ##        showStats(ps) 
+      ##        ps.clear 
+      ##        for x in 0.. <n: ps.push(getRandomFloat() * 100)
+      ##        curup(15) 
+      ##        printLn("getRandomFloat * 100",salmon,xpos = 30)
+      ##        showStats(ps,xpos = 30) 
+      ##    
+      ##        ps.clear 
+      ##        for x in 0.. <n: ps.push(getRndInt(0,100))
+      ##        curup(15) 
+      ##        printLn("getRndInt",salmon,xpos = 60)
+      ##        showStats(ps,xpos = 60) 
+      ##      
+      ##   quickTest() 
+      ##   doFinish()
+      ##   
+      ##    
+      result = a + (b - a) * float(random(b))
+
+      
 proc getRndInt*(mi:int = 0 , ma:int = int.high):int =
  ## getRndInt
  ##
  ## returns a random int between mi and ma
  ##
-
- let u = uniform(float(mi),float(ma))
- result = int(rng.sample(u))   
+ 
+ result = random(mi..ma)
 
 
 
@@ -3553,42 +3582,7 @@ proc reverseString*(text:string):string =
 
 # Convenience procs for random data creation and handling
 
-
-proc uniform*(a,b: float) : float =
-      ## uniform
-      ## 
-      ## returns a random float uniformly distributed between a and  b
-      ## 
-      ## ..code-block:: nim
-      ##   import cx,stats
-      ##   import "random-0.5.3/random"
-      ##   proc quickTest() =
-      ##        var ps : Runningstat
-      ##        var  n = 100_000_000
-      ##        printLnBiCol("Each test loops : " & $n & " times\n\n")
-      ##
-      ##        for x in 0.. <n: ps.push(uniform(0.00,100.00))
-      ##        printLn("uniform",salmon) 
-      ##        showStats(ps) 
-      ##        ps.clear 
-      ##        for x in 0.. <n: ps.push(getRandomFloat() * 100)
-      ##        curup(15) 
-      ##        printLn("getRandomFloat * 100",salmon,xpos = 30)
-      ##        showStats(ps,xpos = 30) 
-      ##    
-      ##        ps.clear 
-      ##        for x in 0.. <n: ps.push(getRndInt(0,100))
-      ##        curup(15) 
-      ##        printLn("getRndInt",salmon,xpos = 60)
-      ##        showStats(ps,xpos = 60) 
-      ##      
-      ##   quickTest() 
-      ##   doFinish()
-      ##   
-      ##    
-      result = a + (b - a) * rng.random()
-
-   
+ 
 
 proc createSeqInt*(n:int = 10,mi:int = 0,ma:int = 1000) : seq[int] {.inline.} =
     ## createSeqInt
@@ -3719,7 +3713,7 @@ proc ff2*(zz:int , n:int = 0):string =
   result = nz
 
 
-proc getRandomFloat*():float =
+proc getRandomFloat*(mi:float = -1.0 ,ma:float = 1.0):float =
      ## getRandomFloat
      ##
      ## convenience proc so we do not need to import random in calling prog
@@ -3731,9 +3725,9 @@ proc getRandomFloat*():float =
      ## .. code-block:: nim
      ##    echo  getRandomFloat() * 10000.00 * getRandomSignF()
      ##
-     result = rng.random()  
+     result = random(-1.0..float(1.0))
 
-proc getRndFloat*():float = result = rng.random() 
+proc getRndFloat*(mi:float = -1.0 ,ma:float = 1.0):float = result =  random(mi..ma)
      ## getRndFloat
      ##
      ## same as getrandomFloat()

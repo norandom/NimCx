@@ -18,7 +18,7 @@
 ##
 ##     Description :
 ##
-##                   cxutils.nim is a collection of simple utility procs and templates
+##                   cxutils.nim is a collection of lesser used simple utility procs and templates
 ##
 ##                   moved here to avoid code bloat in cx.nim
 ##
@@ -32,10 +32,7 @@
 ##     Tested      : OpenSuse Tumbleweed , Ubuntu 16.04 LTS 
 ##       
 import os,osproc,cx,math,stats,cpuinfo,httpclient,browsers
-#import random/urandom, random/mersenne
-#import alea
 
-#var rng = wrap(initMersenneTwister(urandom(200)))
 
 proc memCheck*(stats:bool = false) =
   ## memCheck
@@ -129,8 +126,7 @@ proc getRandomPoint*(minx:float = -500.0,maxx:float = 500.0,miny:float = -500.0,
     if miny < 0.0:   ry = miny - 1.0 
     else        :    ry = miny + 1.0  
     if maxy < 0.0:   ry = maxy - 1.0 
-    else        :    ry = maxy + 1.0 
-              
+    else        :    ry = maxy + 1.0         
         
     var mpl = abs(maxx) * 1000     
     
@@ -586,7 +582,7 @@ proc getWanIp2*():string =
 proc showWanIp*() =
      ## showWanIp
      ##
-     ## show your current wan ip  , this service cdurrently slow
+     ## show your current wan ip  , this service currently slow
      ##
      printBiCol("Current Wan Ip  : " & getWanIp(),":",yellowgreen,gray)
 
