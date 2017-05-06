@@ -108,12 +108,11 @@
 ##
 ##
 ##
-import os, times, parseutils, parseopt, hashes, tables, sets
+import os, times, parseutils, parseopt, hashes, tables, sets, strmisc
 import osproc,macros,posix,terminal,math,stats,json
 import random/urandom, random/mersenne
 import sequtils,httpclient,rawsockets,browsers,intsets, algorithm
 import strutils except toLower,toUpper
-import strmisc
 import unicode ,typeinfo, typetraits ,cpuinfo
 #import nimprof       # needs compile with: nim c --profiler:on --stackTrace:on  -d:memProfiler cx
 #imports based on modules available via nimble
@@ -146,7 +145,7 @@ when defined(posix):
 const CXLIBVERSION* = "0.9.9"
 
 let start* = epochTime()  ##  simple execution timing with one line see doFinish()
-var rng = wrap(initMersenneTwister(urandom(2500)))
+var rng* = wrap(initMersenneTwister(urandom(2500)))  ## init random number generator 
 
 
 type
@@ -431,7 +430,7 @@ const
 
  
 const
-  # used by spellInteger
+  # used by spellInteger,spellFloat
   tens =  ["", "", "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety"]
   small = ["zero", "one", "two", "three", "four", "five", "six", "seven",
            "eight", "nine", "ten", "eleven", "twelve", "thirteen", "fourteen",
@@ -3555,10 +3554,6 @@ proc reverseString*(text:string):string =
 # Convenience procs for random data creation and handling
 
 
-# init the MersenneTwister
-#var rng* = initMersenneTwister(urandom(2500))
-
-
 proc uniform*(a,b: float) : float =
       ## uniform
       ## 
@@ -3619,15 +3614,20 @@ proc createSeqInt*(n:int = 10,mi:int = 0,ma:int = 1000) : seq[int] {.inline.} =
 
 proc sum*[T](aseq: seq[T]): T = foldl(aseq, a + b)
      ## sum
-     ## code per idea from http://rnduja.github.io/2015/10/21/scientific-nim/
-     ##
      ##
      ## returns sum of float or int seqs
      ## 
      ## same effect as math.sum
      ##
 
-
+proc product*[T](aseq: seq[T]):T = foldl(aseq, a * b)
+     ## product
+     ##
+     ## returns product of float or int seqs 
+     ##
+     ## if a seq contains a 0 element than result will be 0
+     ## 
+    
 proc ff*(zz:float,n:int = 5):string =
      ## ff
      ##
@@ -3734,13 +3734,17 @@ proc getRandomFloat*():float =
      result = rng.random()  
 
 proc getRndFloat*():float = result = rng.random() 
+     ## getRndFloat
+     ##
+     ## same as getrandomFloat()
+     ##
 
 proc createSeqFloat*(n:int = 10,prec:int = 3) : seq[float] =
      ## createSeqFloat
      ##
      ## convenience proc to create an unsorted seq of random floats with
      ##
-     ## default length 10 ( always consider how much memory is in the system )
+     ## default length ma = 10 ( always consider how much memory is in the system )
      ##
      ## prec enables after comma precision up to 16 positions after comma
      ##
@@ -3930,8 +3934,8 @@ template withFile*(f:untyped,filename: string, mode: FileMode, body: untyped): t
      ##                  var sw = "the"   # find all lines containing : the
      ##                  if al.contains(sw) == true:
      ##                     inc oc
-     ##                     msgy() do: write(stdout,"{:<8}{:>6} {:<7}{:>6}  ".fmt("Line :",lc,"Count :",oc))
-     ##                     printhl(al,sw,green)
+     ##                     write(stdout,"{:<8}{:>6} {:<7}{:>6}  ".fmt("Line :",lc,"Count :",oc))
+     ##                     printHl(al,sw,green)
      ##                     echo()
      ##               except:
      ##                  break
@@ -3984,7 +3988,7 @@ proc showPalette*(coltype:string = "white") =
     
 
 proc shift*[T](x: var seq[T], zz: Natural = 0): T =
-     ## shift takes a seq and returns the first , and deletes it from the seq
+     ## shift takes a seq and returns the first item, and deletes it from the seq
      ##
      ## build in pop does the same from the other side
      ##
@@ -4664,14 +4668,14 @@ proc doInfo*() =
   printLnBiCol("Now                           : " & getDateStr() & " " & getClockStr(),sep,yellowgreen,lightgrey)
   printLnBiCol("Local Time                    : " & $getLocalTime(getTime()),sep,yellowgreen,lightgrey)
   printLnBiCol("GMT                           : " & $getGMTime(getTime()),sep,yellowgreen,lightgrey)
-  printLnBiCol("Environment Info              : " & getEnv("HOME"),sep,yellowgreen,lightgrey)
+  printLnBiCol("Environment Info              : " & os.getEnv("HOME"),sep,yellowgreen,lightgrey)
   printLnBiCol("File exists                   : " & $(existsFile filename),sep,yellowgreen,lightgrey)
   printLnBiCol("Dir exists                    : " & $(existsDir "/"),sep,yellowgreen,lightgrey)
   printLnBiCol("AppDir                        : " & getAppDir(),sep,yellowgreen,lightgrey)
   printLnBiCol("App File Name                 : " & getAppFilename(),sep,yellowgreen,lightgrey)
-  printLnBiCol("User home  dir                : " & getHomeDir(),sep,yellowgreen,lightgrey)
-  printLnBiCol("Config Dir                    : " & getConfigDir(),sep,yellowgreen,lightgrey)
-  printLnBiCol("Current Dir                   : " & getCurrentDir(),sep,yellowgreen,lightgrey)
+  printLnBiCol("User home  dir                : " & os.getHomeDir(),sep,yellowgreen,lightgrey)
+  printLnBiCol("Config Dir                    : " & os.getConfigDir(),sep,yellowgreen,lightgrey)
+  printLnBiCol("Current Dir                   : " & os.getCurrentDir(),sep,yellowgreen,lightgrey)
   let fi = getFileInfo(filename)
   printLnBiCol("File Id                       : " & $(fi.id.device) ,sep,yellowgreen,lightgrey)
   printLnBiCol("File No.                      : " & $(fi.id.file),sep,yellowgreen,lightgrey)
