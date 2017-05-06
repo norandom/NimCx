@@ -9,5 +9,5 @@ license       = "MIT"
 [Deps]
 
 Requires : "nim >= 0.16.0"
-Requires : alea
+
 
