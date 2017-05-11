@@ -3436,7 +3436,7 @@ proc showIpInfo*(ip:string) =
       except:
           printLnBiCol("IpInfo   : unavailable",":",lightgreen,red)  
 
-proc localIp*():string=
+proc localIp*():string =
    # localIp
    # 
    # returns current machine ip
@@ -3446,6 +3446,15 @@ proc localIp*():string=
   
    
 
+proc localRouterIp*():string = 
+   # localRouterIp
+   # 
+   # returns current router ip
+   # 
+   var res = execCmdEx("ip route list | awk ' /^default/ {print $3}'")
+   result = $res[0]
+   
+   
 proc getHosts*(dm:string):seq[string] =
     ## getHosts
     ##
@@ -4808,19 +4817,19 @@ system.addQuitProc(resetAttributes)
 
 
 when isMainModule:
-  let smm = " import cx and your terminal comes alive with color .."
+  let smm = " import cx and your terminal comes alive with color ...  "
   for x in 0.. 10:
         cleanScreen()
         decho(5)
-        printBigLetters("NIM-CX",xpos = 1,fun=true)
+        printBigLetters("NIM-CX",xpos = tw div 4,fun=true)
         decho(8)
         printLnBiCol(smm,sep = "and ",colLeft = yellowgreen,colRight = clrainbow,centered = false)
         sleepy(0.2)
         curup(1)
         rainbow2(smm,centered = false,colorset = colorsPalette("pastel"))
+        for x in 0.. (tw - smm.len) div 4: print(innocent,randcol(),black,centered=false)
         echo()
-  clearup()      
-  printLn(kitty,lime,black,centered=true)
+  clearup()
   decho(2)
   doInfo()
   doFinish()
