@@ -11,7 +11,7 @@
 ##
 ##     ProjectStart: 2015-06-20
 ##   
-##     Latest      : 2017-05-06
+##     Latest      : 2017-05-14
 ##
 ##     Compiler    : Nim >= 0.16
 ##
@@ -176,7 +176,6 @@ type
 type
     RpointInt*   = tuple[x, y : int]
     RpointFloat* = tuple[x, y : float]
-
 
 # type used in Benchmark
 type
@@ -1355,7 +1354,7 @@ when defined(Linux):
 # forward declarations
 proc ff*(zz:float,n:int = 5):string
 proc ff2*(zz:float,n:int = 3):string
-proc ff2*(zz:int,n:int = 0):string
+proc ff2*(zz:int64,n:int = 0):string
 converter colconv*(cx:string) : string
 proc rainbow*[T](s : T,xpos:int = 0,fitLine:bool = false ,centered:bool = false)  ## forward declaration
 proc print*[T](astring:T,fgr:string = termwhite ,bgr:string = bblack,xpos:int = 0,fitLine:bool = false ,centered:bool = false,styled : set[Style]= {},substr:string = "")
@@ -3607,10 +3606,12 @@ proc createSeqInt*(n:int = 10,mi:int = 0,ma:int = 1000) : seq[int] {.inline.} =
     ##    # including the limits 100 and 2000
     ##    echo createSeqInt(50,100,2000)
 
-    result = newSeq[int]()
+    # result = newSeqofCap[int](n)  # slow use if memory considerations are of top importance
+    result = newSeq[int]()          # faster
     case  mi <= ma
       of true :
-                for x in 0.. <n: result.add(getRndInt(mi,ma))
+                #for x in 0.. <n: result.add()
+                result.add(newSeqWith(n,getRndInt(mi,ma)))
       of false: print("Error : Wrong parameters for min , max ",red)
 
 
@@ -3659,7 +3660,8 @@ proc ff2*(zz:float , n:int = 3):string =
   ##  
   ##       
   
-  if zz < 1.0 == true:   #  number less than 1 so no 1000 seps needed
+   
+  if abs(zz) < 10000 == true:   #  number less than 10000 so no 1000 seps needed
     result = ff(zz,n)
     
   else: 
@@ -3668,11 +3670,12 @@ proc ff2*(zz:float , n:int = 3):string =
         for d in c[2]:
             if cnew.len < n:  cnew = cnew & d
 
-        result = c[0] & c[1] & cnew
+        result = ff2(parseInt(c[0])) & c[1] & cnew
 
 
 
-proc ff2*(zz:int , n:int = 0):string =
+
+proc ff2*(zz:int64 , n:int = 0):string =
   ## ff2
   ## 
   ## formats a integer into form 12,345,678 that is thousands separators are shown
