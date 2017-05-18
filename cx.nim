@@ -954,7 +954,7 @@ const
     cow*                =  "🐮"
 
 
-let emojis* = @[check,xmark,heart,sun,star,darkstar,umbrella,flag,snowflake,music,scissors,
+const emojis* = @[check,xmark,heart,sun,star,darkstar,umbrella,flag,snowflake,music,scissors,
                trademark,copyright,roof,skull,smile,smiley,innocent,lol,tongue,blush,
                sad,cry,rage,cat,kitty,monkey,cow]
 
@@ -963,7 +963,7 @@ let emojis* = @[check,xmark,heart,sun,star,darkstar,umbrella,flag,snowflake,musi
 const wideDot* = "\xE2\x9A\xAB" & " "
 
 # all colors except original terminal colors
-let colorNames* = @[
+const colorNames* = @[
       ("aliceblue", aliceblue),
       ("antiquewhite", antiquewhite),
       ("aqua", aqua),
