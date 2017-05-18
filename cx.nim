@@ -1121,7 +1121,7 @@ proc rndSampleInt*(asq:seq[int]):int =
      result = random(asq)
 
 
-let rxCol* = toSeq(colorNames.low.. colorNames.high) ## index into colorNames
+const rxCol* = toSeq(colorNames.low.. colorNames.high) ## index into colorNames
 
 
 proc uniform*(a,b: float) : float =
@@ -1914,8 +1914,6 @@ proc print*[T](astring:T,fgr:string = termwhite ,bgr:BackgroundColor ,xpos:int =
            setForeGroundColor(fgWhite)
            setBackGroundColor(bgBlack)
         
-     
-
 
 proc printLn*[T](astring:T,fgr:string = termwhite , bgr:string = bblack,xpos:int = 0,fitLine:bool = false,centered:bool = false,styled : set[Style]= {},substr:string = "") =  
     ## 
@@ -2253,31 +2251,32 @@ proc printBiCol*[T](s:T,sep:string = ":",colLeft:string = yellowgreen ,colRight:
      ##    printBiCol("{} : {}     {}".fmt("Good Idea","Number",50),":",yellow,green)
      ##
      ##
-     var nosepflag:bool = false
-     var zz = $s
-     var z = zz.splitty(sep)  # using splitty we retain the sep on the left side
+     {.gcsafe.}:
+        var nosepflag:bool = false
+        var zz = $s
+        var z = zz.splitty(sep)  # using splitty we retain the sep on the left side
 
-     # in case sep occures multiple time we only consider the first one
-     if z.len > 1:
-       for x in 2.. <z.len:
-          # this now should contain the right part to be colored differently
-          z[1] = z[1] & z[x]
+        # in case sep occures multiple time we only consider the first one
+        if z.len > 1:
+           for x in 2.. <z.len:
+              # this now should contain the right part to be colored differently
+              z[1] = z[1] & z[x]
 
-     else:
-          # when the separator is not found
-          nosepflag = true
-          # no separator so we just execute print with left color
-          print(zz,fgr=colLeft,xpos=xpos,centered=centered,styled = styled)
+        else:
+            # when the separator is not found
+            nosepflag = true
+            # no separator so we just execute print with left color
+            print(zz,fgr=colLeft,xpos=xpos,centered=centered,styled = styled)
 
-     if nosepflag == false:
+        if nosepflag == false:
 
-            if centered == false:
-                  print(z[0],fgr = colLeft,bgr = black,xpos = xpos,styled = styled)
-                  print(z[1],fgr = colRight,bgr = black,styled = styled)
-            else:  # centered == true
-                  let npos = centerX() - (zz).len div 2 - 1
-                  print(z[0],fgr = colLeft,bgr = black,xpos = npos,styled = styled)
-                  print(z[1],fgr = colRight,bgr = black,styled = styled)
+                if centered == false:
+                    print(z[0],fgr = colLeft,bgr = black,xpos = xpos,styled = styled)
+                    print(z[1],fgr = colRight,bgr = black,styled = styled)
+                else:  # centered == true
+                    let npos = centerX() - (zz).len div 2 - 1
+                    print(z[0],fgr = colLeft,bgr = black,xpos = npos,styled = styled)
+                    print(z[1],fgr = colRight,bgr = black,styled = styled)
 
 
 
@@ -2305,36 +2304,37 @@ proc printLnBiCol*[T](s:T,sep:string = ":", colLeft:string = yellowgreen, colRig
      ##    printLnBiCol("{} : {}     {}".fmt("Good Idea","Number",50),":",yellow,green)
      ##
      ##
-     var nosepflag:bool = false
-     var zz = $s
-     var z = zz.splitty(sep)  # using splitty we retain the sep on the left side
-     # in case sep occures multiple time we only consider the first one
+     {.gcsafe.}:
+        var nosepflag:bool = false
+        var zz = $s
+        var z = zz.splitty(sep)  # using splitty we retain the sep on the left side
+        # in case sep occures multiple time we only consider the first one
 
-     if z.len > 1:
-       for x in 2.. <z.len:
-           z[1] = z[1] & z[x]
-     else:
-          # when the separator is not found
-          nosepflag = true
-          # no separator so we just execute printLn with left color
-          printLn(zz,fgr=colLeft,xpos=xpos,centered=centered,styled = styled)
+        if z.len > 1:
+          for x in 2.. <z.len:
+             z[1] = z[1] & z[x]
+        else:
+            # when the separator is not found
+            nosepflag = true
+            # no separator so we just execute printLn with left color
+            printLn(zz,fgr=colLeft,xpos=xpos,centered=centered,styled = styled)
 
-     if nosepflag == false:
+        if nosepflag == false:
 
-        if centered == false:
-              print(z[0],fgr = colLeft,bgr = black,xpos = xpos,styled = styled)
-              if colRight == clrainbow:   # we currently do this as rainbow implementation has changed
-                    printLn(z[1],fgr = randcol(),bgr = black,styled = styled)
-              else:
-                    printLn(z[1],fgr = colRight,bgr = black,styled = styled)
+            if centered == false:
+                print(z[0],fgr = colLeft,bgr = black,xpos = xpos,styled = styled)
+                if colRight == clrainbow:   # we currently do this as rainbow implementation has changed
+                        printLn(z[1],fgr = randcol(),bgr = black,styled = styled)
+                else:
+                        printLn(z[1],fgr = colRight,bgr = black,styled = styled)
 
-        else:  # centered == true
-              let npos = centerX() - zz.len div 2 - 1
-              print(z[0],fgr = colLeft,bgr = black,xpos = npos)
-              if colRight == clrainbow:   # we currently do this as rainbow implementation has changed
-                    printLn(z[1],fgr = randcol(),bgr = black,styled = styled)
-              else:
-                    printLn(z[1],fgr = colRight,bgr = black,styled = styled)
+            else:  # centered == true
+                let npos = centerX() - zz.len div 2 - 1
+                print(z[0],fgr = colLeft,bgr = black,xpos = npos)
+                if colRight == clrainbow:   # we currently do this as rainbow implementation has changed
+                        printLn(z[1],fgr = randcol(),bgr = black,styled = styled)
+                else:
+                        printLn(z[1],fgr = colRight,bgr = black,styled = styled)
 
 
 
@@ -4761,14 +4761,15 @@ proc doFinish*() =
     ##
     ## and should be the last line of the application
     ##
-    decho(2)
-    infoLine()
-    printLn(" - " & year(getDateStr()),brightblack)
-    print(fmtx(["<14"],"Elapsed     : "),yellowgreen)
-    print(fmtx(["<",">5"],ff(epochtime() - cx.start,3)," secs"),goldenrod)
-    printLnBiCol(" Compiled on: " & $CompileDate & " at " & $CompileTime)
-    echo()
-    quit(0)
+    {.gcsafe.}:
+        decho(2)
+        infoLine()
+        printLn(" - " & year(getDateStr()),brightblack)
+        print(fmtx(["<14"],"Elapsed     : "),yellowgreen)
+        print(fmtx(["<",">5"],ff(epochtime() - cx.start,3)," secs"),goldenrod)
+        printLnBiCol(" Compiled on: " & $CompileDate & " at " & $CompileTime)
+        echo()
+        quit(0)
 
 proc handler*() {.noconv.} =
     ## handler
