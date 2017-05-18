@@ -1716,7 +1716,7 @@ converter colconv*(cx:string) : string =
 
 
 
-proc print*[T](astring:T,fgr:string = termwhite ,bgr:string = bblack,xpos:int = 0,fitLine:bool = false ,centered:bool = false,styled : set[Style]= {},substr:string = "") =
+proc print*[T](astring:T,fgr:string = termwhite ,bgr:string = bblack,xpos:int = 0,fitLine:bool = false ,centered:bool = false,styled : set[Style]= {},substr:string = ""){.gcsafe.} =
     ## ::
     ## print
     ## 
@@ -1814,7 +1814,7 @@ proc print*[T](astring:T,fgr:string = termwhite ,bgr:string = bblack,xpos:int = 
       
 
 
-proc print*[T](astring:T,fgr:string = termwhite ,bgr:BackgroundColor ,xpos:int = 0,fitLine:bool = false ,centered:bool = false,styled : set[Style]= {},substr:string = "") =
+proc print*[T](astring:T,fgr:string = termwhite ,bgr:BackgroundColor ,xpos:int = 0,fitLine:bool = false ,centered:bool = false,styled : set[Style]= {},substr:string = "") {.gcsafe.}=
  
     ## ::
     ##   print
@@ -1917,7 +1917,7 @@ proc print*[T](astring:T,fgr:string = termwhite ,bgr:BackgroundColor ,xpos:int =
      
 
 
-proc printLn*[T](astring:T,fgr:string = termwhite , bgr:string = bblack,xpos:int = 0,fitLine:bool = false,centered:bool = false,styled : set[Style]= {},substr:string = "") =  
+proc printLn*[T](astring:T,fgr:string = termwhite , bgr:string = bblack,xpos:int = 0,fitLine:bool = false,centered:bool = false,styled : set[Style]= {},substr:string = "") {.gcsafe.}=  
     ## 
     ## ::
     ##   printLn
@@ -1959,7 +1959,7 @@ proc printLn*[T](astring:T,fgr:string = termwhite , bgr:string = bblack,xpos:int
     print($(astring) & "\L",fgr,bgr,xpos,fitLine,centered,styled,substr)
    
 
-proc printLn*[T](astring:T,fgr:string = termwhite , bgr:BackgroundColor,xpos:int = 0,fitLine:bool = false,centered:bool = false,styled : set[Style]= {},substr:string = "") =
+proc printLn*[T](astring:T,fgr:string = termwhite , bgr:BackgroundColor,xpos:int = 0,fitLine:bool = false,centered:bool = false,styled : set[Style]= {},substr:string = "") {.gcsafe.}=
     ## :: 
     ##   printLn
     ## 
@@ -1998,7 +1998,7 @@ proc printLn*[T](astring:T,fgr:string = termwhite , bgr:BackgroundColor,xpos:int
     print cleareol
 
 
-proc rainbow*[T](s : T,xpos:int = 0,fitLine:bool = false,centered:bool = false) =
+proc rainbow*[T](s : T,xpos:int = 0,fitLine:bool = false,centered:bool = false) {.gcsafe.} =
     ## rainbow
     ##
     ## multicolored string
@@ -2190,7 +2190,7 @@ proc sleepy*[T:float|int](secs:T) =
 # these procs have similar functionality
 
 
-proc printRainbow*(s : string,styled:set[Style] = {}) =
+proc printRainbow*(s : string,styled:set[Style] = {}) {.gcsafe.}=
     ## printRainbow
     ##
     ##
@@ -2211,7 +2211,7 @@ proc printRainbow*(s : string,styled:set[Style] = {}) =
        print($astr[x],colorNames[c][1],styled = styled)
 
 
-proc printLnRainbow*[T](s : T,styled:set[Style] = {}) =
+proc printLnRainbow*[T](s : T,styled:set[Style] = {}) {.gcsafe.} =
     ## printLnRainbow
     ##
     ##
