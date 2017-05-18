@@ -1716,7 +1716,7 @@ converter colconv*(cx:string) : string =
 
 
 
-proc print*[T](astring:T,fgr:string = termwhite ,bgr:string = bblack,xpos:int = 0,fitLine:bool = false ,centered:bool = false,styled : set[Style]= {},substr:string = ""){.gcsafe.} =
+proc print*[T](astring:T,fgr:string = termwhite ,bgr:string = bblack,xpos:int = 0,fitLine:bool = false ,centered:bool = false,styled : set[Style]= {},substr:string = "") =
     ## ::
     ## print
     ## 
@@ -1755,66 +1755,66 @@ proc print*[T](astring:T,fgr:string = termwhite ,bgr:string = bblack,xpos:int = 
     ##
     ## or use 2 or more print statements for the desired effect
     ##
+    {.gcsafe.}:
+        var npos = xpos
+        
+        if bgr.startswith("bgre"):
+           setBackgroundColor(bgred)
 
-    var npos = xpos
-    
-    if bgr.startswith("bgre"):
-       setBackgroundColor(bgred)
+        if centered == false:
 
-    if centered == false:
-
-        if npos > 0:  # the result of this is our screen position start with 1
-            setCursorXPos(npos)
-
-        if ($astring).len + xpos >= tw:
-
-            if fitLine == true:
-                # force to write on same line within in terminal whatever the xpos says
-                npos = tw - ($astring).len
+            if npos > 0:  # the result of this is our screen position start with 1
                 setCursorXPos(npos)
 
-    else:
-          # centered == true
-          npos = centerX() - ($astring).len div 2 - 1
-          setCursorXPos(npos)
+            if ($astring).len + xpos >= tw:
+
+                if fitLine == true:
+                    # force to write on same line within in terminal whatever the xpos says
+                    npos = tw - ($astring).len
+                    setCursorXPos(npos)
+
+        else:
+            # centered == true
+            npos = centerX() - ($astring).len div 2 - 1
+            setCursorXPos(npos)
 
 
-    if styled != {}:
-          var s = $astring
-                    
-          if substr.len > 0:
-              var rx = s.split(substr)
-              for x in rx.low.. rx.high:
-                  writestyled(rx[x],{})
-                  if x != rx.high:
-                    case fgr
-                      of clrainbow : printRainbow(substr,styled) 
-                      else: styledEchoPrint(fgr,styled,substr,termwhite)  #orig
-                    
-          else:
-               case fgr
-                    of clrainbow : printRainbow($s,styled)
-                    else: styledEchoPrint(fgr,styled,s,termwhite)  #orig
-                    
-    else:
-      
-        case fgr
-          of clrainbow: rainbow(" " & $astring,npos)
-          else:
-            try:
-               write(stdout,fgr & colconv(bgr) & $(astring))
-            except:
-               echo $(astring)
+        if styled != {}:
+            var s = $astring
+                        
+            if substr.len > 0:
+                var rx = s.split(substr)
+                for x in rx.low.. rx.high:
+                    writestyled(rx[x],{})
+                    if x != rx.high:
+                        case fgr
+                        of clrainbow : printRainbow(substr,styled) 
+                        else: styledEchoPrint(fgr,styled,substr,termwhite)  #orig
+                        
+            else:
+                case fgr
+                        of clrainbow : printRainbow($s,styled)
+                        else: styledEchoPrint(fgr,styled,s,termwhite)  #orig
+                        
+        else:
+        
+            case fgr
+            of clrainbow: rainbow(" " & $astring,npos)
+            else:
+                try:
+                   write(stdout,fgr & colconv(bgr) & $(astring))
+                except:
+                   echo $(astring)
 
-    # reset to white/black only if any changes
-    if fgr != $fgWhite or bgr != $bgBlack:
-      setForeGroundColor(fgWhite)
-      setBackGroundColor(bgBlack)
-      
-      
+        # reset to white/black only if any changes
+        if fgr != $fgWhite or bgr != $bgBlack:
+           setForeGroundColor(fgWhite)
+           setBackGroundColor(bgBlack)
+        
+        
 
 
-proc print*[T](astring:T,fgr:string = termwhite ,bgr:BackgroundColor ,xpos:int = 0,fitLine:bool = false ,centered:bool = false,styled : set[Style]= {},substr:string = "") {.gcsafe.}=
+proc print*[T](astring:T,fgr:string = termwhite ,bgr:BackgroundColor ,xpos:int = 0,fitLine:bool = false ,centered:bool = false,styled : set[Style]= {},substr:string = "") =
  
     ## ::
     ##   print
@@ -1861,63 +1861,63 @@ proc print*[T](astring:T,fgr:string = termwhite ,bgr:BackgroundColor ,xpos:int =
     ##    setBackgroundColor(bgRed)
     ##    print("The end never comes on time ! ",pastelBlue,styled = {styleReverse})
     ##
+    {.gcsafe.}:
+        var npos = xpos
+        
+        if centered == false:
 
-    var npos = xpos
-    
-    if centered == false:
-
-        if npos > 0:  # the result of this is our screen position start with 1
-            setCursorXPos(npos)
-
-        if ($astring).len + xpos >= tw:
-
-            if fitLine == true:
-                # force to write on same line within in terminal whatever the xpos says
-                npos = tw - ($astring).len
+            if npos > 0:  # the result of this is our screen position start with 1
                 setCursorXPos(npos)
 
-    else:
-          # centered == true
-          npos = centerX() - ($astring).len div 2 - 1
-          setCursorXPos(npos)
+            if ($astring).len + xpos >= tw:
+
+                if fitLine == true:
+                    # force to write on same line within in terminal whatever the xpos says
+                    npos = tw - ($astring).len
+                    setCursorXPos(npos)
+
+        else:
+            # centered == true
+            npos = centerX() - ($astring).len div 2 - 1
+            setCursorXPos(npos)
 
 
-    if styled != {}:
-          var s = $astring
-                    
-          if substr.len > 0:
-              var rx = s.split(substr)
-              for x in rx.low.. rx.high:
-                  writestyled(rx[x],{})
-                  if x != rx.high:
-                    case fgr
-                      of clrainbow   : printRainbow(substr,styled)
-                      else: styledEchoPrint(fgr,styled,substr,termwhite)
-          else:
-               case fgr
-                    of clrainbow   : printRainbow($s,styled)
-                    else: styledEchoPrint(fgr,styled,s,termwhite)
+        if styled != {}:
+            var s = $astring
+                        
+            if substr.len > 0:
+                var rx = s.split(substr)
+                for x in rx.low.. rx.high:
+                    writestyled(rx[x],{})
+                    if x != rx.high:
+                        case fgr
+                        of clrainbow   : printRainbow(substr,styled)
+                        else: styledEchoPrint(fgr,styled,substr,termwhite)
+            else:
+                case fgr
+                        of clrainbow   : printRainbow($s,styled)
+                        else: styledEchoPrint(fgr,styled,s,termwhite)
 
-    else:
-      
-        case fgr
-          of clrainbow: rainbow(spaces(1) & $astring,npos)
-          else: 
-              setBackGroundColor(bgr)
-              try:
-                write(stdout,fgr & $astring)
-              except:
-                echo astring
+        else:
+        
+            case fgr
+            of clrainbow: rainbow(spaces(1) & $astring,npos)
+            else: 
+                setBackGroundColor(bgr)
+                try:
+                    write(stdout,fgr & $astring)
+                except:
+                    echo astring
 
-    # reset to white/black only if any changes
-    if fgr != $fgWhite or bgr != bgBlack:
-       setForeGroundColor(fgWhite)
-       setBackGroundColor(bgBlack)
-      
+        # reset to white/black only if any changes
+        if fgr != $fgWhite or bgr != bgBlack:
+           setForeGroundColor(fgWhite)
+           setBackGroundColor(bgBlack)
+        
      
 
 
-proc printLn*[T](astring:T,fgr:string = termwhite , bgr:string = bblack,xpos:int = 0,fitLine:bool = false,centered:bool = false,styled : set[Style]= {},substr:string = "") {.gcsafe.}=  
+proc printLn*[T](astring:T,fgr:string = termwhite , bgr:string = bblack,xpos:int = 0,fitLine:bool = false,centered:bool = false,styled : set[Style]= {},substr:string = "") =  
     ## 
     ## ::
     ##   printLn
@@ -1959,7 +1959,7 @@ proc printLn*[T](astring:T,fgr:string = termwhite , bgr:string = bblack,xpos:int
     print($(astring) & "\L",fgr,bgr,xpos,fitLine,centered,styled,substr)
    
 
-proc printLn*[T](astring:T,fgr:string = termwhite , bgr:BackgroundColor,xpos:int = 0,fitLine:bool = false,centered:bool = false,styled : set[Style]= {},substr:string = "") {.gcsafe.}=
+proc printLn*[T](astring:T,fgr:string = termwhite , bgr:BackgroundColor,xpos:int = 0,fitLine:bool = false,centered:bool = false,styled : set[Style]= {},substr:string = "") =
     ## :: 
     ##   printLn
     ## 
@@ -1998,7 +1998,7 @@ proc printLn*[T](astring:T,fgr:string = termwhite , bgr:BackgroundColor,xpos:int
     print cleareol
 
 
-proc rainbow*[T](s : T,xpos:int = 0,fitLine:bool = false,centered:bool = false) {.gcsafe.} =
+proc rainbow*[T](s : T,xpos:int = 0,fitLine:bool = false,centered:bool = false)  =
     ## rainbow
     ##
     ## multicolored string
@@ -2190,7 +2190,7 @@ proc sleepy*[T:float|int](secs:T) =
 # these procs have similar functionality
 
 
-proc printRainbow*(s : string,styled:set[Style] = {}) {.gcsafe.}=
+proc printRainbow*(s : string,styled:set[Style] = {}) =
     ## printRainbow
     ##
     ##
@@ -2211,7 +2211,7 @@ proc printRainbow*(s : string,styled:set[Style] = {}) {.gcsafe.}=
        print($astr[x],colorNames[c][1],styled = styled)
 
 
-proc printLnRainbow*[T](s : T,styled:set[Style] = {}) {.gcsafe.} =
+proc printLnRainbow*[T](s : T,styled:set[Style] = {}) =
     ## printLnRainbow
     ##
     ##
