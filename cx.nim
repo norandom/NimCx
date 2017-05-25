@@ -11,7 +11,7 @@
 ##
 ##     ProjectStart: 2015-06-20
 ##   
-##     Latest      : 2017-05-14
+##     Latest      : 2017-05-25
 ##
 ##     Compiler    : Nim >= 0.16
 ##
@@ -2181,9 +2181,6 @@ proc sleepy*[T:float|int](secs:T) =
   var milsecs = (secs * 1000).int
   sleep(milsecs)
 
-
-
-
 # Var. convenience procs for colorised data output
 # these procs have similar functionality
 
@@ -3557,7 +3554,7 @@ proc reverseMe*[T](xs: openarray[T]): seq[T] =
 
   result = newSeq[T](xs.len)
   for i, x in xs:
-    result[^i-1] = x # or: result[xs.high-i] = x
+    result[^i - 1] = x # or: result[xs.high - i] = x
 
 
 proc reverseText*(text:string):string = 
@@ -4107,14 +4104,29 @@ proc showStats*(x:Runningstat,n:int = 3,xpos:int = 1) =
      ##
      ## .. code-block:: nim
      ##
-     ##    import cx,stats
-     ##    var rs:Runningstat
-     ##    var z =  createSeqFloat(500000)
-     ##    for x in z:
-     ##        rs.push(x)
-     ##    showStats(rs)
-     ##    doFinish()
+     ##     var rsa:Runningstat
+     ##     var rsb:Runningstat
+     ##     for x in 1.. 100:
+     ##        cleanscreen()
+     ##        rsa.clear
+     ##        rsb.clear
+     ##        var a = createSeqint(500,0,100000)
+     ##        var b = createSeqint(500,0,100000) 
+     ##        rsa.push(a)
+     ##        rsb.push(b)
+     ##        showStats(rsa,5)
+     ##        curup(14)
+     ##        showStats(rsb,5,xpos = 40)
+     ##        decho(2)
+     ##        printLnBiCol("Regression Run  : " & $x)
+     ##        showRegression(a,b,xpos = 20)
+     ##        sleepy(0.05)
+     ##        curup(4)
+     ##     
+     ##     curdn(6)  
+     ##     doFinish()
      ##
+     
      var sep = ":"
      printLnBiCol("Sum     : " & ff(x.sum,n),sep,yellowgreen,white,xpos = xpos)
      printLnBiCol("Mean    : " & ff(x.mean,n),sep,yellowgreen,white,xpos = xpos)
@@ -4130,7 +4142,7 @@ proc showStats*(x:Runningstat,n:int = 3,xpos:int = 1) =
      printLnBiCol("Max     : " & ff(x.max,n),sep,yellowgreen,white,xpos = xpos)
      printLn("S --> sample\n",peru,xpos = xpos)
 
-proc showRegression*(x, y: openArray[float | int]) =
+proc showRegression*(x, y: openArray[float | int],n:int = 5,xpos:int = 1) =
      ## showRegression
      ##
      ## quickly display RunningRegress data based on input of two openarray data series
@@ -4145,12 +4157,12 @@ proc showRegression*(x, y: openArray[float | int]) =
      var sep = ":"
      var rr :RunningRegress
      rr.push(x,y)
-     printLnBiCol("Intercept     : " & ff(rr.intercept()),sep,yellowgreen,white)
-     printLnBiCol("Slope         : " & ff(rr.slope()),sep,yellowgreen,white)
-     printLnBiCol("Correlation   : " & ff(rr.correlation()),sep,yellowgreen,white)
+     printLnBiCol("Intercept     : " & ff(rr.intercept(),n),sep,yellowgreen,white,xpos = xpos)
+     printLnBiCol("Slope         : " & ff(rr.slope(),n),sep,yellowgreen,white,xpos = xpos)
+     printLnBiCol("Correlation   : " & ff(rr.correlation(),n),sep,yellowgreen,white,xpos = xpos)
     
 
-proc showRegression*(rr: RunningRegress) =
+proc showRegression*(rr: RunningRegress,n:int = 5,xpos:int = 1) =
      ## showRegression
      ##
      ## Displays RunningRegress data from an already formed RunningRegress
@@ -4158,11 +4170,36 @@ proc showRegression*(rr: RunningRegress) =
   
      var sep = ":"
           
-     printLnBiCol("Intercept     : " & ff(rr.intercept()),sep,yellowgreen,white)
-     printLnBiCol("Slope         : " & ff(rr.slope()),sep,yellowgreen,white)
-     printLnBiCol("Correlation   : " & ff(rr.correlation()),sep,yellowgreen,white)
+     printLnBiCol("Intercept     : " & ff(rr.intercept(),n),sep,yellowgreen,white,xpos = xpos)
+     printLnBiCol("Slope         : " & ff(rr.slope(),n),sep,yellowgreen,white,xpos = xpos)
+     printLnBiCol("Correlation   : " & ff(rr.correlation(),n),sep,yellowgreen,white,xpos = xpos)
     
+    
+template zipWith*[T1,T2](f: untyped; xs:openarray[T1], ys:openarray[T2]): untyped =
+  ## zipWith
+  ## 
+  ## 
+  ## .. code-block:: nim
+  ##    var s1 = createSeqInt(5)
+  ##    var s2 = createSeqInt(5)
+  ##    var zs = zipWith(`/`,s1,s2)   # try with +,-,*,/,div ...
+  ##    echo zs
+  ##    
+  ##    
+  ## original code ex Nim Forum
+  ## 
+  let N = min(xs.len, ys.len)
+  var res = newSeq[type(f(xs[0],ys[0]))](N)
+  for i, value in res.mpairs: value = f(xs[i], ys[i])
+  res
 
+
+template currentFile*: string =
+  ## currentFile
+  ## 
+  ## returns path and current filename
+  ## 
+  instantiationInfo(-1, true).filename 
 
 proc newDir*(dirname:string) =
      ## newDir
@@ -4473,6 +4510,10 @@ proc drawBox*(hy:int = 1, wx:int = 1 , hsec:int = 1 ,vsec:int = 1,frCol:string =
      #
      # given some data should the data be printed into a drawn box
      # or the box around the data ?
+     # 
+     # brcol does not have any sensible effect
+     # 
+     # need to have a writeable coordinate system so we can more easier fill in data
      #
 
      var h = hy
@@ -4664,7 +4705,7 @@ proc doInfo*() =
   #var accTime = getLastAccessTime(filename)
   let modTime = getLastModificationTime(filename)
   let sep = ":"
-  superHeader("Information for file " & filename & " and System      ")
+  superHeader("Information for file " & filename & " and System " & spaces(22))
   printLnBiCol("Last compilation on           : " & CompileDate &  " at " & CompileTime,sep,yellowgreen,lightgrey)
   # this only makes sense for non executable files
   #printLnBiCol("Last access time to file      : " & filename & " " & $(fromSeconds(int(getLastAccessTime(filename)))),sep,yellowgreen,lightgrey)
@@ -4821,18 +4862,20 @@ system.addQuitProc(resetAttributes)
 
 
 when isMainModule:
-  let smm = " import cx and your terminal comes alive with color ...  "
+  let smm = "   import cx and your terminal comes alive with color ...  "
   for x in 0.. 10:
         cleanScreen()
         decho(5)
         printBigLetters("NIM-CX",xpos = tw div 4,fun=true)
         decho(8)
-        printLnBiCol(smm,sep = "and ",colLeft = yellowgreen,colRight = clrainbow,centered = false)
-        sleepy(0.2)
-        curup(1)
         rainbow2(smm,centered = false,colorset = colorsPalette("pastel"))
-        for x in 0.. (tw - smm.len) div 4: print(innocent,randcol(),black,centered=false)
-        echo()
+        print(innocent,truetomato)
+        for x in 0.. 12: print(innocent,randcol())
+        sleepy(0.3)
+        curup(1)
+        
+        
+        
   clearup()
   decho(2)
   doInfo()
