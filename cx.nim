@@ -11,7 +11,7 @@
 ##
 ##     ProjectStart: 2015-06-20
 ##   
-##     Latest      : 2017-05-25
+##     Latest      : 2017-05-28
 ##
 ##     Compiler    : Nim >= 0.16
 ##
@@ -114,7 +114,6 @@ import sequtils,httpclient,rawsockets,browsers,intsets, algorithm
 import strutils except toLower,toUpper
 import unicode ,typeinfo, typetraits ,cpuinfo
 #import nimprof       # needs compile with: nim c --profiler:on --stackTrace:on  -d:memProfiler cx
-
 export strutils,sequtils,times,unicode
 export terminal.Style,terminal.getch  # make terminal style constants available in the calling prog
 
@@ -433,6 +432,9 @@ const
   huge =  ["", "", "million", "billion", "trillion", "quadrillion",
            "quintillion", "sextillion", "septillion", "octillion", "nonillion","decillion"]
  
+ 
+  pastelSet* = [pastelgreen,pastelbeige,pastelpink,pastelblue,pastelwhite,pastelorange,pastelyellow]
+ 
 # some handmade font...
 let a1 = "  ██   "
 let a2 = " ██ █  "
@@ -518,11 +520,11 @@ let l4 = "██     "
 let l5 = "██████ "
 
 
-let m1 = "██  ██ "
-let m2 = "█ ██ █ "
-let m3 = "█  █ █ "
-let m4 = "█  █ █ "
-let m5 = "█    █ "
+let m1 = "███ ██ "
+let m2 = "██ █ █ "
+let m3 = "██ █ █ "
+let m4 = "██   █ "
+let m5 = "██   █ "
 
 
 let n1 = "██   █ "
@@ -1122,7 +1124,7 @@ proc rndSampleInt*(asq:seq[int]):int =
 
 
 const rxCol* = toSeq(colorNames.low.. colorNames.high) ## index into colorNames
-
+const rxPastelCol* = toSeq(pastelset.low.. pastelset.high) ## index into colorNames
 
 proc uniform*(a,b: float) : float =
       ## uniform
@@ -1415,7 +1417,7 @@ template currentLine* =
    var z = instantiationInfo().line
    printLnBiCol("Line -> " & $z,"->",peru,red)
 
-template randPastelCol*: string = pastelSet[rxPastelCol.randomChoice()][1]
+template randPastelCol*: string = random(pastelset)
    ## randPastelCol
    ##
    ## get a randomcolor from pastelSet
@@ -1425,6 +1427,7 @@ template randPastelCol*: string = pastelSet[rxPastelCol.randomChoice()][1]
    ##    loopy(0..5,printLn("Hello Random Color",randPastelCol()))
    ##
    ##
+ 
 
 template hdx*(code:typed,frm:string = "+",width:int = tw,nxpos:int = 0):typed =
    ## hdx
@@ -1556,20 +1559,20 @@ proc fmtengine[T](a:string,astring:T):string =
      if okstring.len > parseInt(dg) and parseInt(dg) > 0:
         var dps = ""
         for x in 0.. <parseInt(dg):  
-          dps = dps & okstring[x]
+            dps = dps & okstring[x]
         okstring = dps
          
      result = okstring
 
 
 
-proc fmtx*[T](fmts:openarray[string],fstrings:varargs[T, `$`]):string =
+proc fmtx*[T](fmts:openarray[string],fstrings:varargs[T,`$`]):string =
      ## fmtx
      ## 
      ## ::
      ##   simple format utility similar to strfmt to accommodate our needs
      ##   implemented :  right or left align within given param and float precision
-     ##   returns a string
+     ##   returns a string   
      ##
      ##   Some observations:
      ##
@@ -1596,18 +1599,20 @@ proc fmtx*[T](fmts:openarray[string],fstrings:varargs[T, `$`]):string =
      ## Examples :
      ##
      ## .. code-block:: nim
+     ##    import cx,cxutils
      ##    echo fmtx(["","","<8.3",""," High : ","<8","","","","","","","",""],lime,"Open : ",unquote("1234.5986"),yellow,"",3456.67,red,showRune("FFEC"),white," Change:",unquote("-1.34 - 0.45%"),"  Range : ",lime,@[123,456,789])
      ##    echo fmtx(["","<18",":",">15","","",">8.2"],salmon,"nice something",steelblue,123,spaces(5),yellow,456.12345676)
      ##    echo()
-     ##    ruler()
+     ##    showRuler()
      ##    for x in 0.. 10: printlnBiCol(fmtx([">22",">10"],"nice something :",x ))
      ##    echo()
      ##    printLnBiCol(fmtx(["",">15.3f"],"Result : ",123.456789),":",lime,red)  # formats the float to a string with precision 3 the f is not necessary
      ##    echo()
      ##    echo fmtx([">22.3"],234.43324234)  # this formats float and aligns last char to pos 22
      ##    echo fmtx(["22.3"],234.43324234)   # this formats float but ignores position as no align operator given
+     ##    printLnBiCol(fmtx([">15." & $getRndInt(2,4),":",">10"],getRndFloat() * float(getRndInt(50000,500000)),spaces(5),getRndInt(12222,10000000)))
      ##
-
+     
      var okresult = ""
      # if formatstrings count not same as vararg count we bail out some error about fmts will be shown
      doassert(fmts.len == fstrings.len)
@@ -4860,23 +4865,23 @@ setControlCHook(handler)
 system.addQuitProc(resetAttributes)
 # end of cx.nim
 
-
 when isMainModule:
+
+  clearup()
+  decho(2)
+  doInfo()
+  clearup()
   let smm = "   import cx and your terminal comes alive with color ...  "
   for x in 0.. 10:
         cleanScreen()
         decho(5)
-        printBigLetters("NIM-CX",xpos = tw div 4,fun=true)
+        printBigLetters("NIMCX",xpos = tw div 4 + 6,fun=true)
         decho(8)
         rainbow2(smm,centered = false,colorset = colorsPalette("pastel"))
         print(innocent,truetomato)
-        for x in 0.. 12: print(innocent,randcol())
-        sleepy(0.3)
+        for x in 0.. (tw - 5) div 5: print(innocent,randcol())
+        sleepy(0.106)
         curup(1)
         
-        
-        
-  clearup()
-  decho(2)
-  doInfo()
   doFinish()
+
