@@ -17,6 +17,9 @@ Color and Utilities for the Linux Terminal
 Requires     : Latest Nim dev version
 
 
+![Image](http://qqtop.github.io/snowmaninjapan.png?raw=true)
+
+
 Installation : 
 
 
@@ -67,9 +70,9 @@ dofinish()
 
 ![Image](http://qqtop.github.io/nimcolors13.png?raw=true)
 
-![Image](http://qqtop.github.io/nimcx.gif?raw=true)
+                          ![Image](http://qqtop.github.io/nimcx.gif?raw=true)
 
-Brought to you by :
+    Brought to you by :
   
   
    ![Image](http://qqtop.github.io/gnu2.png?raw=true)  ![Image](http://qqtop.github.io/gnu.png?raw=true)
