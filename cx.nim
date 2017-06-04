@@ -1279,7 +1279,8 @@ template randCol*(coltype:string): auto =
          var rxColt = colPaletteIndexer(ts) 
          ts[rndSampleInt(rxColt)]
   
-template randCol*: string = colorNames[rndSampleInt(rxCol)][1]
+#template randCol*: string = colorNames[rndSampleInt(rxCol)][1]  # deprecated
+template randCol*: string = random(colorNames)[1]
    ## randCol
    ##
    ## get a randomcolor from colorNames , no filter is applied 
@@ -2001,6 +2002,20 @@ proc printLn*[T](astring:T,fgr:string = termwhite , bgr:BackgroundColor,xpos:int
     print cleareol
 
 
+proc printy*[T](astring:varargs[T,`$`]) = 
+    ## printy
+    ##
+    ## similar to echo but does not issue new line
+    ##
+    ## ..code-block:: nim
+    ##    printy "this is : " ,yellowgreen,1,bgreen,5,bblue," ʈəɽɭάɧɨɽ ʂəɱρʊɽɲά(άɲάʂʈάʂɣά)"
+    ##
+    
+    for x in astring: write(stdout,x)
+    setForeGroundColor(fgWhite)
+    setBackGroundColor(bgBlack)
+    
+    
 proc rainbow*[T](s : T,xpos:int = 0,fitLine:bool = false,centered:bool = false)  =
     ## rainbow
     ##
@@ -2892,7 +2907,7 @@ proc getRndDate*():string =
 
 # large font printing, numbers are implemented
 
-proc printBigNumber*(xnumber:string|int,fgr:string = yellowgreen ,bgr:string = black,xpos:int = 1,fun:bool = false) =
+proc printBigNumber*(xnumber:string|int|int64,fgr:string = yellowgreen ,bgr:string = black,xpos:int = 1,fun:bool = false) =
     ## printBigNumber
     ##
     ## prints a string in big block font
@@ -4293,7 +4308,25 @@ proc dayOfYear*(tt:Time) : range[0..365] = getLocalTime(tt).yearday + 1
     ##
     ##
 
-
+proc toTimeInfo*(date:string="2000-01-01"):TimeInfo =
+   ## toTimeInfo
+   ## 
+   ## converts a date of format yyyy-mm-dd to timeInfo
+   ## 
+   var adate = date.split("-")
+   var zyear = parseint(adate[0])
+   var zmonth = parseint(adate[1])
+   var zday = parseint(adate[2])
+   result.year = zyear
+   result.monthday = zmonth
+   result.monthday = zday
+   
+proc epochSecs*(date:string = "2000-01-01"):int =
+   ## epochSecs
+   ##
+   ## converts a date into secs since unix time 0
+   ##
+   result  =  int(toSeconds(toTime(toTimeInfo(date))))
  
   
 proc checkClip*(sel:string = "primary"):string  = 
@@ -4325,7 +4358,7 @@ proc toClip*[T](s:T ) =
      
 
 
-proc tableRune*[T](z:T,fgr:string = white,cols = 18) = 
+proc tableRune*[T](z:T,fgr:string = white,cols = 18,pause:float=0.05) = 
     ## tableRune
     ##
     ## simple table routine with 15 cols for displaying various unicode sets
@@ -4335,8 +4368,10 @@ proc tableRune*[T](z:T,fgr:string = white,cols = 18) =
     ##      tableRune(cjk(),"rand")
     ##      tableRune(katakana(),yellowgreen)
     ##      tableRune(hiragana(),truetomato)
-    ##      
+    ##      tableRune(geoshapes(),randcol())
+    ##
     var c = 0
+    var r = 0
     for x in 0.. <z.len:
       inc c
       if c < cols + 1 :
@@ -4348,10 +4383,35 @@ proc tableRune*[T](z:T,fgr:string = white,cols = 18) =
       else:
             c = 0
             echo()
+      
+      if r == th :
+         sleepy(pause)
+         r = 0
+      else: inc(r)   
+      
     decho(2)
 
 
+    
 
+proc uniall*(showOrd:bool=true):seq[string] =
+     # for testing purpose only
+     var gs = newSeq[string]()
+     for j in 1..55203:   
+            # there are more chars up to maybe 120150 some
+            # maybe for indian langs,iching, some special arab and koran symbols if installed on the system
+            # https://www.w3schools.com/charsets/ref_html_utf8.asp
+            if showOrd==true:
+                   gs.add($j & " : " & $Rune(j))
+            else:
+                   gs.add($Rune(j)) 
+     result = gs    
+    
+proc geoshapes*():seq[string] =
+     var gs = newSeq[string]()
+     for j in 9632..9727: gs.add($Rune(j))
+     result = gs
+     
 proc hiragana*():seq[string] =
     ## hiragana
     ##
