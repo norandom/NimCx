@@ -4341,7 +4341,7 @@ proc toTimeInfo*(date:string="2000-01-01"):TimeInfo =
    result.month = zmonth
    result.monthday = zday
 
-proc epochSecs2*(date:string="2000-01-01"):int =
+proc epochSecs*(date:string="2000-01-01"):int =
    ## epochSecs
    ##
    ## converts a date into secs since unix time 0
