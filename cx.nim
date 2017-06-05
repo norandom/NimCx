@@ -4308,6 +4308,7 @@ proc dayOfYear*(tt:Time) : range[0..365] = getLocalTime(tt).yearday + 1
     ##
     ##
 
+
 proc toTimeInfo*(date:string="2000-01-01"):TimeInfo =
    ## toTimeInfo
    ## 
@@ -4315,19 +4316,38 @@ proc toTimeInfo*(date:string="2000-01-01"):TimeInfo =
    ## 
    var adate = date.split("-")
    var zyear = parseint(adate[0])
-   var zmonth = parseint(adate[1])
+   var enzmonth = parseint(adate[1])
+   var zmonth : Month
+   case enzmonth 
+      of  1: zmonth = mJan
+      of  2: zmonth = mFeb
+      of  3: zmonth = mMar
+      of  4: zmonth = mApr
+      of  5: zmonth = mMay
+      of  6: zmonth = mJun
+      of  7: zmonth = mJul 
+      of  8: zmonth = mAug 
+      of  9: zmonth = mSep 
+      of  10: zmonth = mOct 
+      of  11: zmonth = mNov 
+      of  12: zmonth = mDec 
+      else:
+         printLnBiCol("Month error : Month = " & adate[1] & " ?? ",":",red)
+         printLnBiCol("Exiting now : ....")
+         quit(0)
+   
    var zday = parseint(adate[2])
    result.year = zyear
-   result.monthday = zmonth
+   result.month = zmonth
    result.monthday = zday
-   
-proc epochSecs*(date:string = "2000-01-01"):int =
+
+proc epochSecs2*(date:string="2000-01-01"):int =
    ## epochSecs
    ##
    ## converts a date into secs since unix time 0
    ##
    result  =  int(toSeconds(toTime(toTimeInfo(date))))
- 
+
   
 proc checkClip*(sel:string = "primary"):string  = 
      ## checkClip
