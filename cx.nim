@@ -11,9 +11,9 @@
 ##
 ##     ProjectStart: 2015-06-20
 ##   
-##     Latest      : 2017-05-28
+##     Latest      : 2017-06-14
 ##
-##     Compiler    : Nim >= 0.16
+##     Compiler    : Nim >= 0.17
 ##
 ##     OS          : Linux
 ##
@@ -109,12 +109,12 @@
 ##
 ##
 import os, times, parseutils, parseopt, hashes, tables, sets, strmisc
-import osproc,macros,posix,terminal,math,stats,json,random
+import osproc,macros,posix,terminal,math,stats,json,random,streams
 import sequtils,httpclient,rawsockets,browsers,intsets, algorithm
 import strutils except toLower,toUpper
 import unicode ,typeinfo, typetraits ,cpuinfo
 #import nimprof       # needs compile with: nim c --profiler:on --stackTrace:on  -d:memProfiler cx
-export strutils,sequtils,times,unicode
+export strutils,sequtils,times,unicode,streams
 export terminal.Style,terminal.getch  # make terminal style constants available in the calling prog
 
 #const someGcc = defined(gcc) or defined(llvm_gcc) or defined(clang)  # idea for backend info ex nimforum
@@ -148,6 +148,9 @@ type
      # to be used like so
      # raise newException(NimCxCustomError, "didn't do stuff")
 
+
+ 
+     
 proc getfg(fg:ForegroundColor):string =
     var gFG = ord(fg)
     result = "\e[" & $gFG & 'm'
@@ -3467,7 +3470,7 @@ proc localRouterIp*():string =
    # 
    # returns current router ip
    # 
-   var res = execCmdEx("ip route list | awk ' /^default/ {print $3}'")
+   let res = execCmdEx("ip route list | awk ' /^default/ {print $3}'")
    result = $res[0]
    
    
@@ -3896,11 +3899,12 @@ proc showBench*() =
  else:
     printLn("Benchmark results emtpy.Nothing to show",red)   
 
+    
 proc `$`*[T](some:typedesc[T]): string = name(T)
-proc typetest*[T](x:T): T =
-  # used to determine the field types in the temp sqllite table used for sorting
-  printLnBiCol("Type     : " & $type(x))
-  printLnBiCol("Value    : " & $x)
+proc typeTest*[T](x:T): T =
+     # used to determine the field types in the temp sqllite table used for sorting
+     printLnBiCol("Type     : " & $type(x))
+     printLnBiCol("Value    : " & $x)
 
 
 proc sortMe*[T](xs:var seq[T],order = Ascending): seq[T] =
@@ -3916,15 +3920,24 @@ proc sortMe*[T](xs:var seq[T],order = Ascending): seq[T] =
      ##    printLn(sortMe(z,Descending),peru)
      ##
      ##
-     xs.sort(proc(x,y:T):int = cmp(x,y),order = order)
-     result = xs
+     result = xs.sort(proc(x,y:T):int = cmp(x,y),order = order)
+     
 
-
-
+proc streamFile*(filename:string,mode:FileMode): FileStream = newFileStream(filename, mode)    
+     ## streamFile
+     ##
+     ## creates a new filestream opened with the desired filemode
+     ##
+     ##
+     
+     
+     
 template withFile*(f:untyped,filename: string, mode: FileMode, body: untyped): typed =
      ## withFile
      ##
      ## file open close utility template
+     ## 
+     ## Note overall it maybe better to use filestreams which can handle large files better
      ##
      ## Example 1
      ##
@@ -4314,6 +4327,7 @@ proc toTimeInfo*(date:string="2000-01-01"):TimeInfo =
    ## 
    ## converts a date of format yyyy-mm-dd to timeInfo
    ## 
+   var fresult:TimeInfo = getLocalTime(getTime())   # we init the TimeInfo object to avoid some future warning being displayed
    var adate = date.split("-")
    var zyear = parseint(adate[0])
    var enzmonth = parseint(adate[1])
@@ -4337,9 +4351,10 @@ proc toTimeInfo*(date:string="2000-01-01"):TimeInfo =
          quit(0)
    
    var zday = parseint(adate[2])
-   result.year = zyear
-   result.month = zmonth
-   result.monthday = zday
+   fresult.year = zyear
+   fresult.month = zmonth
+   fresult.monthday = zday
+   result = fresult
 
 proc epochSecs*(date:string="2000-01-01"):int =
    ## epochSecs
