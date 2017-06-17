@@ -114,7 +114,7 @@ import sequtils,httpclient,rawsockets,browsers,intsets, algorithm
 import strutils except toLower,toUpper
 import unicode ,typeinfo, typetraits ,cpuinfo
 #import nimprof       # needs compile with: nim c --profiler:on --stackTrace:on  -d:memProfiler cx
-export strutils,sequtils,times,unicode,streams
+export strutils,sequtils,times,unicode,streams,hashes
 export terminal.Style,terminal.getch  # make terminal style constants available in the calling prog
 
 #const someGcc = defined(gcc) or defined(llvm_gcc) or defined(clang)  # idea for backend info ex nimforum
@@ -1129,6 +1129,14 @@ proc rndSampleInt*(asq:seq[int]):int =
 const rxCol* = toSeq(colorNames.low.. colorNames.high) ## index into colorNames
 const rxPastelCol* = toSeq(pastelset.low.. pastelset.high) ## index into colorNames
 
+
+proc streamFile*(filename:string,mode:FileMode): FileStream = newFileStream(filename, mode)    
+     ## streamFile
+     ##
+     ## creates a new filestream opened with the desired filemode
+     ##
+     ##
+
 proc uniform*(a,b: float) : float =
       ## uniform
       ## 
@@ -1171,6 +1179,7 @@ proc getRndInt*(mi:int = 0 , ma:int = int.high):int =
  ##
  
  result = random(mi..ma)
+
 
 
 
@@ -3540,7 +3549,32 @@ proc showHosts*(dm:string) =
        for x in z:
          printLn(x)
 
-
+proc pingy*(dest:string,pingcc:int,col:string = termwhite) = 
+        ## pingy
+        ## 
+        ## small utility to ping some server
+        ## 
+        ## .. code-block:: nim 
+        ##    pingy("yahoo.com",4,dodgerblue)   # 4 pings and display progress in some color
+        ##    pingy("google.com",8,aqua)
+        ## 
+ 
+        let pingc = $pingcc
+        
+        let (outp,err) = execCmdEx("which ping")
+        let outp2 = quoteshellposix(strip(outp,true,true))
+        
+        if err > 0:
+            printLnBiCol("Error : " & $err,":",red)
+            
+        else:        
+               
+            printLnBiCol("Pinging : " & dest,":",yellowgreen,truetomato)
+            printLnBiCol("Expected: " & pingc & " pings")
+            printLn("",col)
+            var p = startProcess(outp2,args=["-c",pingc,dest] , options={poParentStreams})
+            printLn($p.waitForExit(parseInt(pingc) * 1000 + 500),truetomato)
+            decho(2)
 
 template quickList*[T](c:int,d:T,cw:int = 7 ,dw:int = 15) =
       ## quickList
@@ -3812,6 +3846,55 @@ proc createSeqFloat*(n:int = 10,prec:int = 3) : seq[float] =
 # Misc. routines
 
 
+proc nimcat*(curFile:string,startline:int = -1,endline = -1) =
+    ## nimcat
+    ## 
+    ## a simple file lister which allows to show all rows
+    ## or consecutive lines from  startline to endline  with line number
+    ## a file name without extension will be assuemed to be .nim  ... it is the nimcat afterall
+    ## 
+    ## .. code-block: nim
+    ## 
+    ##   nimcat("notes.txt")                   # show all lines
+    ##   nimcat("bigdatafile.csv",2000,3000)   # show lines 2000 to 3000
+    ## 
+    ## 
+    decho(2)
+    dlineLn()
+    echo()
+    var line = ""
+    var ccurFile = curFile
+    var (dir, name, ext) = splitFile(ccurFile)
+    if ext == "":
+       ccurFile = ccurFile & ".nim"
+    var fs = streamFile(ccurFile, fmRead)
+    var c = 1
+    if startline == -1 and endline == -1:
+      if not isNil(fs):
+        while fs.readLine(line):
+            printLnBiCol(fmtx([">5",": ",""],c,spaces(2),line))
+            inc c
+        fs.close()   
+        
+    else:
+      if not isNil(fs):
+        while fs.readLine(line):
+            if c >= startline and c <= endline: printLnBiCol(fmtx([">9",": ",""],c,spaces(2),line))
+            if c <= endline: inc c
+            else:
+              fs.close() 
+              break
+       
+    echo()
+    printLnBiCol("File       : " & ccurFile)
+    if startline > 0 and endline > 0:
+       printLnBiCol("Startline  : " & $startline)
+       printLnBiCol("Endline    : " & $endline)
+       printLnBiCol("Lines Shown: " & ff2(endline - startline))
+    else:
+       printLnBiCol("Lines Shown: " & ff2(c - 1))
+    
+
  
 proc checkHash*[T](kata:string,hsx:T)  =
   ## checkHash
@@ -3921,14 +4004,6 @@ proc sortMe*[T](xs:var seq[T],order = Ascending): seq[T] =
      ##
      ##
      result = xs.sort(proc(x,y:T):int = cmp(x,y),order = order)
-     
-
-proc streamFile*(filename:string,mode:FileMode): FileStream = newFileStream(filename, mode)    
-     ## streamFile
-     ##
-     ## creates a new filestream opened with the desired filemode
-     ##
-     ##
      
      
      
@@ -4175,7 +4250,7 @@ proc showStats*(x:Runningstat,n:int = 3,xpos:int = 1) =
      printLnBiCol("Max     : " & ff(x.max,n),sep,yellowgreen,white,xpos = xpos)
      printLn("S --> sample\n",peru,xpos = xpos)
 
-proc showRegression*(x, y: openArray[float | int],n:int = 5,xpos:int = 1) =
+proc showRegression*(x,y: seq[float | int],n:int = 5,xpos:int = 1) =
      ## showRegression
      ##
      ## quickly display RunningRegress data based on input of two openarray data series
