@@ -11,7 +11,7 @@
 ##
 ##     ProjectStart: 2015-06-20
 ##   
-##     Latest      : 2017-06-14
+##     Latest      : 2017-06-18
 ##
 ##     Compiler    : Nim >= 0.17
 ##
@@ -3596,6 +3596,15 @@ template quickList*[T](c:int,d:T,cw:int = 7 ,dw:int = 15) =
       echo fmtx([fms1,"",fms2],c,spaces(1),d)
 
 
+template doSomething*(body:untyped,secs:int) =
+  ## doSomething
+  ## 
+  ## execute some code for a certain amount of seconds
+  ## 
+  var mytime =  getTime().getLocalTime()
+  while toTime(getTime().getLocalTime()) < toTime(mytime) + secs.seconds : 
+      body
+    
 
 proc reverseMe*[T](xs: openarray[T]): seq[T] =
   ## reverseMe
@@ -4007,69 +4016,61 @@ proc sortMe*[T](xs:var seq[T],order = Ascending): seq[T] =
      
      
      
-template withFile*(f:untyped,filename: string, mode: FileMode, body: untyped): typed =
-     ## withFile
-     ##
-     ## file open close utility template
-     ## 
-     ## Note overall it maybe better to use filestreams which can handle large files better
-     ##
-     ## Example 1
-     ##
-     ## .. code-block:: nim
-     ##   let curFile="/data5/notes.txt"    # some file
-     ##   withFile(txt, curFile, fmRead):
-     ##       while true:
-     ##          try:
-     ##             printLn(txt.readLine())   # do something with the lines
-     ##          except:
-     ##             break
-     ##   echo()
-     ##   printLn("Finished",clRainbow)
-     ##   doFinish()
-     ##
-     ##
-     ## Example 2
-     ##
-     ## .. code-block:: nim
-     ##    import cx,strutils,strfmt
-     ##
-     ##    let curFile="/data5/notes.txt"
-     ##    var lc = 0
-     ##    var oc = 0
-     ##    withFile(txt, curFile, fmRead):
-     ##           while 1 == 1:
-     ##               try:
-     ##                  inc lc
-     ##                  var al = $txt.readline()
-     ##                  var sw = "the"   # find all lines containing : the
-     ##                  if al.contains(sw) == true:
-     ##                     inc oc
-     ##                     write(stdout,"{:<8}{:>6} {:<7}{:>6}  ".fmt("Line :",lc,"Count :",oc))
-     ##                     printHl(al,sw,green)
-     ##                     echo()
-     ##               except:
-     ##                  break
-     ##
-     ##    echo()
-     ##    printLn("Finished",clRainbow)
-     ##    doFinish()
-     ##
 
-     let fn = filename
-     var f: File
+template withFile*(f,fn, mode, actions: untyped): untyped =
+  ## withFile
+  ## 
+  ## easy file handling template , which is using fileStreams
+  ## 
+  ## f is a file handle
+  ## fn is the filename
+  ## mode is fmWrite,fmRead,fmReadWrite,fmAppend or fmReadWriteExisiting
+  ## 
+  ## 
+  ## Example 1
+  ## 
+  ## .. code-block:: nim
+  ##   let curFile="/data5/notes.txt"    # some file
+  ##   withFile(fs, curFile, fmRead):
+  ##       var line = ""
+  ##       while fs.readLine(line):
+  ##           printLn(line,yellowgreen)
+  ##           
+  ##  Example 2   
+  ##    
+  ## .. code-block:: nim
+  ##   import cx
+  ##
+  ##   let curFile="/data5/notes.txt"    # some file
+  ##
+  ##   withFile(txt2, curFile, fmRead):
+  ##           var aline = ""
+  ##           var lc = 0
+  ##           var oc = 0
+  ##           while txt2.readline(aline):
+  ##               try:
+  ##                   inc lc
+  ##                   var sw = "the"   # find all lines containing : the
+  ##                   if aline.contains(sw) == true:
+  ##                       inc oc
+  ##                       printBiCol(fmtx(["<8",">6","","<7","<6"],"Line :",lc,rightarrow,"Count : ",oc))
+  ##                       printHl(aline,sw,green)
+  ##                       echo()
+  ##               except:
+  ##                   break 
 
-     if open(f, fn, mode):
-         try:
-             body
-         finally:
-             close(f)
-     else:
+  var f = streamFile(fn,mode)
+  if not isNil f:
+    try:
+        actions
+    finally:
+        close(f)
+  else:
          echo()
-         printLnBiCol("Error : Cannot open file " & filename,":",red,yellow)
+         printLnBiCol("Error : Cannot open file " & fn,":",red,yellow)
          quit()
 
-
+         
 
 template loopy*[T](ite:T,st:typed) =
      ## loopy
