@@ -2774,18 +2774,17 @@ proc getFirstMondayYear*(ayear:string):string =
     ## getFirstMondayYear
     ##
     ## returns date of first monday of any given year
-    ## should be ok for the next years but after 2100-02-28 all bets are off
-    ##
     ##
     ## .. code-block:: nim
     ##    echo  getFirstMondayYear("2015")
     ##
     ##
  
-    for x in 1.. 8:
-       var datestr= ayear & "-01-0" & $x
+    for x in 0.. 7:
+       var datestr = ayear & "-01-0" & $x
        if validdate(datestr) == true:
-          if dayofweekjulian(datestr) == "Monday": result = datestr
+          if $(getdayofweek(parseInt(day(datestr)),parseInt(month(datestr)),parseInt(year(datestr)))) == "Monday":
+             result = datestr
 
 
 proc getFirstMondayYearMonth*(aym:string):string =
@@ -2803,14 +2802,14 @@ proc getFirstMondayYearMonth*(aym:string):string =
 
     #var n:WeekDay
     var amx = aym
-    for x in 1.. 8:
+    for x in 0.. 7:
        if aym.len < 7:
           let yr = year(amx)
           let mo = month(aym)  # this also fixes wrong months
           amx = yr & "-" & mo
        var datestr = amx & "-0" & $x
        if validdate(datestr) == true:
-          if dayofweekjulian(datestr) == "Monday":
+          if $(getdayofweek(parseInt(day(datestr)),parseInt(month(datestr)),parseInt(year(datestr)))) == "Monday":
             result = datestr
 
 
@@ -2834,31 +2833,32 @@ proc getNextMonday*(adate:string):string =
     ## in case of invalid dates nil will be returned
     ##
 
-    #var n:WeekDay
+    
     var ndatestr = ""
     if isNil(adate) == true :
-        print("Error received a date with value : nil",red)
+       print("Error received a date with value : nil",red)
     else:
 
         if validdate(adate) == true:
-            var z = dayofweekjulian(adate)
-
+           
+            var z = $(getdayofweek(parseInt(day(adate)),parseInt(month(adate)),parseInt(year(adate))))
+            
             if z == "Monday":
-              # so the datestr points to a monday we need to add a
-              # day to get the next one calculated
+                # so the datestr points to a monday we need to add a
+                # day to get the next one calculated
                 ndatestr = plusDays(adate,1)
 
             else:
                 ndatestr = adate
 
             for x in 0.. <7:
-              if validdate(ndatestr) == true:
-                z = dayofweekjulian(ndatestr)
-
+                if validdate(ndatestr) == true:
+                    z =  $(getdayofweek(parseInt(day(ndatestr)),parseInt(month(ndatestr)),parseInt(year(ndatestr))))
                 if z.strip() != "Monday":
                     ndatestr = plusDays(ndatestr,1)
                 else:
                     result = ndatestr
+
 
 
 
