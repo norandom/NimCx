@@ -4859,6 +4859,41 @@ proc showTerminalSize*() =
 
 # Info and handlers procs for quick information
 
+template infoProc*(code: untyped) =
+  ## infoProc
+  ## 
+  ## shows from where a specific function has been called 
+  ## .. code-block:: nim
+  ##   proc test[T](ff:T) =
+  ##     let yuuu = @["test"]
+  ##     var x = "sdfsdf"
+  ##     var z = 689999999999999999i64
+  ##     checklocals()
+  ##     
+  try:
+    let pos = instantiationInfo()
+    code
+    echo "Called by: $1 Line: $2 with: '$3'" % [pos.filename,$pos.line, astToStr(code)]
+  except:
+    echo "Error checking instantiationInfo occurred"
+    discard
+
+proc `$`(T: typedesc): string = name(T)
+template checkLocals*() =
+  ## checkLocals
+  ## 
+  ## check name,type and value of local variables
+  ## needs to be called inside a proc calling from toplevel has no effect
+  ## best placed at bottom end of a proc to pick up all Variables
+  ## 
+    
+  for name, value in fieldPairs(locals()): 
+      var aname = name 
+      var avalue = value
+      #var atype = $test(avalue)
+      var atype = $type(avalue)
+      printLnBiCol(fmtx(["","<20","","","","","<25","","","","",""],"Variable : ",$aname,spaces(3),peru,"Type : ",termwhite,atype,spaces(1),aqua,"Value : ",termwhite,$avalue))
+  
 
 proc qqTop*() =
   ## qqTop
