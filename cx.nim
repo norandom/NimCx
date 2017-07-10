@@ -11,7 +11,7 @@
 ##
 ##     ProjectStart: 2015-06-20
 ##   
-##     Latest      : 2017-06-18
+##     Latest      : 2017-07-10
 ##
 ##     Compiler    : Nim >= 0.17
 ##
@@ -88,7 +88,7 @@
 ##
 ##                   proc fmtx a formatting utility has been added
 ##
-##                   to remove dependency on strfmt , which breaks sometimes
+##                   to remove dependency on strfmt , which used to break sometimes
 ##
 ##                   after compiler updates .
 ##                   
@@ -98,7 +98,7 @@
 ##     Installation: nimble install https://github.com/qqtop/NimCx.git
 ##
 ##
-##     Optional    : xclip  
+##     Optional    : xclip  (linux clipboard utility)
 ##                 
 ##                   unicode font libraries as needed 
 ##
@@ -112,7 +112,7 @@ import os, times, parseutils, parseopt, hashes, tables, sets, strmisc
 import osproc,macros,posix,terminal,math,stats,json,random,streams
 import sequtils,httpclient,rawsockets,browsers,intsets, algorithm
 import strutils except toLower,toUpper
-import unicode ,typeinfo, typetraits ,cpuinfo
+import unicode ,typeinfo, typetraits ,cpuinfo,colors,encodings,distros
 #import nimprof       # needs compile with: nim c --profiler:on --stackTrace:on  -d:memProfiler cx
 export strutils,sequtils,times,unicode,streams,hashes
 export terminal.Style,terminal.getch  # make terminal style constants available in the calling prog
@@ -148,9 +148,7 @@ type
      # to be used like so
      # raise newException(NimCxCustomError, "didn't do stuff")
 
-
- 
-     
+   
 proc getfg(fg:ForegroundColor):string =
     var gFG = ord(fg)
     result = "\e[" & $gFG & 'm'
@@ -279,8 +277,12 @@ const
       pastelwhite*          =  "\x1b[38;2;204;204;204m"
 
       # other colors of interest
+      # https://www.w3schools.com/colors/colors_trends.asp
+      # http://www.javascripter.net/faq/hextorgb.htm
       truetomato*           =   "\x1b[38;2;255;100;0m"
-
+      bigdip*               =   "\x1b[38;2;156;37;66m"
+      greenery*             =   "\x1b[38;2;136;176;75m"
+      bluey*                =   "\x1b[38;2;41;194;102m"    # not displaying , showing default bluishgreen
       # colors lifted from colors.nim and massaged into rgb escape seqs
 
       aliceblue*            =  "\x1b[38;2;240;248;255m"
@@ -423,8 +425,165 @@ const
       whitesmoke*           =  "\x1b[38;2;245;245;245m"
       yellow*               =  "\x1b[38;2;255;255;0m"
       yellowgreen*          =  "\x1b[38;2;154;205;50m"
+      zcolor*               =  "\x1b[38;2;255;111;210m"
+      zippi*                =  "\x1b[38;2;79;196;132m"     # not displaying , showing default blueish green
 
-
+# all colors except original terminal colors
+const colorNames* = @[
+      ("aliceblue", aliceblue),
+      ("antiquewhite", antiquewhite),
+      ("aqua", aqua),
+      ("aquamarine", aquamarine),
+      ("azure", azure),
+      ("beige", beige),
+      ("bigdip",bigdip),
+      ("bisque", bisque),
+      ("black", black),
+      ("blanchedalmond", blanchedalmond),
+      ("blue", blue),
+      ("blueviolet", blueviolet),
+      ("bluey",bluey),
+      ("brown", brown),
+      ("burlywood", burlywood),
+      ("cadetblue", cadetblue),
+      ("chartreuse", chartreuse),
+      ("chocolate", chocolate),
+      ("coral", coral),
+      ("cornflowerblue", cornflowerblue),
+      ("cornsilk", cornsilk),
+      ("crimson", crimson),
+      ("cyan", cyan),
+      ("darkblue", darkblue),
+      ("darkcyan", darkcyan),
+      ("darkgoldenrod", darkgoldenrod),
+      ("darkgray", darkgray),
+      ("darkgreen", darkgreen),
+      ("darkkhaki", darkkhaki),
+      ("darkmagenta", darkmagenta),
+      ("darkolivegreen", darkolivegreen),
+      ("darkorange", darkorange),
+      ("darkorchid", darkorchid),
+      ("darkred", darkred),
+      ("darksalmon", darksalmon),
+      ("darkseagreen", darkseagreen),
+      ("darkslateblue", darkslateblue),
+      ("darkslategray", darkslategray),
+      ("darkturquoise", darkturquoise),
+      ("darkviolet", darkviolet),
+      ("deeppink", deeppink),
+      ("deepskyblue", deepskyblue),
+      ("dimgray", dimgray),
+      ("dodgerblue", dodgerblue),
+      ("firebrick", firebrick),
+      ("floralwhite", floralwhite),
+      ("forestgreen", forestgreen),
+      ("fuchsia", fuchsia),
+      ("gainsboro", gainsboro),
+      ("ghostwhite", ghostwhite),
+      ("gold", gold),
+      ("goldenrod", goldenrod),
+      ("gray", gray),
+      ("green", green),
+      ("greenery",greenery),
+      ("greenyellow", greenyellow),
+      ("honeydew", honeydew),
+      ("hotpink", hotpink),
+      ("indianred", indianred),
+      ("indigo", indigo),
+      ("ivory", ivory),
+      ("khaki", khaki),
+      ("lavender", lavender),
+      ("lavenderblush", lavenderblush),
+      ("lawngreen", lawngreen),
+      ("lemonchiffon", lemonchiffon),
+      ("lightblue", lightblue),
+      ("lightcoral", lightcoral),
+      ("lightcyan", lightcyan),
+      ("lightgoldenrodyellow", lightgoldenrodyellow),
+      ("lightgrey", lightgrey),
+      ("lightgreen", lightgreen),
+      ("lightpink", lightpink),
+      ("lightsalmon", lightsalmon),
+      ("lightseagreen", lightseagreen),
+      ("lightskyblue", lightskyblue),
+      ("lightslategray", lightslategray),
+      ("lightsteelblue", lightsteelblue),
+      ("lightyellow", lightyellow),
+      ("lime", lime),
+      ("limegreen", limegreen),
+      ("linen", linen),
+      ("magenta", magenta),
+      ("maroon", maroon),
+      ("mediumaquamarine", mediumaquamarine),
+      ("mediumblue", mediumblue),
+      ("mediumorchid", mediumorchid),
+      ("mediumpurple", mediumpurple),
+      ("mediumseagreen", mediumseagreen),
+      ("mediumslateblue", mediumslateblue),
+      ("mediumspringgreen", mediumspringgreen),
+      ("mediumturquoise", mediumturquoise),
+      ("mediumvioletred", mediumvioletred),
+      ("midnightblue", midnightblue),
+      ("mintcream", mintcream),
+      ("mistyrose", mistyrose),
+      ("moccasin", moccasin),
+      ("navajowhite", navajowhite),
+      ("navy", navy),
+      ("oldlace", oldlace),
+      ("olive", olive),
+      ("olivedrab", olivedrab),
+      ("orange", orange),
+      ("orangered", orangered),
+      ("orchid", orchid),
+      ("palegoldenrod", palegoldenrod),
+      ("palegreen", palegreen),
+      ("paleturquoise", paleturquoise),
+      ("palevioletred", palevioletred),
+      ("papayawhip", papayawhip),
+      ("peachpuff", peachpuff),
+      ("peru", peru),
+      ("pink", pink),
+      ("plum", plum),
+      ("powderblue", powderblue),
+      ("purple", purple),
+      ("red", red),
+      ("rosybrown", rosybrown),
+      ("royalblue", royalblue),
+      ("saddlebrown", saddlebrown),
+      ("salmon", salmon),
+      ("sandybrown", sandybrown),
+      ("seagreen", seagreen),
+      ("seashell", seashell),
+      ("sienna", sienna),
+      ("silver", silver),
+      ("skyblue", skyblue),
+      ("slateblue", slateblue),
+      ("slategray", slategray),
+      ("snow", snow),
+      ("springgreen", springgreen),
+      ("steelblue", steelblue),
+      ("tan", tan),
+      ("teal", teal),
+      ("thistle", thistle),
+      ("tomato", tomato),
+      ("turquoise", turquoise),
+      ("violet", violet),
+      ("wheat", wheat),
+      ("white", white),
+      ("whitesmoke", whitesmoke),
+      ("yellow", yellow),
+      ("yellowgreen", yellowgreen),
+      ("pastelbeige",pastelbeige),
+      ("pastelblue",pastelblue),
+      ("pastelgreen",pastelgreen),
+      ("pastelorange",pastelorange),
+      ("pastelpink",pastelpink),
+      ("pastelwhite",pastelwhite),
+      ("pastelyellow",pastelyellow),
+      ("pastelyellowgreen",pastelyellowgreen),
+      ("truetomato",truetomato),
+      ("zcolor",zcolor),
+      ("zippi",zippi)]
  
 const
   # used by spellInteger,spellFloat
@@ -967,158 +1126,6 @@ const emojis* = @[check,xmark,heart,sun,star,darkstar,umbrella,flag,snowflake,mu
 # may or may not be available on all systems
 const wideDot* = "\xE2\x9A\xAB" & " "
 
-# all colors except original terminal colors
-const colorNames* = @[
-      ("aliceblue", aliceblue),
-      ("antiquewhite", antiquewhite),
-      ("aqua", aqua),
-      ("aquamarine", aquamarine),
-      ("azure", azure),
-      ("beige", beige),
-      ("bisque", bisque),
-      ("black", black),
-      ("blanchedalmond", blanchedalmond),
-      ("blue", blue),
-      ("blueviolet", blueviolet),
-      ("brown", brown),
-      ("burlywood", burlywood),
-      ("cadetblue", cadetblue),
-      ("chartreuse", chartreuse),
-      ("chocolate", chocolate),
-      ("coral", coral),
-      ("cornflowerblue", cornflowerblue),
-      ("cornsilk", cornsilk),
-      ("crimson", crimson),
-      ("cyan", cyan),
-      ("darkblue", darkblue),
-      ("darkcyan", darkcyan),
-      ("darkgoldenrod", darkgoldenrod),
-      ("darkgray", darkgray),
-      ("darkgreen", darkgreen),
-      ("darkkhaki", darkkhaki),
-      ("darkmagenta", darkmagenta),
-      ("darkolivegreen", darkolivegreen),
-      ("darkorange", darkorange),
-      ("darkorchid", darkorchid),
-      ("darkred", darkred),
-      ("darksalmon", darksalmon),
-      ("darkseagreen", darkseagreen),
-      ("darkslateblue", darkslateblue),
-      ("darkslategray", darkslategray),
-      ("darkturquoise", darkturquoise),
-      ("darkviolet", darkviolet),
-      ("deeppink", deeppink),
-      ("deepskyblue", deepskyblue),
-      ("dimgray", dimgray),
-      ("dodgerblue", dodgerblue),
-      ("firebrick", firebrick),
-      ("floralwhite", floralwhite),
-      ("forestgreen", forestgreen),
-      ("fuchsia", fuchsia),
-      ("gainsboro", gainsboro),
-      ("ghostwhite", ghostwhite),
-      ("gold", gold),
-      ("goldenrod", goldenrod),
-      ("gray", gray),
-      ("green", green),
-      ("greenyellow", greenyellow),
-      ("honeydew", honeydew),
-      ("hotpink", hotpink),
-      ("indianred", indianred),
-      ("indigo", indigo),
-      ("ivory", ivory),
-      ("khaki", khaki),
-      ("lavender", lavender),
-      ("lavenderblush", lavenderblush),
-      ("lawngreen", lawngreen),
-      ("lemonchiffon", lemonchiffon),
-      ("lightblue", lightblue),
-      ("lightcoral", lightcoral),
-      ("lightcyan", lightcyan),
-      ("lightgoldenrodyellow", lightgoldenrodyellow),
-      ("lightgrey", lightgrey),
-      ("lightgreen", lightgreen),
-      ("lightpink", lightpink),
-      ("lightsalmon", lightsalmon),
-      ("lightseagreen", lightseagreen),
-      ("lightskyblue", lightskyblue),
-      ("lightslategray", lightslategray),
-      ("lightsteelblue", lightsteelblue),
-      ("lightyellow", lightyellow),
-      ("lime", lime),
-      ("limegreen", limegreen),
-      ("linen", linen),
-      ("magenta", magenta),
-      ("maroon", maroon),
-      ("mediumaquamarine", mediumaquamarine),
-      ("mediumblue", mediumblue),
-      ("mediumorchid", mediumorchid),
-      ("mediumpurple", mediumpurple),
-      ("mediumseagreen", mediumseagreen),
-      ("mediumslateblue", mediumslateblue),
-      ("mediumspringgreen", mediumspringgreen),
-      ("mediumturquoise", mediumturquoise),
-      ("mediumvioletred", mediumvioletred),
-      ("midnightblue", midnightblue),
-      ("mintcream", mintcream),
-      ("mistyrose", mistyrose),
-      ("moccasin", moccasin),
-      ("navajowhite", navajowhite),
-      ("navy", navy),
-      ("oldlace", oldlace),
-      ("olive", olive),
-      ("olivedrab", olivedrab),
-      ("orange", orange),
-      ("orangered", orangered),
-      ("orchid", orchid),
-      ("palegoldenrod", palegoldenrod),
-      ("palegreen", palegreen),
-      ("paleturquoise", paleturquoise),
-      ("palevioletred", palevioletred),
-      ("papayawhip", papayawhip),
-      ("peachpuff", peachpuff),
-      ("peru", peru),
-      ("pink", pink),
-      ("plum", plum),
-      ("powderblue", powderblue),
-      ("purple", purple),
-      ("red", red),
-      ("rosybrown", rosybrown),
-      ("royalblue", royalblue),
-      ("saddlebrown", saddlebrown),
-      ("salmon", salmon),
-      ("sandybrown", sandybrown),
-      ("seagreen", seagreen),
-      ("seashell", seashell),
-      ("sienna", sienna),
-      ("silver", silver),
-      ("skyblue", skyblue),
-      ("slateblue", slateblue),
-      ("slategray", slategray),
-      ("snow", snow),
-      ("springgreen", springgreen),
-      ("steelblue", steelblue),
-      ("tan", tan),
-      ("teal", teal),
-      ("thistle", thistle),
-      ("tomato", tomato),
-      ("turquoise", turquoise),
-      ("violet", violet),
-      ("wheat", wheat),
-      ("white", white),
-      ("whitesmoke", whitesmoke),
-      ("yellow", yellow),
-      ("yellowgreen", yellowgreen),
-      ("pastelbeige",pastelbeige),
-      ("pastelblue",pastelblue),
-      ("pastelgreen",pastelgreen),
-      ("pastelorange",pastelorange),
-      ("pastelpink",pastelpink),
-      ("pastelwhite",pastelwhite),
-      ("pastelyellow",pastelyellow),
-      ("pastelyellowgreen",pastelyellowgreen),
-      ("truetomato",truetomato)]
-
 
 proc rndSampleInt*(asq:seq[int]):int =
      ## rndSampleint
@@ -1175,13 +1182,26 @@ proc uniform*(a,b: float) : float =
 proc getRndInt*(mi:int = 0 , ma:int = int.high):int =
  ## getRndInt
  ##
- ## returns a random int between mi and ma
+ ## returns a random int between mi and < ma
  ##
  
  result = random(mi..ma)
 
 
-
+proc fibonacci*(n: int):float =  
+   ## fibonacci
+   ## 
+   ## calculate fibonacci values
+   ##
+   ## .. code-block:: nim
+   ## 
+   ##    for x in 0.. 20: quickList(x,fibonacci(x))
+   ## 
+   if n < 2: 
+      result = float(n)
+   else: 
+      result = fibonacci(n-1) + fibonacci(n-2)
+  
 
 template colPaletteIndexer*(colx:seq[string]):auto =  toSeq(colx.low.. colx.high) 
 
@@ -1371,7 +1391,7 @@ proc ff*(zz:float,n:int = 5):string
 proc ff2*(zz:float,n:int = 3):string
 proc ff2*(zz:int64,n:int = 0):string
 converter colconv*(cx:string) : string
-proc rainbow*[T](s : T,xpos:int = 0,fitLine:bool = false ,centered:bool = false)  ## forward declaration
+proc rainbow*[T](s : T,xpos:int = 1,fitLine:bool = false ,centered:bool = false)  ## forward declaration
 proc print*[T](astring:T,fgr:string = termwhite ,bgr:string = bblack,xpos:int = 0,fitLine:bool = false ,centered:bool = false,styled : set[Style]= {},substr:string = "")
 proc printLn*[T](astring:T,fgr:string = termwhite , bgr:string = bblack,xpos:int = 0,fitLine:bool = false,centered:bool = false,styled : set[Style]= {},substr:string = "")
 proc printBiCol*[T](s:T,sep:string = ":",colLeft:string = yellowgreen ,colRight:string = termwhite,xpos:int = 0,centered:bool = false,styled : set[Style]= {}) ## forward declaration
@@ -1732,8 +1752,6 @@ converter colconv*(cx:string) : string =
      result = bg
 
 
-
-
 proc print*[T](astring:T,fgr:string = termwhite ,bgr:string = bblack,xpos:int = 0,fitLine:bool = false ,centered:bool = false,styled : set[Style]= {},substr:string = "") =
     ## ::
     ## print
@@ -2014,7 +2032,7 @@ proc printLn*[T](astring:T,fgr:string = termwhite , bgr:BackgroundColor,xpos:int
     print cleareol
 
 
-proc printy*[T](astring:varargs[T,`$`]) = 
+proc printy*[T](astring:varargs[T,`$`]) =  
     ## printy
     ##
     ## similar to echo but does not issue new line
@@ -2027,8 +2045,23 @@ proc printy*[T](astring:varargs[T,`$`]) =
     setForeGroundColor(fgWhite)
     setBackGroundColor(bgBlack)
     
+ 
+
+template printyLn*(astring:varargs[untyped]) =  
+    ## printy2
+    ##
+    ## similar to echo , backgroundcolor will be set to black when finished
+    ##
+    ## ..code-block:: nim
+    ##    printy2(peru,"this is : " ,yellowgreen,1,rightarrow,bbrightmagenta,black,5,bblue,seagreen," ʈəɽɭάɧɨɽ ʂəɱρʊɽɲά(άɲάʂʈάʂɣά)")
+    ##
     
-proc rainbow*[T](s : T,xpos:int = 0,fitLine:bool = false,centered:bool = false)  =
+    echo(astring,bblack)
+    setForeGroundColor(fgWhite)
+    setBackGroundColor(bgBlack)
+    
+ 
+proc rainbow*[T](s : T,xpos:int = 1,fitLine:bool = false,centered:bool = false)  =
     ## rainbow
     ##
     ## multicolored string
@@ -2047,7 +2080,7 @@ proc rainbow*[T](s : T,xpos:int = 0,fitLine:bool = false,centered:bool = false) 
     var nxpos = xpos
     var astr = $s
     var c = 0
-    var a = toSeq(1.. <colorNames.len)
+    var a = toSeq(0.. <colorNames.len)
 
     for x in 0.. <astr.len:
        c = a[getRndInt(ma=a.len)]
@@ -2597,9 +2630,9 @@ proc validdate*(adate:string):bool =
       let m31 = @["01","03","05","07","08","10","12"]
       let xdate = parseInt(aDate.replace("-",""))
       # check 1 is our date between 1900 - 3000
-      if xdate > 19000101 and xdate < 30001212:
+      if xdate >= 19000101 and xdate < 30010101:
           var spdate = aDate.split("-")
-          if parseInt(spdate[0]) >= 1900 and parseInt(spdate[0]) <= 3000:
+          if parseInt(spdate[0]) >= 1900 and parseInt(spdate[0]) <= 3001:
               if spdate[1] in m30:
                   #  day max 30
                   if parseInt(spdate[2]) > 0 and parseInt(spdate[2]) < 31:
@@ -2657,6 +2690,7 @@ proc intervalsecs*(startDate,endDate:string) : float =
       else:
           printLn("Error: " &  startDate & "/" & endDate & " --> Format yyyy-MM-dd required",red)
           #result = -0.0
+          
 
 proc intervalmins*(startDate,endDate:string) : float =
            var imins = intervalsecs(startDate,endDate) / 60
@@ -2798,7 +2832,7 @@ proc getFirstMondayYearMonth*(aym:string):string =
     ##    echo  getFirstMondayYearMonth("2015-2")
     ##
     ## in case of invalid dates nil will be returned
-    ## should be ok for the next years but after 2100-02-28 all bets are off
+    
 
     #var n:WeekDay
     var amx = aym
@@ -2879,6 +2913,20 @@ proc createSeqDate*(fromDate:string,toDate:string):seq[string] =
          aDate = plusDays(aDate,1)  
      result = aresult    
          
+         
+proc dayofweek*(datestr:string):string = 
+    ## dayofweek
+    ## 
+    ## returns day of week from a date in format yyyy-MM-dd
+    ## 
+    ## .. code-block:: nim    
+    ##    echo getNextMonday("2017-07-15"),"  ",dayofweek(getNextMonday("2017-07-15"))
+    ##    echo getFirstMondayYear("2018"),"  ",dayofweek(getFirstMondayYear("2018"))
+    ##    echo getFirstMondayYearMonth("2018-2"),"  ",dayofweek(getFirstMondayYearMonth("2018-2"))
+    
+    result =  $(getdayofweek(parseInt(day(datestr)),parseInt(month(datestr)),parseInt(year(datestr))))
+  
+
      
 
 proc createSeqDate*(fromDate:string,days:int = 1):seq[string] = 
@@ -3852,6 +3900,14 @@ proc createSeqFloat*(n:int = 10,prec:int = 3) : seq[float] =
        if result.len == n : break
 
 
+       
+template bitCheck*(a, b: untyped): bool =
+    ## bitCheck
+    ## 
+    ## check bitsets as suggested by araq
+    ##  
+    (a and (1 shl b)) != 0       
+       
 # Misc. routines
 
 
@@ -4888,11 +4944,7 @@ template checkLocals*() =
   ## 
     
   for name, value in fieldPairs(locals()): 
-      var aname = name 
-      var avalue = value
-      #var atype = $test(avalue)
-      var atype = $type(avalue)
-      printLnBiCol(fmtx(["","<20","","","","","<25","","","","",""],"Variable : ",$aname,spaces(3),peru,"Type : ",termwhite,atype,spaces(1),aqua,"Value : ",termwhite,$avalue))
+      printLnBiCol(fmtx(["","<20","","","","","<25","","","","",""],"Variable : ",$name,spaces(3),peru,"Type : ",termwhite,$type(value),spaces(1),aqua,"Value : ",termwhite,$value))
   
 
 proc qqTop*() =
@@ -4947,7 +4999,7 @@ proc doInfo*() =
   #printLnBiCol("Last Access                   : " & $(fi.lastAccessTime),sep,yellowgreen,lightgrey)
   #printLnBiCol("Last Write                    : " & $(fi.lastWriteTime),sep,yellowgreen,lightgrey)
   printLnBiCol("Creation                      : " & $(fi.creationTime),sep,yellowgreen,lightgrey)
-
+  
   when defined windows:
         printLnBiCol("System                        : Windows ..... Really ??",sep,red,lightgrey)
   elif defined linux:
@@ -4969,9 +5021,8 @@ proc doInfo*() =
   printBiCol(" | CPU: "& hostCPU,sep,yellowgreen,lightgrey)
   printLnBiCol(" | cpuEndian: "& $cpuEndian,sep,yellowgreen,lightgrey)
   printLnBiCol("CPU Cores                     : " & $cpuInfo.countProcessors())
-  let pd = getpid()
-  printLnBiCol("Current pid                   : " & $pd,sep,yellowgreen,lightgrey)
-
+  printLnBiCol("Current pid                   : " & $getpid(),sep,yellowgreen,lightgrey)
+  printLnBiCol("Terminal encoding             : " & $getCurrentEncoding())
 
 
 proc infoLine*() =
@@ -4980,7 +5031,7 @@ proc infoLine*() =
     ## prints some info for current application
     ##
     hlineLn()
-    print(fmtx(["<14"],"Application :"),yellowgreen)
+    print(fmtx(["<14"],"Application:"),yellowgreen)
     print(extractFileName(getAppFilename()),brightblack)
     print(" | ",brightblack)
     print("Nim : ",lime)
@@ -5004,6 +5055,18 @@ proc doByeBye*() =
   doFinish()
 
 
+# code below borrowed from distros.nim  and made exportable 
+var unameRes, releaseRes: string                      
+
+template unameRelease(cmd, cache): untyped =
+  if cache.len == 0:
+    cache = (when defined(nimscript): gorge(cmd) else: execProcess(cmd))
+  cache
+
+template uname*(): untyped = unameRelease("uname -a", unameRes)
+template release*(): untyped = unameRelease("lsb_release -a", releaseRes)
+# end of borrow  
+  
 proc doFinish*() =
     ## doFinish
     ##
@@ -5017,9 +5080,17 @@ proc doFinish*() =
         decho(2)
         infoLine()
         printLn(" - " & year(getDateStr()),brightblack)
-        print(fmtx(["<14"],"Elapsed     : "),yellowgreen)
+        print(fmtx(["<14"],"Elapsed    : "),yellowgreen)
         print(fmtx(["<",">5"],ff(epochtime() - cx.start,3)," secs"),goldenrod)
-        printLnBiCol(" Compiled on: " & $CompileDate & " at " & $CompileTime)
+        printLnBiCol("  Compiled on: " & $CompileDate & " at " & $CompileTime)
+        if detectOs(OpenSUSE):  # some additional data if on openSuse systems
+            printLnBiCol("Kernel     :  " & uname().split("#")[0],":",lightslategray ,lavender)
+            var rld = release().splitLines()
+            var rld2 = $rld[2]
+            var rld21 = rld2.replace("Description:    o","Description:  o")
+            printBiCol(rld21 & spaces(2),":",lightslategray ,seagreen)
+            printLnBiCol(rld[3],":",lightslategray ,olivedrab)
+            
         echo()
         quit(0)
 
