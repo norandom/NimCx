@@ -33,6 +33,8 @@
 ##       
 import os,osproc,cx,math,stats,cpuinfo,httpclient,browsers
 
+var tw = 80
+var th = 100
 
 proc memCheck*(stats:bool = false) =
   ## memCheck
