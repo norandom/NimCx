@@ -3,11 +3,11 @@
 ## 
 ##     Library     : cx.nim
 ##
-##     Status      : stable
+##     Status      : beta
 ##
 ##     License     : MIT opensource
 ##
-##     Version     : 0.9.9
+##     Version     : 0.9.9.w
 ##
 ##     ProjectStart: 2015-06-20
 ##   
@@ -15,7 +15,7 @@
 ##
 ##     Compiler    : Nim >= 0.17
 ##
-##     OS          : Linux
+##     OS          : Linux, Windows
 ##
 ##     Description :
 ##
@@ -133,7 +133,7 @@ when defined(macosx):
 
 when defined(windows):
   {.hint    : "Time to switch to Linux !".}
-  {.fatal   : "CX does not support Windows at this stage and never will !".}
+  ##{.fatal   : "CX does not support Windows at this stage and never will !".}
 
 when defined(posix):
   {.hint    : "\x1b[38;2;154;205;50m \u2691 Delicious Os flavour detected .... NimCx loves Linux ! \u2691".}
