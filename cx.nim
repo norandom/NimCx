@@ -981,7 +981,7 @@ let NIMX10 = "██     █  ██  ██     █  ██"
 
 let nimsx2* = @[NIMX6,NIMX7,NIMX8,NIMX9,NIMX10]
 
-
+var tw = 80
 
 # slim numbers can be used with printSlimNumber
 
